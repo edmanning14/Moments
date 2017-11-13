@@ -7,15 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		641A381F1F9E1D5C00B238A0 /* AddEventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641A381E1F9E1D5C00B238A0 /* AddEventTableViewCell.swift */; };
 		6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */; };
 		6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */; };
 		6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DE1F9CFDFE005C0F9C /* DetailViewController.swift */; };
 		6444D8E21F9CFDFF005C0F9C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6444D8E01F9CFDFF005C0F9C /* Main.storyboard */; };
 		6444D8E41F9CFDFF005C0F9C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6444D8E31F9CFDFF005C0F9C /* Assets.xcassets */; };
 		6444D8E71F9CFDFF005C0F9C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6444D8E51F9CFDFF005C0F9C /* LaunchScreen.storyboard */; };
+		6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */; };
+		6444D8F51F9D0509005C0F9C /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6444D8F41F9D0509005C0F9C /* Default-568h@2x.png */; };
+		64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */; };
+		64A2495A1FB9AD1600E15B7A /* DS-DIGIB.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 64A249591FB9AD1600E15B7A /* DS-DIGIB.TTF */; };
+		B65F908917762A0A66BE04AC /* Pods_Multiple_Event_Countdown.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		641A381E1F9E1D5C00B238A0 /* AddEventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEventTableViewCell.swift; sourceTree = "<group>"; };
 		6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiple Event Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -24,6 +31,14 @@
 		6444D8E31F9CFDFF005C0F9C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6444D8E61F9CFDFF005C0F9C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6444D8E81F9CFDFF005C0F9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmDataModel.swift; sourceTree = "<group>"; };
+		6444D8F41F9D0509005C0F9C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCell.swift; sourceTree = "<group>"; };
+		64A249591FB9AD1600E15B7A /* DS-DIGIB.TTF */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DS-DIGIB.TTF"; path = "../../../../../Library/Fonts/DS-DIGIB.TTF"; sourceTree = "<group>"; };
+		64FE4BD21FA649E2009CF0E9 /* Multiple Event Countdown.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Multiple Event Countdown.entitlements"; sourceTree = "<group>"; };
+		9B903F1D196FF2B2980E137F /* Pods-Multiple Event Countdown.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Multiple Event Countdown.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Multiple Event Countdown/Pods-Multiple Event Countdown.debug.xcconfig"; sourceTree = "<group>"; };
+		BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Multiple_Event_Countdown.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CDEC1EEE30EC2817AB9ACDAA /* Pods-Multiple Event Countdown.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Multiple Event Countdown.release.xcconfig"; path = "Pods/Target Support Files/Pods-Multiple Event Countdown/Pods-Multiple Event Countdown.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,17 +46,33 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B65F908917762A0A66BE04AC /* Pods_Multiple_Event_Countdown.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		641A38201F9E1D7D00B238A0 /* Table View Cells */ = {
+			isa = PBXGroup;
+			children = (
+				64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */,
+				641A381E1F9E1D5C00B238A0 /* AddEventTableViewCell.swift */,
+			);
+			name = "Table View Cells";
+			path = "New Group";
+			sourceTree = "<group>";
+		};
 		6444D8CE1F9CFDFE005C0F9C = {
 			isa = PBXGroup;
 			children = (
+				64A249591FB9AD1600E15B7A /* DS-DIGIB.TTF */,
+				64A249441FB9863000E15B7A /* Images */,
+				6444D8F31F9D03F6005C0F9C /* Types */,
 				6444D8D91F9CFDFE005C0F9C /* Multiple Event Countdown */,
 				6444D8D81F9CFDFE005C0F9C /* Products */,
+				C0A394DBF7E81E121B026FE7 /* Pods */,
+				DD3060DC2AD974C5A5F703F5 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -56,15 +87,74 @@
 		6444D8D91F9CFDFE005C0F9C /* Multiple Event Countdown */ = {
 			isa = PBXGroup;
 			children = (
+				64FE4BD21FA649E2009CF0E9 /* Multiple Event Countdown.entitlements */,
+				6444D8EE1F9D02F7005C0F9C /* Storyboards */,
 				6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */,
-				6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */,
-				6444D8DE1F9CFDFE005C0F9C /* DetailViewController.swift */,
-				6444D8E01F9CFDFF005C0F9C /* Main.storyboard */,
-				6444D8E31F9CFDFF005C0F9C /* Assets.xcassets */,
-				6444D8E51F9CFDFF005C0F9C /* LaunchScreen.storyboard */,
-				6444D8E81F9CFDFF005C0F9C /* Info.plist */,
+				6444D8EF1F9D0303005C0F9C /* View Controllers */,
+				641A38201F9E1D7D00B238A0 /* Table View Cells */,
+				6444D8F01F9D031A005C0F9C /* Supporting Documents */,
 			);
 			path = "Multiple Event Countdown";
+			sourceTree = "<group>";
+		};
+		6444D8EE1F9D02F7005C0F9C /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				6444D8E01F9CFDFF005C0F9C /* Main.storyboard */,
+				6444D8E51F9CFDFF005C0F9C /* LaunchScreen.storyboard */,
+			);
+			path = Storyboards;
+			sourceTree = "<group>";
+		};
+		6444D8EF1F9D0303005C0F9C /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */,
+				6444D8DE1F9CFDFE005C0F9C /* DetailViewController.swift */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		6444D8F01F9D031A005C0F9C /* Supporting Documents */ = {
+			isa = PBXGroup;
+			children = (
+				6444D8E31F9CFDFF005C0F9C /* Assets.xcassets */,
+				6444D8E81F9CFDFF005C0F9C /* Info.plist */,
+			);
+			path = "Supporting Documents";
+			sourceTree = "<group>";
+		};
+		6444D8F31F9D03F6005C0F9C /* Types */ = {
+			isa = PBXGroup;
+			children = (
+				6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */,
+			);
+			name = Types;
+			sourceTree = "<group>";
+		};
+		64A249441FB9863000E15B7A /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				6444D8F41F9D0509005C0F9C /* Default-568h@2x.png */,
+			);
+			path = Images;
+			sourceTree = "<group>";
+		};
+		C0A394DBF7E81E121B026FE7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9B903F1D196FF2B2980E137F /* Pods-Multiple Event Countdown.debug.xcconfig */,
+				CDEC1EEE30EC2817AB9ACDAA /* Pods-Multiple Event Countdown.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		DD3060DC2AD974C5A5F703F5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -74,9 +164,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6444D8EB1F9CFDFF005C0F9C /* Build configuration list for PBXNativeTarget "Multiple Event Countdown" */;
 			buildPhases = (
+				FCD529B011E59BF60686D2FC /* [CP] Check Pods Manifest.lock */,
 				6444D8D31F9CFDFE005C0F9C /* Sources */,
 				6444D8D41F9CFDFE005C0F9C /* Frameworks */,
 				6444D8D51F9CFDFE005C0F9C /* Resources */,
+				FD8F03B817B9977787C76D58 /* [CP] Embed Pods Frameworks */,
+				CF0F5CE180E0A5E7070CD99F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -100,6 +193,17 @@
 					6444D8D61F9CFDFE005C0F9C = {
 						CreatedOnToolsVersion = 9.0.1;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -126,7 +230,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64A2495A1FB9AD1600E15B7A /* DS-DIGIB.TTF in Resources */,
 				6444D8E71F9CFDFF005C0F9C /* LaunchScreen.storyboard in Resources */,
+				6444D8F51F9D0509005C0F9C /* Default-568h@2x.png in Resources */,
 				6444D8E41F9CFDFF005C0F9C /* Assets.xcassets in Resources */,
 				6444D8E21F9CFDFF005C0F9C /* Main.storyboard in Resources */,
 			);
@@ -134,12 +240,63 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		CF0F5CE180E0A5E7070CD99F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Multiple Event Countdown/Pods-Multiple Event Countdown-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FCD529B011E59BF60686D2FC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		FD8F03B817B9977787C76D58 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Multiple Event Countdown/Pods-Multiple Event Countdown-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		6444D8D31F9CFDFE005C0F9C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */,
+				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
 				6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */,
+				641A381F1F9E1D5C00B238A0 /* AddEventTableViewCell.swift in Sources */,
 				6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */,
 				6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */,
 			);
@@ -276,11 +433,13 @@
 		};
 		6444D8EC1F9CFDFF005C0F9C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9B903F1D196FF2B2980E137F /* Pods-Multiple Event Countdown.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Multiple Event Countdown/Multiple Event Countdown.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2F2W64K6HE;
-				INFOPLIST_FILE = "Multiple Event Countdown/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Multiple Event Countdown/Supporting Documents/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Ed-Manning.Multiple-Event-Countdown";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -291,11 +450,13 @@
 		};
 		6444D8ED1F9CFDFF005C0F9C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CDEC1EEE30EC2817AB9ACDAA /* Pods-Multiple Event Countdown.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Multiple Event Countdown/Multiple Event Countdown.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2F2W64K6HE;
-				INFOPLIST_FILE = "Multiple Event Countdown/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Multiple Event Countdown/Supporting Documents/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Ed-Manning.Multiple-Event-Countdown";
 				PRODUCT_NAME = "$(TARGET_NAME)";
