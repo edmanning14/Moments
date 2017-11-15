@@ -1,0 +1,6 @@
+framework module Pods_Multiple_Event_Countdown {
+  umbrella header "Pods-Multiple Event Countdown-umbrella.h"
+
+  export *
+  module * { export * }
+}
