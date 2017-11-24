@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="FiraSans-Light.ttf">
+            <string>FiraSans-Light</string>
+        </array>
+        <array key="FiraSans-Regular.ttf">
+            <string>FiraSans-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="ImageInputView" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9cm-fY-iSH">
+                    <rect key="frame" x="0.0" y="607" width="375" height="60"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gMq-oV-xTj">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oBa-Pj-BNu">
+                                    <rect key="frame" x="0.0" y="14" width="125" height="32"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="16"/>
+                                    <state key="normal" title="Catalog"/>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Ml-jO-eA6">
+                                    <rect key="frame" x="125" y="14" width="125" height="32"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="16"/>
+                                    <state key="normal" title="Personal Photo"/>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="arf-yY-EfE">
+                                    <rect key="frame" x="250" y="14" width="125" height="32"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="16"/>
+                                    <state key="normal" title="None"/>
+                                </button>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="gMq-oV-xTj" firstAttribute="leading" secondItem="9cm-fY-iSH" secondAttribute="leading" id="2ay-qO-gLD"/>
+                        <constraint firstAttribute="height" constant="60" id="Pbj-xj-jPY"/>
+                        <constraint firstAttribute="bottom" secondItem="gMq-oV-xTj" secondAttribute="bottom" id="YUL-DE-YAw"/>
+                        <constraint firstAttribute="trailing" secondItem="gMq-oV-xTj" secondAttribute="trailing" id="a9U-7K-Ecj"/>
+                        <constraint firstItem="gMq-oV-xTj" firstAttribute="top" secondItem="9cm-fY-iSH" secondAttribute="top" id="diO-J4-gVS"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="11k-88-8WA">
+                    <rect key="frame" x="0.0" y="606" width="375" height="1"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="Pdl-c4-jTP"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NoS-do-EZA">
+                    <rect key="frame" x="0.0" y="411" width="375" height="195"/>
+                    <subviews>
+                        <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="LcB-Nl-2Pb">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="195"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="q0q-cQ-V05">
+                                <size key="itemSize" width="50" height="50"/>
+                                <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                            </collectionViewFlowLayout>
+                        </collectionView>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cdb-8m-4xR">
+                            <rect key="frame" x="321" y="8" width="46" height="29"/>
+                            <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="14"/>
+                            <state key="normal" title="Expand"/>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="LcB-Nl-2Pb" firstAttribute="leading" secondItem="NoS-do-EZA" secondAttribute="leading" id="EWI-PI-vYb"/>
+                        <constraint firstAttribute="trailing" secondItem="LcB-Nl-2Pb" secondAttribute="trailing" id="HAI-TU-USm"/>
+                        <constraint firstAttribute="bottom" secondItem="LcB-Nl-2Pb" secondAttribute="bottom" id="MC6-qB-eB5"/>
+                        <constraint firstItem="LcB-Nl-2Pb" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="top" id="ZGE-gm-sSX"/>
+                        <constraint firstItem="cdb-8m-4xR" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="topMargin" id="eQF-zt-xq0"/>
+                        <constraint firstItem="cdb-8m-4xR" firstAttribute="trailing" secondItem="NoS-do-EZA" secondAttribute="trailingMargin" id="tES-hh-iVS"/>
+                        <constraint firstAttribute="height" constant="195" id="wgK-YS-dKa"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="11k-88-8WA" secondAttribute="trailing" id="1Pd-ei-od5"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="NoS-do-EZA" secondAttribute="trailing" id="Bhl-TU-Le3"/>
+                <constraint firstItem="NoS-do-EZA" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="EFx-0Q-7fI"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="9cm-fY-iSH" secondAttribute="trailing" id="EaZ-lj-kpT"/>
+                <constraint firstItem="9cm-fY-iSH" firstAttribute="top" secondItem="11k-88-8WA" secondAttribute="bottom" id="GgT-pY-1C3"/>
+                <constraint firstItem="11k-88-8WA" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="SHR-e6-v6Y"/>
+                <constraint firstItem="11k-88-8WA" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="bottom" id="fWc-T1-Pjg"/>
+                <constraint firstItem="9cm-fY-iSH" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="h9z-h3-P3W"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="9cm-fY-iSH" secondAttribute="bottom" id="ihq-C0-M4D"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="appImagesButton" destination="oBa-Pj-BNu" id="lMt-Pi-HZH"/>
+                <outlet property="collectionViewContainer" destination="NoS-do-EZA" id="GNa-gl-qsj"/>
+                <outlet property="expandButton" destination="cdb-8m-4xR" id="RFl-AV-IfK"/>
+                <outlet property="imageCollectionView" destination="LcB-Nl-2Pb" id="Fhp-jQ-ODf"/>
+                <outlet property="noImageButton" destination="arf-yY-EfE" id="z1v-RV-5Ng"/>
+                <outlet property="userImageButton" destination="0Ml-jO-eA6" id="ynj-vD-q3K"/>
+                <outlet property="viewSeparator" destination="11k-88-8WA" id="yfh-VQ-IoS"/>
+            </connections>
+        </view>
+    </objects>
+</document>

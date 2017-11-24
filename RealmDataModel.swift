@@ -35,16 +35,21 @@ let realmConfig = Realm.Configuration(
 
 class SpecialEvent: Object {
     @objc dynamic var title: String?
+    @objc dynamic var tagline: String?
     @objc dynamic var date: Date?
     @objc dynamic var category: EventCategory?
+    @objc dynamic var imageTitle: String?
+    @objc dynamic var traceImageTitle: String?
     
     override static func primaryKey() -> String? {return "title"}
     
-    convenience init(title: String?, date: Date?, category: EventCategory) {
+    convenience init(category: EventCategory, title: String?, tagline: String?, date: Date?, imageTitle: String?) {
         self.init()
-        self.title = title
-        self.date = date
         self.category = category
+        self.title = title
+        self.tagline = tagline
+        self.date = date
+        self.imageTitle = imageTitle
     }
 }
 
@@ -69,7 +74,6 @@ class Categories: Object {
 //
 // MARK: - Realm helper funcitons
 //
-
 
 public func deletePersistentData(atIndexPath: IndexPath) -> Void {
     

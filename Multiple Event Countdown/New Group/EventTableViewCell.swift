@@ -17,13 +17,33 @@ class EventTableViewCell: UITableViewCell {
     // Data Model
     var eventTitle: String? {didSet {testLabel.text = eventTitle ?? "New Event"}}
     
-    var eventDate: Date? {
+    var eventDate: Date? {didSet {initializePhotosAndMask()}}
+    
+    var mainImage: UIImage? {
         didSet {
-            convertPhotos()
+            if clippedMainImage == nil  && mainImage != nil {
+                clippedMainImage = formatImage(mainImage!)
+            }
         }
     }
+    var overlayImage: UIImage? {
+        didSet {
+            if clippedOverlayImage == nil && overlayImage != nil {
+                clippedOverlayImage = formatImage(overlayImage!)
+            }
+        }
+    }
+    var clippedMainImage: UIImage? {didSet {initializePhotosAndMask()}}
+    var clippedOverlayImage: UIImage? {didSet {initializePhotosAndMask()}}
     
-    var images = EventImageSet() {didSet {initializePhotosAndMask()}}
+    var containedImages: packageContents {
+        if mainImage == nil && overlayImage == nil {return .none}
+        else if mainImage != nil && overlayImage == nil {return .mainOnly}
+        else if mainImage == nil && overlayImage != nil {return .overlayOnly}
+        else {return .mainAndOverlay}
+    }
+    
+    enum packageContents {case none, mainOnly, overlayOnly, mainAndOverlay}
     
     var imageMask: CAGradientLayer?
     
@@ -64,29 +84,21 @@ class EventTableViewCell: UITableViewCell {
     //
     
     // Function to initialize photo backgrouds.
-    fileprivate func convertPhotos() -> Void {
+    fileprivate func formatImage(_ image: UIImage) -> UIImage? {
         
-        // function clips image to specified bounds. Returns nil if image clip failed.
-        func clipImage(image: CGImage) -> CGImage? {
-            let imageWidth = CGFloat(integerLiteral: image.width)
+        if let cgImage = image.cgImage {
+            let imageWidth = CGFloat(integerLiteral: cgImage.width)
             
-            let frameY = CGFloat(integerLiteral: image.height) / 2
+            let frameY = CGFloat(integerLiteral: cgImage.height) / 2
             
             let cellAR = contentView.frame.width / contentView.frame.height
             let clippingHeight = imageWidth / cellAR
             
             let clippingFrame = CGRect(x: 0.0, y: frameY, width: imageWidth, height: clippingHeight)
             
-            if let clippedImage = image.cropping(to: clippingFrame) {return clippedImage}
-            else {return nil}
+            if let clippedImage = cgImage.cropping(to: clippingFrame) {return UIImage(cgImage: clippedImage)}
         }
-        
-        if let cgDesertDunesOriginal = UIImage(named: "Desert Dunes Original")?.cgImage {
-            images.originalImage = clipImage(image: cgDesertDunesOriginal)
-        }
-        if let cgDesertDunesTrace = UIImage(named: "Desert Dunes Trace")?.cgImage {
-            images.traceImage = clipImage(image: cgDesertDunesTrace)
-        }
+        return nil
     }
     
     // Function to initialize the mask whith photo data.
@@ -99,22 +111,22 @@ class EventTableViewCell: UITableViewCell {
             imageMask.endPoint = CGPoint(x: 1.0, y: 0.5)
             imageMask.colors = [UIColor.black.withAlphaComponent(0.0).cgColor, UIColor.black.cgColor]
             imageMask.locations = [NSNumber(value: 0.0),NSNumber(value: 1.0)]
-            imageMask.contents = images.originalImage
+            imageMask.contents = clippedMainImage!
             maskInitialized = true
         }
         
-        switch images.containedImages {
+        switch containedImages {
         case .none:
             if contentView.layer.sublayers != nil {contentView.layer.sublayers!.removeAll()}
             contentView.layer.backgroundColor = UIColor.black.cgColor
-        case .originalOnly:
+        case .mainOnly:
             if !maskInitialized {initialzeMask()}
-        case .traceOnly:
+        case .overlayOnly:
             contentView.layer.backgroundColor = UIColor.black.cgColor
-            contentView.layer.contents = images.traceImage
-        case .originalAndTrace:
+            contentView.layer.contents = clippedOverlayImage!
+        case .mainAndOverlay:
             contentView.layer.backgroundColor = UIColor.black.cgColor
-            contentView.layer.contents = images.traceImage
+            contentView.layer.contents = clippedOverlayImage!
             if !maskInitialized {initialzeMask()}
         }
     }

@@ -13,7 +13,7 @@ class MasterViewController: UITableViewController {
     
     
     //
-    // MARK: - Varibles and Constants
+    // MARK: - Properties
     //
     
     // Data Model
@@ -169,8 +169,7 @@ class MasterViewController: UITableViewController {
                         EventCategory(title: "Wedding", newEvent: nil),
                         EventCategory(title: "Family", newEvent: nil),
                         EventCategory(title: "Other", newEvent: nil),
-                        EventCategory(title: "Previous", newEvent: nil),
-                        EventCategory(title: "New Events", newEvent: nil)
+                        EventCategory(title: "Previous", newEvent: nil)
                     ]
                 )
                 try! localPersistentStore.write {localPersistentStore.add(newDataModel)}
@@ -218,29 +217,14 @@ class MasterViewController: UITableViewController {
     }
     
     // Function to add a new event from the events page.
-    @objc fileprivate func insertNewObject(_ sender: Any) {
-        
-        // Adds a new blank event to be edited.
-        let category = categories[0].list.filter("title = 'New Events'")[0]
-        let newEvent = SpecialEvent(title: nil, date: nil, category: category)
-        do {
-            try localPersistentStore?.write {
-                category.includedSpecialEvents.append(newEvent)
-            }
-        }
-        catch {
-            // TODO: - Add some error handling when appropriate
-            let realmCreationError = error as NSError
-            fatalError("Unable to write to local persistent store! Error: \(realmCreationError), \(realmCreationError.localizedDescription)")
-        }
-    }
+    @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
     
     fileprivate func addOrRemoveNewCellPrompt() -> Void {
         if activeCategories.isEmpty {
             let addNewCellPrompt = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: 300.0))
             addNewCellPrompt.text = "Tap the '+' in the upper right to create a new event!"
             addNewCellPrompt.textColor = UIColor.white
-            addNewCellPrompt.font = UIFont(name: "HelveticaNeue", size: 18.0)
+            addNewCellPrompt.font = UIFont(name: "FiraSans-Light", size: 18.0)
             addNewCellPrompt.numberOfLines = 0
             addNewCellPrompt.lineBreakMode = .byClipping
             addNewCellPrompt.textAlignment = .center
