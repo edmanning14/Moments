@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import CloudKit
 
-open struct EventDate {
+public struct EventDate {
     
     var date: Date
     var dateOnly: Bool
@@ -22,33 +22,48 @@ open struct EventDate {
 open class EventImage {
     let title: String
     let uiImage: UIImage
-    lazy var cgImage: cgImage? {return uiImage.cgImage}
+    var cgImage: CGImage? {return uiImage.cgImage}
     let category: String
-    var associatedTraceImage: EventImage?
+    var usingOverlayImage: EventImage?
     let isTraceImage: Bool
     
     init(title aTitle: String, image aImage: UIImage, category aCategory: String, associatedTraceImage: EventImage?, isTraceImage: Bool) {
         self.title = aTitle
         self.uiImage = aImage
         self.category = aCategory
-        self.associatedTraceImage = associatedTraceImage
+        self.usingOverlayImage = associatedTraceImage
         self.isTraceImage = isTraceImage
     }
     
     convenience init(title aTitle: String, image aImage: CGImage, category aCategory: String, associatedTraceImage: EventImage?, isTraceImage: Bool) {
-        self.title = aTitle
-        self.uiImage = UIImage(cgImage: aImage)
-        self.category = aCategory
-        self.associatedTraceImage = associatedTraceImage
-        self.isTraceImage = isTraceImage
+        
+        let uiImage = UIImage(cgImage: aImage)
+        self.init(
+            title: aTitle,
+            image: uiImage,
+            category: aCategory,
+            associatedTraceImage: associatedTraceImage,
+            isTraceImage: isTraceImage
+        )
     }
     
     convenience init(title aTitle: String, image aImage: UIImage, category aCategory: String) {
-        self.title = aTitle
-        self.uiImage = aImage
-        self.category = aCategory
-        self.associatedTraceImage = nil
-        self.isTraceImage = true
+        self.init(
+            title: aTitle,
+            image: aImage,
+            category: aCategory,
+            associatedTraceImage: nil,
+            isTraceImage: true
+        )
+    }
+    
+    convenience init(title aTitle: String, image aImage: CGImage, category aCategory: String) {
+        self.init(
+            title: aTitle,
+            image: aImage,
+            category: aCategory,
+            associatedTraceImage: nil,
+            isTraceImage: true)
     }
 }
 

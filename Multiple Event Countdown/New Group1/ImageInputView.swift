@@ -25,6 +25,8 @@ class ImageInputView: UIView {
     
     @IBOutlet weak var imageCollectionView: UICollectionView!
     
+    @IBOutlet weak var useOverlayButton: UIButton!
+    @IBOutlet weak var overlayDetailButton: UIButton!
     @IBOutlet weak var expandButton: UIButton!
     @IBOutlet weak var appImagesButton: UIButton!
     @IBOutlet weak var userImageButton: UIButton!
@@ -32,6 +34,10 @@ class ImageInputView: UIView {
     
     @IBOutlet weak var collectionViewContainer: UIView!
     @IBOutlet weak var viewSeparator: UIView!
+    @IBOutlet weak var headerView: UIView!
+    
+    @IBOutlet weak var cloudLoadingActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var networkErrorPrompt: UILabel!
     
     
     //
@@ -40,7 +46,6 @@ class ImageInputView: UIView {
     
     override func awakeFromNib() {
         self.sizeToFit()
-        expandButton.addTarget(self, action: #selector(handleButtonClick(_:)), for: .touchUpInside)
         appImagesButton.addTarget(self, action: #selector(handleButtonClick(_:)), for: .touchUpInside)
         userImageButton.addTarget(self, action: #selector(handleButtonClick(_:)), for: .touchUpInside)
         noImageButton.addTarget(self, action: #selector(handleButtonClick(_:)), for: .touchUpInside)
@@ -50,6 +55,10 @@ class ImageInputView: UIView {
         case .user: select(button: userImageButton)
         case .none: select(button: noImageButton)
         }
+        
+        useOverlayButton.isHidden = true
+        overlayDetailButton.isHidden = true
+        networkErrorPrompt.isHidden = true
     }
     
     
@@ -61,10 +70,19 @@ class ImageInputView: UIView {
         switch button.titleLabel!.text! {
         case "Expand":
             break
+        case "Use Overlay":
+            if useOverlayButton.isSelected {useOverlayButton.isSelected = false}
+            else {useOverlayButton.isSelected = true}
+            return
         case "Catalog", "Personal Photo", "None":
             if !button.isSelected {select(button: button)}
+            return
         default:
             break
+        }
+        
+        if button == overlayDetailButton {
+            // Create and display popover view describing what an overlay is.
         }
     }
     
@@ -79,17 +97,17 @@ class ImageInputView: UIView {
         button.isSelected = true
         if button == appImagesButton {
             userImageButton.isSelected = false; noImageButton.isSelected = false
-            showHideCollectionView()
-            imageCollectionView.reloadData()
+            if imageCollectionView.isHidden {showHideCollectionView()}
+            if imageCollectionView.window != nil {imageCollectionView.reloadData()}
         }
         else if button == userImageButton {
             appImagesButton.isSelected = false; noImageButton.isSelected = false
-            showHideCollectionView()
-            imageCollectionView.reloadData()
+            if imageCollectionView.isHidden {showHideCollectionView()}
+            if imageCollectionView.window != nil {imageCollectionView.reloadData()}
         }
         else if button == noImageButton {
             userImageButton.isSelected = false; appImagesButton.isSelected = false
-            showHideCollectionView()
+            if !imageCollectionView.isHidden {showHideCollectionView()}
         }
     }
     
@@ -102,10 +120,16 @@ class ImageInputView: UIView {
         if imageCollectionView.isHidden {
             imageCollectionView.isHidden = false
             collectionViewContainer.backgroundColor = UIColor.white
+            headerView.backgroundColor = UIColor.white
+            expandButton.isHidden = false
         }
         else {
             imageCollectionView.isHidden = true
             collectionViewContainer.backgroundColor = UIColor.lightGray
+            headerView.backgroundColor = UIColor.lightGray
+            expandButton.isHidden = true
+            useOverlayButton.isHidden = true
+            overlayDetailButton.isHidden = true
         }
     }
 }

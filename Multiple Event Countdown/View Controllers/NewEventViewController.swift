@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, ImageHandlerDelegate {
     
     //
     // MARK: - Properties
@@ -52,7 +52,7 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         }
     }
     
-    let newEventImageHandler = ImageHandler(forJob: .newEventControllerImageRetrieval)
+    let newEventImageHandler = ImageHandler()
     var selectableCategories = [String]()
     
     var modelAndGate: UInt8 = 0b00000000 {
@@ -104,6 +104,8 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
     // Other
     var goalDateFormatter = DateFormatter()
     let defaultTimeStyle = DateFormatter.Style.short
+    var eventImageIsSet = false
+    var selectedImageTitle: String?
     
     
     //
@@ -132,6 +134,20 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         
         createEventButton.isHidden = true
         editSettngsButton.isHidden = true
+        
+        newEventImageHandler.delegate = self
+        newEventImageHandler.fetchOriginalsFromCloud()
+        
+        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak weakSelf = self] (aTimer) in
+            if weakSelf?.imageInputView?.appImagesButton.isSelected == true && weakSelf?.newEventImageHandler.eventImages.isEmpty == true {
+                DispatchQueue.main.async { [weak weakSelf = self] in
+                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.isHidden = true
+                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
+                    weakSelf?.imageInputView?.networkErrorPrompt.isHidden = false
+                }
+            }
+            aTimer.invalidate()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {categoryTextView.becomeFirstResponder()}
@@ -207,6 +223,7 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
             theInputAccessoryView.items![0].title = DefaultStrings.imageInputViewTitle
             theInputAccessoryView.items![0].rightBarButtonItem!.title = "Done"
             selectText()
+            if !imageInputView!.imageCollectionView.isHidden {imageInputView!.imageCollectionView.reloadData()}
         }
     }
     
@@ -225,12 +242,54 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         cell.cellLabel.text = newEventImageHandler.eventImages[indexPath.row].title
         cell.cellImageView.image = newEventImageHandler.eventImages[indexPath.row].uiImage
         
+        cell.configure()
+        
+        if cell.cellLabel.text! == selectedImageTitle {selectCell(cell, atIndexPath: indexPath)}
+        else {cell.deselect()}
+        
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        eventMainImage = newEventImageHandler.eventImages[indexPath.row]
+        
+        if let cell = collectionView.cellForItem(at: indexPath) as? ImageInputViewCollectionViewCell {
+            
+            let imageName = cell.cellLabel.text!
+            
+            if selectedImageTitle != imageName {
+                
+                let visibleCells = collectionView.visibleCells
+                for untypedCell in visibleCells {
+                    if let aCell = untypedCell as? ImageInputViewCollectionViewCell {
+                        if aCell.cellLabel.text! == selectedImageTitle {aCell.deselect()}
+                    }
+                }
+                
+                selectedImageTitle = imageName
+                
+                selectCell(cell, atIndexPath: indexPath)
+            }
+        }
     }
+    
+    // Image Handler
+    //
+    
+    open var cloudLoadFailed = false {
+        didSet {
+            if cloudLoadFailed == false {
+                imageInputView?.imageCollectionView.reloadData()
+                imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
+                imageInputView?.cloudLoadingActivityIndicator.isHidden = true
+            }
+            else {
+                imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
+                imageInputView?.cloudLoadingActivityIndicator.isHidden = true
+                imageInputView?.networkErrorPrompt.isHidden = false
+            }
+        }
+    }
+
     
     //
     // MARK: - Helper Functions
@@ -252,10 +311,6 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
             if category.title != "Favorites" && category.title != "Previous" {
                 if let title = category.title {selectableCategories.append(title)}
             }
-        }
-        
-        // Fetch app provided images
-        DispatchQueue.global(qos: .userInitiated).async {
         }
     }
     
@@ -320,6 +375,8 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         if let loadedImageView = Bundle.main.loadNibNamed("ImageInputView", owner: self, options: nil)?[0] as? ImageInputView {
             imageInputView = loadedImageView
             imageTextView.inputView = imageInputView!
+            imageInputView!.imageCollectionView.delegate = self
+            imageInputView!.imageCollectionView.dataSource = self
             let collectionViewCell = UINib(nibName: "ImageInputViewCollectionViewCell", bundle: nil)
             imageInputView!.imageCollectionView.register(collectionViewCell, forCellWithReuseIdentifier: "Image Input View Collection View Cell")
         }
@@ -404,13 +461,43 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
             switch sender.title! {
             case "Done":
                 if imageInputView != nil {
-                    
+                    if imageInputView!.appImagesButton.isSelected {
+                        if let selectedCellIndexPaths = imageInputView!.imageCollectionView.indexPathsForSelectedItems {
+                            guard selectedCellIndexPaths.count <= 1 else {
+                                print("More than one cell was selected in the collection view!")
+                                break
+                            }
+                            if selectedCellIndexPaths.count == 1 {
+                                let mainImage = newEventImageHandler.eventImages[selectedCellIndexPaths[0].row]
+                                eventMainImage = mainImage
+                                if imageInputView!.useOverlayButton.isSelected {
+                                    
+                                }
+                                imageTextView.text = newEventImageHandler.eventImages[selectedCellIndexPaths[0].row].title
+                                eventImageIsSet = true
+                            }
+                        }
+                    }
+                    else if imageInputView!.userImageButton.isSelected {
+                        
+                    }
+                    else if imageInputView!.noImageButton.isSelected {
+                        eventMainImage = nil
+                        selectedImageTitle = nil
+                        imageTextView.text = "No Image Used"
+                        eventImageIsSet = true
+                    }
                 }
+                if !eventImageIsSet {createPlaceholderText(inTextView: imageTextView)}
                 imageTextView.resignFirstResponder()
             case "Cancel":
-                if eventMainImage == nil {createPlaceholderText(inTextView: imageTextView)}
+                if !eventImageIsSet {
+                    createPlaceholderText(inTextView: imageTextView)
+                    selectedImageTitle = nil
+                }
                 else {
-                    // Get title of old image and set here.
+                    imageTextView.text = eventMainImage?.title ?? "No Image Used"
+                    selectedImageTitle = eventMainImage?.title ?? nil
                 }
                 imageTextView.resignFirstResponder()
             default:
@@ -469,5 +556,22 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         errorLabel.centerXAnchor.constraint(equalTo: errorView.centerXAnchor).isActive = true
         errorLabel.centerYAnchor.constraint(equalTo: errorView.centerYAnchor).isActive = true
         textView.inputView = errorView
+    }
+    
+    fileprivate func selectCell(_ cell: ImageInputViewCollectionViewCell, atIndexPath indexPath: IndexPath) -> Void {
+        cell.select()
+        
+        if newEventImageHandler.hasAvailableOverlayImage(mainImage: newEventImageHandler.eventImages[indexPath.row]) {
+            if imageInputView!.useOverlayButton.isHidden {
+                imageInputView!.useOverlayButton.isHidden = false
+                imageInputView!.overlayDetailButton.isHidden = false
+            }
+        }
+        else {
+            if !imageInputView!.useOverlayButton.isHidden {
+                imageInputView!.useOverlayButton.isHidden = true
+                imageInputView!.overlayDetailButton.isHidden = true
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		643F9A291FC9520900D1D82E /* ImageHandlerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643F9A281FC9520900D1D82E /* ImageHandlerDelegate.swift */; };
 		6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */; };
 		6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */; };
 		6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DE1F9CFDFE005C0F9C /* DetailViewController.swift */; };
@@ -48,6 +49,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		643F9A281FC9520900D1D82E /* ImageHandlerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageHandlerDelegate.swift; path = Protocols/ImageHandlerDelegate.swift; sourceTree = "<group>"; };
 		6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiple Event Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -116,6 +118,14 @@
 			path = "New Group";
 			sourceTree = "<group>";
 		};
+		643F9A2A1FC954FC00D1D82E /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				643F9A281FC9520900D1D82E /* ImageHandlerDelegate.swift */,
+			);
+			name = Protocols;
+			sourceTree = "<group>";
+		};
 		6444D8CE1F9CFDFE005C0F9C = {
 			isa = PBXGroup;
 			children = (
@@ -123,6 +133,7 @@
 				64A249441FB9863000E15B7A /* Images */,
 				6444D8F31F9D03F6005C0F9C /* Models */,
 				64D5FF8A1FC6800B0043E064 /* Convineince Classes */,
+				643F9A2A1FC954FC00D1D82E /* Protocols */,
 				6444D8D91F9CFDFE005C0F9C /* Multiple Event Countdown */,
 				6444D8D81F9CFDFE005C0F9C /* Products */,
 				C0A394DBF7E81E121B026FE7 /* Pods */,
@@ -424,6 +435,7 @@
 				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
 				64D5FF891FC67FFE0043E064 /* ImageHandler.swift in Sources */,
 				64E40C061FBC5FF40076AB2D /* NewEventViewController.swift in Sources */,
+				643F9A291FC9520900D1D82E /* ImageHandlerDelegate.swift in Sources */,
 				64D5FF7B1FC45C910043E064 /* GlobalTypes.swift in Sources */,
 				64D5FF871FC57D510043E064 /* ImageInputView.swift in Sources */,
 				64D5FF931FC7DF2A0043E064 /* ImageInputViewCollectionViewCell.swift in Sources */,

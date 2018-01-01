@@ -105,7 +105,7 @@ class DateInputView: UIView {
                     button.isSelected = true
                     button.setTitle(dateFormatter.string(from: calendarDayHolder!), for: UIControlState.selected)
                     mutableDatePicker.datePickerMode = .time
-                    mutableDatePicker.date = timeHolder ?? Date()
+                    mutableDatePicker.date = timeHolder ?? setDefaultTime()
                     if cancelSetTimeButton == nil {initializeCancelSetTimeButton()}
                     if !cancelSetTimeButton!.isDescendant(of: aStackView) {
                         aStackView.addArrangedSubview(cancelSetTimeButton!)
@@ -145,5 +145,12 @@ class DateInputView: UIView {
         cancelSetTimeButton!.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchUpInside)
         cancelSetTimeButton!.titleLabel!.font = UIFont(name: "FiraSans-Light", size: 18.0)
         cancelSetTimeButton?.titleLabel!.textColor = UIColor.black
+    }
+    
+    fileprivate func setDefaultTime() -> Date {
+        let currentDate = Date()
+        let numberOfNoonsSinceReferenceDate = (currentDate.timeIntervalSinceReferenceDate - 43200) / 86400
+        let timeIntervalToReturn = (numberOfNoonsSinceReferenceDate.rounded(.up) * 86400) + 43200
+        return Date(timeIntervalSinceReferenceDate: timeIntervalToReturn)
     }
 }

@@ -19,6 +19,7 @@ class MasterViewController: UITableViewController {
     // Data Model
     var categories: Results<Categories>!
     var activeCategories = [EventCategory]() {didSet {addOrRemoveNewCellPrompt()}}
+    let imageHandler = ImageHandler()
 
     // Persistence
     var localPersistentStore: Realm!
@@ -180,6 +181,11 @@ class MasterViewController: UITableViewController {
             // Get the data model from the database
             categories = localPersistentStore!.objects(Categories.self)
             updateActiveCategories()
+            
+            // Configure image handler
+            for event in categories[0].list {
+                
+            }
             
             // Setup notification token for database changes
             localPersistentStoreNotificationsToken = categories._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in

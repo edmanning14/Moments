@@ -5,7 +5,6 @@
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -65,33 +64,76 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NoS-do-EZA">
-                    <rect key="frame" x="0.0" y="411" width="375" height="195"/>
+                    <rect key="frame" x="0.0" y="409" width="375" height="197"/>
                     <subviews>
                         <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="LcB-Nl-2Pb">
-                            <rect key="frame" x="0.0" y="0.0" width="375" height="195"/>
+                            <rect key="frame" x="0.0" y="40" width="375" height="157"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="q0q-cQ-V05">
-                                <size key="itemSize" width="50" height="50"/>
+                            <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Kw7-KZ-yCO">
+                                <size key="itemSize" width="80" height="147"/>
                                 <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                 <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <inset key="sectionInset" minX="10" minY="5" maxX="10" maxY="5"/>
                             </collectionViewFlowLayout>
                         </collectionView>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cdb-8m-4xR">
-                            <rect key="frame" x="321" y="8" width="46" height="29"/>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jCv-7X-49Q">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="40"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vxr-7a-1Fs">
+                                    <rect key="frame" x="309" y="6" width="46" height="29"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="14"/>
+                                    <state key="normal" title="Expand"/>
+                                </button>
+                                <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="xHv-zc-jLx">
+                                    <rect key="frame" x="20" y="4" width="123" height="32"/>
+                                    <subviews>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bi3-bm-dE8">
+                                            <rect key="frame" x="0.0" y="0.0" width="86" height="32"/>
+                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="16"/>
+                                            <state key="normal" title="Use Overlay"/>
+                                        </button>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="detailDisclosure" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w8R-b0-XoR">
+                                            <rect key="frame" x="101" y="0.0" width="22" height="32"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        </button>
+                                    </subviews>
+                                </stackView>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="xHv-zc-jLx" firstAttribute="leading" secondItem="jCv-7X-49Q" secondAttribute="leading" constant="20" symbolic="YES" id="G19-tJ-77t"/>
+                                <constraint firstAttribute="trailing" secondItem="vxr-7a-1Fs" secondAttribute="trailing" constant="20" symbolic="YES" id="GtL-8L-E44"/>
+                                <constraint firstItem="xHv-zc-jLx" firstAttribute="centerY" secondItem="jCv-7X-49Q" secondAttribute="centerY" id="aLA-ul-Wt0"/>
+                                <constraint firstItem="vxr-7a-1Fs" firstAttribute="centerY" secondItem="jCv-7X-49Q" secondAttribute="centerY" id="rcQ-lj-ync"/>
+                                <constraint firstAttribute="height" constant="40" id="xzN-AV-bTl"/>
+                            </constraints>
+                        </view>
+                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="RSW-ss-W9z">
+                            <rect key="frame" x="169" y="100" width="37" height="37"/>
+                            <color key="color" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </activityIndicatorView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="There appears to be a problem loading the catelog from the network.  Please try again later." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ed9-RT-PW5">
+                            <rect key="frame" x="20" y="101.5" width="335" height="34"/>
                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="14"/>
-                            <state key="normal" title="Expand"/>
-                        </button>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
+                        <constraint firstAttribute="trailing" secondItem="jCv-7X-49Q" secondAttribute="trailing" id="98M-Fe-JdA"/>
+                        <constraint firstItem="RSW-ss-W9z" firstAttribute="centerX" secondItem="jCv-7X-49Q" secondAttribute="centerX" id="D9s-Oe-mG9"/>
                         <constraint firstItem="LcB-Nl-2Pb" firstAttribute="leading" secondItem="NoS-do-EZA" secondAttribute="leading" id="EWI-PI-vYb"/>
+                        <constraint firstItem="jCv-7X-49Q" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="top" id="FD8-d4-446"/>
                         <constraint firstAttribute="trailing" secondItem="LcB-Nl-2Pb" secondAttribute="trailing" id="HAI-TU-USm"/>
                         <constraint firstAttribute="bottom" secondItem="LcB-Nl-2Pb" secondAttribute="bottom" id="MC6-qB-eB5"/>
-                        <constraint firstItem="LcB-Nl-2Pb" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="top" id="ZGE-gm-sSX"/>
-                        <constraint firstItem="cdb-8m-4xR" firstAttribute="top" secondItem="NoS-do-EZA" secondAttribute="topMargin" id="eQF-zt-xq0"/>
-                        <constraint firstItem="cdb-8m-4xR" firstAttribute="trailing" secondItem="NoS-do-EZA" secondAttribute="trailingMargin" id="tES-hh-iVS"/>
-                        <constraint firstAttribute="height" constant="195" id="wgK-YS-dKa"/>
+                        <constraint firstItem="RSW-ss-W9z" firstAttribute="centerY" secondItem="LcB-Nl-2Pb" secondAttribute="centerY" id="ahi-iN-aUi"/>
+                        <constraint firstAttribute="trailing" secondItem="Ed9-RT-PW5" secondAttribute="trailing" constant="20" symbolic="YES" id="bQb-PN-N70"/>
+                        <constraint firstItem="Ed9-RT-PW5" firstAttribute="leading" secondItem="NoS-do-EZA" secondAttribute="leading" constant="20" symbolic="YES" id="gYb-iu-OHU"/>
+                        <constraint firstItem="jCv-7X-49Q" firstAttribute="leading" secondItem="NoS-do-EZA" secondAttribute="leading" id="mYh-aL-38q"/>
+                        <constraint firstItem="LcB-Nl-2Pb" firstAttribute="top" secondItem="jCv-7X-49Q" secondAttribute="bottom" id="w3W-jX-z4b"/>
+                        <constraint firstAttribute="height" constant="197" id="wgK-YS-dKa"/>
+                        <constraint firstItem="Ed9-RT-PW5" firstAttribute="centerY" secondItem="LcB-Nl-2Pb" secondAttribute="centerY" id="xbk-oT-OWj"/>
                     </constraints>
                 </view>
             </subviews>
@@ -110,13 +152,19 @@
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
                 <outlet property="appImagesButton" destination="oBa-Pj-BNu" id="lMt-Pi-HZH"/>
+                <outlet property="cloudLoadingActivityIndicator" destination="RSW-ss-W9z" id="EyW-01-DIk"/>
                 <outlet property="collectionViewContainer" destination="NoS-do-EZA" id="GNa-gl-qsj"/>
-                <outlet property="expandButton" destination="cdb-8m-4xR" id="RFl-AV-IfK"/>
+                <outlet property="expandButton" destination="vxr-7a-1Fs" id="1fp-ml-d8g"/>
+                <outlet property="headerView" destination="jCv-7X-49Q" id="M79-k3-bxk"/>
                 <outlet property="imageCollectionView" destination="LcB-Nl-2Pb" id="Fhp-jQ-ODf"/>
+                <outlet property="networkErrorPrompt" destination="Ed9-RT-PW5" id="TN7-aa-900"/>
                 <outlet property="noImageButton" destination="arf-yY-EfE" id="z1v-RV-5Ng"/>
+                <outlet property="overlayDetailButton" destination="w8R-b0-XoR" id="t4p-kL-x08"/>
+                <outlet property="useOverlayButton" destination="bi3-bm-dE8" id="3v0-8D-4bw"/>
                 <outlet property="userImageButton" destination="0Ml-jO-eA6" id="ynj-vD-q3K"/>
                 <outlet property="viewSeparator" destination="11k-88-8WA" id="yfh-VQ-IoS"/>
             </connections>
+            <point key="canvasLocation" x="35.5" y="54.5"/>
         </view>
     </objects>
 </document>
