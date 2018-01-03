@@ -8,6 +8,7 @@
 
 import Foundation
 
-protocol ImageHandlerDelegate {
-    var cloudIsLoading: Bool { get set }
+@objc protocol ImageHandlerDelegate {
+    @objc optional func cloudLoadBegan() -> Void
+    @objc optional func cloudLoadEnded(imagesLoaded: Bool, error: Error?) -> Void
 }

@@ -137,17 +137,6 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
         
         newEventImageHandler.delegate = self
         newEventImageHandler.fetchOriginalsFromCloud()
-        
-        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak weakSelf = self] (aTimer) in
-            if weakSelf?.imageInputView?.appImagesButton.isSelected == true && weakSelf?.newEventImageHandler.eventImages.isEmpty == true {
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.isHidden = true
-                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
-                    weakSelf?.imageInputView?.networkErrorPrompt.isHidden = false
-                }
-            }
-            aTimer.invalidate()
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {categoryTextView.becomeFirstResponder()}
@@ -275,18 +264,27 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
     // Image Handler
     //
     
-    open var cloudLoadFailed = false {
-        didSet {
-            if cloudLoadFailed == false {
-                imageInputView?.imageCollectionView.reloadData()
-                imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
-                imageInputView?.cloudLoadingActivityIndicator.isHidden = true
+    func cloudLoadBegan() {
+        imageInputView?.cloudLoadingActivityIndicator.startAnimating()
+        imageInputView?.cloudLoadingActivityIndicator.isHidden = false
+        
+        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak weakSelf = self] (aTimer) in
+            if weakSelf?.imageInputView?.appImagesButton.isSelected == true && weakSelf?.newEventImageHandler.eventImages.isEmpty == true {
+                DispatchQueue.main.async { [weak weakSelf = self] in
+                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.isHidden = true
+                    weakSelf?.imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
+                    weakSelf?.imageInputView?.networkErrorPrompt.isHidden = false
+                }
             }
-            else {
-                imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
-                imageInputView?.cloudLoadingActivityIndicator.isHidden = true
-                imageInputView?.networkErrorPrompt.isHidden = false
-            }
+            aTimer.invalidate()
+        }
+    }
+    
+    func cloudLoadEnded(imagesLoaded: Bool, error: Error?) {
+        if imagesLoaded == true && error == nil {
+            imageInputView?.imageCollectionView.reloadData()
+            imageInputView?.cloudLoadingActivityIndicator.stopAnimating()
+            imageInputView?.cloudLoadingActivityIndicator.isHidden = true
         }
     }
 
@@ -453,6 +451,7 @@ class NewEventViewController: UIViewController, UIPickerViewDataSource, UIPicker
             case "Cancel":
                 if eventDate == nil {createPlaceholderText(inTextView: dateTextView)}
                 else {dateTextView.text = goalDateFormatter.string(from: eventDate!.date)}
+                dateInputView?.reset()
                 dateTextView.resignFirstResponder()
             default:
                 break

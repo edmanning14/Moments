@@ -83,16 +83,11 @@ open class ImageHandler {
     }
     
     open func fetchOriginalsFromCloud() -> Void {
+        delegate?.cloudLoadBegan()
         publicCloudDatabase.perform(originalImagesQuerry, inZoneWith: nil) { [weak weakSelf = self] (records, error) in
-            guard error != nil else {
+            if error != nil {
+                // TODO: Add error handling, retry network errors gracefully.
                 print("There was an error fetching shit from the cloud: \(error.debugDescription)")
-                switch error {
-                default:
-                    DispatchQueue.main.async { [weak weakSelf = self] in
-                        weakSelf?.delegate?.cloudLoadFailed = true
-                    }
-                    return
-                }
             }
             if let returnedRecords = records {
                 var arrayToReturn = [(EventImage, CKRecordID, CKReference?)]()
@@ -118,14 +113,22 @@ open class ImageHandler {
                     }
                 }
                 weakSelf?.images = arrayToReturn
+                DispatchQueue.main.async { [weak weakSelf = self] in
+                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: true, error: error)
+                }
             }
-            else {print("No records were returned, no error.")}
+            else {
+                print("No records were returned, no error.")
+                DispatchQueue.main.async { [weak weakSelf = self] in
+                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false, error: error)
+                }
+            }
         }
     }
     
-    open func fetchOverlay(forImage image: UIImage) -> UIImage {
+    //open func fetchOverlay(forImage image: UIImage) -> UIImage {
         
-    }
+    //}
     
     open func saveLocal(imageTitled title: String) throws -> Bool {
         let imageExists = images.contains {$0.0.title == title}

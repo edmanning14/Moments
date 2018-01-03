@@ -133,6 +133,19 @@ class DateInputView: UIView {
         }
     }
     
+    //
+    // MARK: - Methods
+    //
+    
+    open func reset() -> Void {
+        calendarDayHolder = nil
+        timeHolder = nil
+        cancelSetTimeButton?.removeFromSuperview()
+        selectDateButton.isSelected = false
+        mutableDatePicker.datePickerMode = .date
+        mutableDatePicker.date = Date()
+    }
+    
     
     //
     // MARK: - Helper Functions
@@ -148,9 +161,9 @@ class DateInputView: UIView {
     }
     
     fileprivate func setDefaultTime() -> Date {
-        let currentDate = Date()
-        let numberOfNoonsSinceReferenceDate = (currentDate.timeIntervalSinceReferenceDate - 43200) / 86400
-        let timeIntervalToReturn = (numberOfNoonsSinceReferenceDate.rounded(.up) * 86400) + 43200
+        let localTimeIntervalAdjustment = TimeZone.current.secondsFromGMT()
+        var timeIntervalToReturn = 43200 - Double(localTimeIntervalAdjustment)
+        if timeIntervalToReturn.isLess(than: 0.0) {timeIntervalToReturn += 3600}
         return Date(timeIntervalSinceReferenceDate: timeIntervalToReturn)
     }
 }
