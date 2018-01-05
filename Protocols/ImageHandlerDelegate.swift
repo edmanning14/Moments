@@ -10,5 +10,5 @@ import Foundation
 
 @objc protocol ImageHandlerDelegate {
     @objc optional func cloudLoadBegan() -> Void
-    @objc optional func cloudLoadEnded(imagesLoaded: Bool, error: Error?) -> Void
+    @objc optional func cloudLoadEnded(imagesLoaded: Bool) -> Void
 }

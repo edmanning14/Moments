@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="FiraSans-Regular.ttf">
+            <string>FiraSans-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="37n-fK-C3M">
+                    <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fXH-vq-FXL">
+                    <rect key="frame" x="0.0" y="332.5" width="375" height="22"/>
+                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="18"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="37n-fK-C3M" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="8MM-zv-gvY"/>
+                <constraint firstItem="fXH-vq-FXL" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="9SO-jM-tGx"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="37n-fK-C3M" secondAttribute="trailing" id="OFs-zO-vqR"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="fXH-vq-FXL" secondAttribute="trailing" id="ORB-WB-42J"/>
+                <constraint firstItem="37n-fK-C3M" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="SCQ-i9-tyC"/>
+                <constraint firstItem="fXH-vq-FXL" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="Vz0-0e-0x9"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="37n-fK-C3M" secondAttribute="bottom" id="fTY-Jy-XXa"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="_titleLabel" destination="fXH-vq-FXL" id="W9a-Xz-NIr"/>
+                <outlet property="image" destination="37n-fK-C3M" id="6cT-Kj-izg"/>
+                <outlet property="imageView" destination="37n-fK-C3M" id="Zdr-5X-BNC"/>
+            </connections>
+        </view>
+    </objects>
+</document>

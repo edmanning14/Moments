@@ -28,18 +28,7 @@ open class ImageHandler {
     // Public Data Model
     //
     
-    var delegate: NewEventViewController? /*{
-        didSet {
-            switch job {
-            case .newEventControllerImageRetrieval:
-                fetchOriginalsFromCloud()
-            case .activeEventsImageCaching:
-                break
-            }
-        }
-    }*/
-    
-    //enum ImageHandlerJob {case newEventControllerImageRetrieval, activeEventsImageCaching}
+    var delegate: NewEventViewController?
     
     open var eventImages: [EventImage] {
         var arrayToReturn = [EventImage]()
@@ -50,29 +39,12 @@ open class ImageHandler {
     // Private Data Model
     //
     
-    //fileprivate let job: ImageHandlerJob
     fileprivate var images = [(EventImage, CKRecordID, CKReference?)]()
     lazy fileprivate var publicCloudDatabase = CKContainer.default().publicCloudDatabase
     lazy fileprivate var originalImagesPredicate = NSPredicate(format: "isTraceImage = %@", "No")
     lazy fileprivate var originalImagesQuerry = CKQuery(recordType: "EventImage", predicate: originalImagesPredicate)
     lazy fileprivate var defaultFileManager = FileManager.default
     lazy fileprivate var groupFileDirectory = defaultFileManager.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ed_Manning.Multiple_Event_Countdown")
-    
-    //
-    // MARK: - Initializers
-    //
-    
-    init() {}
-    
-    /*convenience init(forJob job: ImageHandlerJob) {
-        self.init()
-        switch job {
-        case .newEventControllerImageRetrieval:
-            fetchOriginalsFromCloud()
-        case .activeEventsImageCaching:
-            fetchImagesFromFiles()
-        }
-    }*/
     
     //
     // MARK: - Instance Methods
@@ -82,13 +54,38 @@ open class ImageHandler {
         
     }
     
-    open func fetchOriginalsFromCloud() -> Void {
-        delegate?.cloudLoadBegan()
+    open func fetchOriginalsFromCloud(_ previousNetworkFetchAttemps: Int = 0) -> Void {
+        
+        if previousNetworkFetchAttemps == 0 {delegate?.cloudLoadBegan()}
+        
         publicCloudDatabase.perform(originalImagesQuerry, inZoneWith: nil) { [weak weakSelf = self] (records, error) in
+            
             if error != nil {
                 // TODO: Add error handling, retry network errors gracefully.
-                print("There was an error fetching shit from the cloud: \(error.debugDescription)")
+                if let nsError = error as NSError? {
+                    print(nsError.code)
+                    print("There was an error fetching shit from the cloud: \(nsError.debugDescription)")
+                    print(nsError.domain)
+                    print(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")
+                    
+                    switch nsError.code {
+                    // Error code 4: CKErrorDoman, invalid server certificate
+                    case 4:
+                        if previousNetworkFetchAttemps <= 1 {
+                            weakSelf?.fetchOriginalsFromCloud(previousNetworkFetchAttemps + 1)
+                            return
+                        }
+                        else {
+                            DispatchQueue.main.async { [weak weakSelf = self] in
+                                weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false)
+                            }
+                            return
+                        }
+                    default: break
+                    }
+                }
             }
+            
             if let returnedRecords = records {
                 var arrayToReturn = [(EventImage, CKRecordID, CKReference?)]()
                 for record in returnedRecords {
@@ -114,13 +111,13 @@ open class ImageHandler {
                 }
                 weakSelf?.images = arrayToReturn
                 DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: true, error: error)
+                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: true)
                 }
             }
             else {
                 print("No records were returned, no error.")
                 DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false, error: error)
+                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false)
                 }
             }
         }
