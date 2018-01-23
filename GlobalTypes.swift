@@ -66,30 +66,3 @@ open class EventImage {
             isTraceImage: true)
     }
 }
-
-/*struct EventImageSet {
-    
-    var originalImage: EventImage
-    var traceImage: EventImage?
-    
-    var containedImages: packageContents {
-        if originalImage == nil && traceImage == nil {return .none}
-        else if originalImage != nil && traceImage == nil {return .originalOnly}
-        else if originalImage == nil && traceImage != nil {return .traceOnly}
-        else {return .originalAndTrace}
-    }
-    
-    enum packageContents {
-        case none
-        case originalOnly
-        case traceOnly
-        case originalAndTrace
-    }
-    
-    init() {originalImage = nil; traceImage = nil}
-    
-    init(originalImage aOriginalImage: CGImage?, traceImage aTraceImage: CGImage?) {
-        originalImage = aOriginalImage
-        traceImage = aTraceImage
-    }
-}*/
