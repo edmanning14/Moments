@@ -183,9 +183,7 @@ class MasterViewController: UITableViewController {
             updateActiveCategories()
             
             // Configure image handler
-            for event in categories[0].list {
-                
-            }
+            
             
             // Setup notification token for database changes
             localPersistentStoreNotificationsToken = categories._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in

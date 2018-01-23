@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		64238DAF1FFDFDEB009124BD /* NewEventInputsControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */; };
 		64238DB11FFDFE42009124BD /* CustomNewEventInputButton.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64238DB01FFDFE42009124BD /* CustomNewEventInputButton.xib */; };
+		643C362F200DD4B400ECCA8F /* ButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643C362E200DD4B400ECCA8F /* ButtonsView.swift */; };
 		643F9A291FC9520900D1D82E /* ImageHandlerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643F9A281FC9520900D1D82E /* ImageHandlerDelegate.swift */; };
 		6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */; };
 		6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */; };
@@ -19,6 +20,9 @@
 		6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */; };
 		6444D8F51F9D0509005C0F9C /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6444D8F41F9D0509005C0F9C /* Default-568h@2x.png */; };
 		64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */; };
+		6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */; };
+		6477FB122016F8C100EDFF50 /* LabelBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */; };
+		64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BFC8A92008644D002DA9EF /* StringExtensions.swift */; };
 		64D5FF741FC41DAD0043E064 /* DateInputView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64D5FF731FC41DAD0043E064 /* DateInputView.xib */; };
 		64D5FF771FC421210043E064 /* DateInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64D5FF761FC421210043E064 /* DateInputView.swift */; };
 		64D5FF7B1FC45C910043E064 /* GlobalTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64D5FF7A1FC45C910043E064 /* GlobalTypes.swift */; };
@@ -54,6 +58,7 @@
 /* Begin PBXFileReference section */
 		64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventInputsControl.swift; sourceTree = "<group>"; };
 		64238DB01FFDFE42009124BD /* CustomNewEventInputButton.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomNewEventInputButton.xib; sourceTree = "<group>"; };
+		643C362E200DD4B400ECCA8F /* ButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ButtonsView.swift; path = "Multiple Event Countdown/New Group1/ButtonsView.swift"; sourceTree = SOURCE_ROOT; };
 		643F9A281FC9520900D1D82E /* ImageHandlerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageHandlerDelegate.swift; path = Protocols/ImageHandlerDelegate.swift; sourceTree = "<group>"; };
 		6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiple Event Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -66,6 +71,9 @@
 		6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmDataModel.swift; sourceTree = "<group>"; };
 		6444D8F41F9D0509005C0F9C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCell.swift; sourceTree = "<group>"; };
+		6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CGSizeExtensions.swift; path = Extensions/CGSizeExtensions.swift; sourceTree = SOURCE_ROOT; };
+		6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelBackgroundView.swift; sourceTree = "<group>"; };
+		64BFC8A92008644D002DA9EF /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StringExtensions.swift; path = "Multiple Event Countdown/Extensions/StringExtensions.swift"; sourceTree = SOURCE_ROOT; };
 		64D5FF731FC41DAD0043E064 /* DateInputView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DateInputView.xib; sourceTree = "<group>"; };
 		64D5FF761FC421210043E064 /* DateInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DateInputView.swift; path = "Multiple Event Countdown/Views/DateInputView.swift"; sourceTree = SOURCE_ROOT; };
 		64D5FF7A1FC45C910043E064 /* GlobalTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalTypes.swift; sourceTree = "<group>"; };
@@ -135,9 +143,11 @@
 		6444D8CE1F9CFDFE005C0F9C = {
 			isa = PBXGroup;
 			children = (
+				64BFC8A820086441002DA9EF /* Extensions */,
 				64FE12741FBC21F70025C005 /* Fonts */,
 				64A249441FB9863000E15B7A /* Images */,
 				6444D8F31F9D03F6005C0F9C /* Models */,
+				6477FB102016F89000EDFF50 /* Custom Classes */,
 				64D5FF8A1FC6800B0043E064 /* Convineince Classes */,
 				643F9A2A1FC954FC00D1D82E /* Protocols */,
 				6444D8D91F9CFDFE005C0F9C /* Multiple Event Countdown */,
@@ -207,6 +217,23 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
+		6477FB102016F89000EDFF50 /* Custom Classes */ = {
+			isa = PBXGroup;
+			children = (
+				6477FB132016F8CD00EDFF50 /* Pill Background Button */,
+			);
+			path = "Custom Classes";
+			sourceTree = "<group>";
+		};
+		6477FB132016F8CD00EDFF50 /* Pill Background Button */ = {
+			isa = PBXGroup;
+			children = (
+				64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */,
+				6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */,
+			);
+			path = "Pill Background Button";
+			sourceTree = "<group>";
+		};
 		64A249441FB9863000E15B7A /* Images */ = {
 			isa = PBXGroup;
 			children = (
@@ -215,10 +242,18 @@
 			path = Images;
 			sourceTree = "<group>";
 		};
+		64BFC8A820086441002DA9EF /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				64BFC8A92008644D002DA9EF /* StringExtensions.swift */,
+				6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		64D5FF751FC41DB60043E064 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */,
 				64238DB01FFDFE42009124BD /* CustomNewEventInputButton.xib */,
 				64D5FF841FC57D390043E064 /* ImageInputView.xib */,
 				64D5FF901FC7DF100043E064 /* ImageInputViewCollectionViewCell.xib */,
@@ -226,6 +261,7 @@
 				64D5FF861FC57D510043E064 /* ImageInputView.swift */,
 				64D5FF731FC41DAD0043E064 /* DateInputView.xib */,
 				64D5FF761FC421210043E064 /* DateInputView.swift */,
+				643C362E200DD4B400ECCA8F /* ButtonsView.swift */,
 			);
 			name = Views;
 			path = "New Group1";
@@ -440,18 +476,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6477FB122016F8C100EDFF50 /* LabelBackgroundView.swift in Sources */,
 				64D5FF771FC421210043E064 /* DateInputView.swift in Sources */,
 				64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */,
 				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
 				64D5FF891FC67FFE0043E064 /* ImageHandler.swift in Sources */,
 				64E40C061FBC5FF40076AB2D /* NewEventViewControllerOld.swift in Sources */,
 				643F9A291FC9520900D1D82E /* ImageHandlerDelegate.swift in Sources */,
+				643C362F200DD4B400ECCA8F /* ButtonsView.swift in Sources */,
 				64238DAF1FFDFDEB009124BD /* NewEventInputsControl.swift in Sources */,
 				64D5FF7B1FC45C910043E064 /* GlobalTypes.swift in Sources */,
 				64D5FF871FC57D510043E064 /* ImageInputView.swift in Sources */,
+				6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */,
 				64D5FF931FC7DF2A0043E064 /* ImageInputViewCollectionViewCell.swift in Sources */,
 				6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */,
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
+				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,
 				6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */,
 				6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */,
 			);

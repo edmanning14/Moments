@@ -110,6 +110,9 @@
                             </visualEffectView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Category" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sdn-lm-0aG">
                                 <rect key="frame" x="8" y="72" width="304" height="17"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="17" id="KD4-1Q-eFS"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -399,81 +402,20 @@
                             </view>
                             <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mhz-W6-sij">
                                 <rect key="frame" x="0.0" y="265" width="320" height="103"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Flm-XV-h1g">
+                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Flm-XV-h1g" userLabel="ButtonsView">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="103"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <stackView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="sX2-Dh-9Mk">
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QNg-Dd-Gzy" customClass="ButtonsView" customModule="Multiple_Event_Countdown" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="103"/>
-                                            <subviews>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5vo-4W-3wn">
-                                                    <rect key="frame" x="40" y="0.0" width="240" height="20.5"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                </view>
-                                                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="mTp-GF-YzY">
-                                                    <rect key="frame" x="20" y="20.5" width="280" height="20.5"/>
-                                                    <subviews>
-                                                        <button contentMode="scaleToFill" selected="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MY6-zf-ZfR">
-                                                            <rect key="frame" x="0.0" y="0.0" width="93.5" height="20.5"/>
-                                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
-                                                            <state key="normal" title="$"/>
-                                                        </button>
-                                                        <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YqJ-JF-9Re">
-                                                            <rect key="frame" x="93.5" y="0.0" width="93" height="20.5"/>
-                                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
-                                                            <state key="normal" title="%"/>
-                                                        </button>
-                                                        <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ahX-f0-qls">
-                                                            <rect key="frame" x="186.5" y="0.0" width="93.5" height="20.5"/>
-                                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
-                                                            <state key="normal" title="&amp;"/>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstItem="YqJ-JF-9Re" firstAttribute="centerX" secondItem="mTp-GF-YzY" secondAttribute="centerX" id="2zd-eN-huR"/>
-                                                    </constraints>
-                                                </stackView>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3WD-bI-tMl">
-                                                    <rect key="frame" x="40" y="41" width="240" height="21"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                </view>
-                                                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="c1P-0o-QKa">
-                                                    <rect key="frame" x="20" y="62" width="280" height="20.5"/>
-                                                    <subviews>
-                                                        <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZjB-To-Vw5">
-                                                            <rect key="frame" x="0.0" y="0.0" width="140" height="20.5"/>
-                                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
-                                                            <state key="normal" title="#">
-                                                                <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            </state>
-                                                        </button>
-                                                        <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pKX-Fq-iO5">
-                                                            <rect key="frame" x="140" y="0.0" width="140" height="20.5"/>
-                                                            <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
-                                                            <state key="normal" title="@">
-                                                                <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            </state>
-                                                        </button>
-                                                    </subviews>
-                                                </stackView>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xIg-Ut-HLI">
-                                                    <rect key="frame" x="40" y="82.5" width="240" height="20.5"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                </view>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="mTp-GF-YzY" firstAttribute="leading" secondItem="sX2-Dh-9Mk" secondAttribute="leading" constant="20" id="0zl-nZ-jug"/>
-                                                <constraint firstAttribute="trailing" secondItem="mTp-GF-YzY" secondAttribute="trailing" constant="20" id="16O-JD-gFq"/>
-                                                <constraint firstAttribute="trailing" secondItem="c1P-0o-QKa" secondAttribute="trailing" constant="20" id="f9I-ow-HKR"/>
-                                                <constraint firstItem="c1P-0o-QKa" firstAttribute="leading" secondItem="sX2-Dh-9Mk" secondAttribute="leading" constant="20" id="fn5-mK-QLx"/>
-                                            </constraints>
-                                        </stackView>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </view>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="sX2-Dh-9Mk" secondAttribute="trailing" id="6rb-w2-fLd"/>
-                                        <constraint firstItem="sX2-Dh-9Mk" firstAttribute="top" secondItem="Flm-XV-h1g" secondAttribute="top" id="7y6-fL-v6j"/>
-                                        <constraint firstAttribute="bottom" secondItem="sX2-Dh-9Mk" secondAttribute="bottom" id="rAw-XH-GPz"/>
-                                        <constraint firstItem="sX2-Dh-9Mk" firstAttribute="leading" secondItem="Flm-XV-h1g" secondAttribute="leading" id="tbR-lr-Hpc"/>
+                                        <constraint firstItem="QNg-Dd-Gzy" firstAttribute="top" secondItem="Flm-XV-h1g" secondAttribute="top" id="7SX-2h-tTk"/>
+                                        <constraint firstAttribute="trailing" secondItem="QNg-Dd-Gzy" secondAttribute="trailing" id="9Vp-fw-VQO"/>
+                                        <constraint firstAttribute="bottom" secondItem="QNg-Dd-Gzy" secondAttribute="bottom" id="GRa-a2-MKz"/>
+                                        <constraint firstItem="QNg-Dd-Gzy" firstAttribute="leading" secondItem="Flm-XV-h1g" secondAttribute="leading" id="hWl-hP-hvs"/>
                                     </constraints>
                                 </view>
                                 <blurEffect style="dark"/>
@@ -518,26 +460,21 @@
                     <connections>
                         <outlet property="EventImageView" destination="hSF-lx-YVg" id="TkL-4Z-hb6"/>
                         <outlet property="abridgedStackView" destination="i5V-xh-3CR" id="dNA-kF-FF2"/>
-                        <outlet property="buttonsView" destination="Flm-XV-h1g" id="lev-DI-zOZ"/>
-                        <outlet property="categoryButton" destination="MY6-zf-ZfR" id="aVF-jS-gQ0"/>
+                        <outlet property="buttonsView" destination="QNg-Dd-Gzy" id="VhB-GA-U6j"/>
                         <outlet property="categoryLabel" destination="Sdn-lm-0aG" id="SgA-Zb-pmF"/>
                         <outlet property="categoryPickerView" destination="qOn-cK-Utl" id="rtk-b0-eOO"/>
                         <outlet property="categoryVisualEffectView" destination="8VH-6M-McO" id="I6u-gl-Y4H"/>
-                        <outlet property="dateButton" destination="ahX-f0-qls" id="euO-vz-FcW"/>
                         <outlet property="datePickerStackView" destination="YuW-yC-lu6" id="8XR-dQ-i4L"/>
                         <outlet property="eventDateButtonsStackView" destination="ybY-kM-Dj1" id="UdU-Ws-Nzv"/>
                         <outlet property="eventDatePicker" destination="Yps-aP-RAL" id="JwS-Hg-UQN"/>
                         <outlet property="eventImageView" destination="hSF-lx-YVg" id="DJY-9c-am4"/>
-                        <outlet property="imageButton" destination="pKX-Fq-iO5" id="PjY-Yc-UJY"/>
                         <outlet property="labelsStackView" destination="1gu-XU-3Tn" id="Lbq-bj-shD"/>
                         <outlet property="labelsVisualEffectView" destination="Vsu-sT-WtU" id="izi-aN-8f9"/>
                         <outlet property="setTimeButton" destination="ilL-fs-O3y" id="8EL-oo-PBM"/>
-                        <outlet property="taglineButton" destination="ZjB-To-Vw5" id="f5z-hw-rbI"/>
                         <outlet property="taglineLabel" destination="zdG-X3-ajJ" id="x6R-3j-0uM"/>
                         <outlet property="taglineVisualEffectView" destination="6i0-e4-IJf" id="PzB-Al-6i9"/>
                         <outlet property="timerStackView" destination="k0c-DT-e42" id="QjE-JW-tvZ"/>
                         <outlet property="timerVisualEffectView" destination="gOd-sY-ou1" id="oy2-1v-LA2"/>
-                        <outlet property="titleButton" destination="YqJ-JF-9Re" id="FAl-r7-uue"/>
                         <outlet property="titleLabel" destination="iiS-Yd-QKg" id="Jyv-aC-OXf"/>
                         <outlet property="titleVisualEffectView" destination="Cqg-sg-ttk" id="BFP-lQ-Rpm"/>
                     </connections>
@@ -578,55 +515,55 @@
                                             <rect key="frame" x="51" y="99" width="245" height="32"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ATF-2G-Uk3">
-                                                    <rect key="frame" x="0.0" y="0.0" width="43" height="32"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="42.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JUN-rH-Frq">
-                                                    <rect key="frame" x="43" y="0.0" width="8" height="32"/>
+                                                    <rect key="frame" x="42.5" y="0.0" width="8" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3zJ-cw-0lF">
-                                                    <rect key="frame" x="51" y="0.0" width="42.5" height="32"/>
+                                                    <rect key="frame" x="50.5" y="0.0" width="42.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yf0-dP-eFT">
-                                                    <rect key="frame" x="93.5" y="0.0" width="8" height="32"/>
+                                                    <rect key="frame" x="93" y="0.0" width="8.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HFn-hg-m1W">
-                                                    <rect key="frame" x="101.5" y="0.0" width="42.5" height="32"/>
+                                                    <rect key="frame" x="101.5" y="0.0" width="43" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjN-KC-g0g">
-                                                    <rect key="frame" x="144" y="0.0" width="8" height="32"/>
+                                                    <rect key="frame" x="144.5" y="0.0" width="8" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QaP-n8-b2H">
-                                                    <rect key="frame" x="152" y="0.0" width="42.5" height="32"/>
+                                                    <rect key="frame" x="152.5" y="0.0" width="42.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KTF-8k-Xn5">
-                                                    <rect key="frame" x="194.5" y="0.0" width="7.5" height="32"/>
+                                                    <rect key="frame" x="195" y="0.0" width="7.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="N8M-rw-OKZ">
-                                                    <rect key="frame" x="202" y="0.0" width="43" height="32"/>
+                                                    <rect key="frame" x="202.5" y="0.0" width="42.5" height="32"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
@@ -658,13 +595,13 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hours" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gwt-8M-LHy">
-                                                    <rect key="frame" x="102" y="0.0" width="51.5" height="14"/>
+                                                    <rect key="frame" x="102" y="0.0" width="52" height="14"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="14"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Minutes" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FUR-kb-cmX">
-                                                    <rect key="frame" x="153.5" y="0.0" width="50" height="14"/>
+                                                    <rect key="frame" x="154" y="0.0" width="49.5" height="14"/>
                                                     <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="14"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>

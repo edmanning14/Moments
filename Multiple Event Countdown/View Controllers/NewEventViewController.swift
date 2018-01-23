@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import QuartzCore
 
 class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
 
@@ -35,16 +36,17 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
     var localPersistentStore: Realm!
     
     //
-    // References and Outlets
+    // UI Elements
     
     @IBOutlet weak var eventImageView: UIImageView!
+
+    @IBOutlet weak var buttonsView: ButtonsView!
     
-    @IBOutlet weak var buttonsView: UIView!
-    @IBOutlet weak var categoryButton: UIButton!
-    @IBOutlet weak var titleButton: UIButton!
-    @IBOutlet weak var dateButton: UIButton!
-    @IBOutlet weak var taglineButton: UIButton!
-    @IBOutlet weak var imageButton: UIButton!
+    var categoryButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Category", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "CategoryButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
+    var titleButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Title", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "TitleButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 50.0, height: 30.0))
+    var dateButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Date", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "DateButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
+    var taglineButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Tagline", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "TaglineButtonImage", isDataRequired: false, sizeOfGlyph: CGSize(width: 50.0, height: 30.0))
+    var imageButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Image", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "ImageButtonImage", isDataRequired: false, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
     
     @IBOutlet weak var categoryVisualEffectView: UIVisualEffectView!
     @IBOutlet weak var titleVisualEffectView: UIVisualEffectView!
@@ -158,7 +160,7 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
         case datePicker
     }
     
-    var buttonToStateAssociations: [Inputs: UIButton] = [:]
+    var buttonToStateAssociations: [Inputs: NewEventInputsControl] = [:]
     
     let accessibilityTitlesToStateAssociations = [
         Inputs.category: [StringConstants.categoryLabelAccessibilityIdentifier, StringConstants.categoryButtonAccessibilityIdentifier, StringConstants.categoryVisualEffectViewAccessibilityIdentifier],
@@ -214,7 +216,10 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if initialLoad {currentInputViewState = .category}
+        if initialLoad {
+            currentInputViewState = .category
+            initialLoad = false
+        }
     }
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
@@ -232,7 +237,7 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
     }
     
     func cloudLoadEnded(imagesLoaded: Bool) {
-        if imagesLoaded == true {
+        if imagesLoaded {
             eventImageView.image = newEventImageHandler.eventImages[0].uiImage
         }
         else {
@@ -274,14 +279,12 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
         let stringToReturn = selectableCategories[row]
         return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor:UIColor.white])
     }
-    /*func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return selectableCategories[row]
-    }*/
     
     /*
+    //
     // MARK: - Navigation
+    //
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
@@ -397,30 +400,18 @@ class NewEventViewController: UIViewController, ImageHandlerDelegate, UIPickerVi
         abridgedStackView.addGestureRecognizer(cellTapGestureRecognizer)
     }
     
-    fileprivate func configureButtons() -> Void {
-        
-        
-        categoryButton.isSelected = false
-        titleButton.isSelected = false
-        dateButton.isSelected = false
-        taglineButton.isSelected = false
-        imageButton.isSelected = false
+    fileprivate func configureButtons() {
+        buttonsView.addSubview(categoryButton)
+        buttonsView.addSubview(titleButton)
+        buttonsView.addSubview(dateButton)
+        buttonsView.addSubview(taglineButton)
+        buttonsView.addSubview(imageButton)
         
         categoryButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
         titleButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
         dateButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
         taglineButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
         imageButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
-        
-        categoryButton.setTitle("Choose Category", for: .selected)
-        titleButton.setTitle("Set Title", for: .selected)
-        dateButton.setTitle("Choose Date", for: .selected)
-        taglineButton.setTitle("Set Tagline (Optional)", for: .selected)
-        
-        categoryButton.setTitleColor(UIColor.green, for: .selected)
-        titleButton.setTitleColor(UIColor.green, for: .selected)
-        dateButton.setTitleColor(UIColor.green, for: .selected)
-        taglineButton.setTitleColor(UIColor.green, for: .selected)
     }
     
     fileprivate func configureInputView() -> Void {
