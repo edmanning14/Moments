@@ -19,4 +19,6 @@ extension CGSize: Comparable {
         if lhs.width == rhs.width && rhs.height == lhs.height {return true}
         else {return false}
     }
+    
+    public var aspectRatio: CGFloat {return self.width / self.height}
 }

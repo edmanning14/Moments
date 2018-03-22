@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="DS-DIGIB.TTF">
+            <string>DS-Digital-Bold</string>
+        </array>
+        <array key="FiraSans-Light.ttf">
+            <string>FiraSans-Light</string>
+        </array>
+        <array key="FiraSans-Medium.ttf">
+            <string>FiraSans-Medium</string>
+        </array>
+        <array key="FiraSans-Regular.ttf">
+            <string>FiraSans-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="EventTableViewCell" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ue3-Sf-TXv">
+                    <rect key="frame" x="8" y="28" width="36" height="22"/>
+                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="18"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tagline" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yd2-Ze-G9g">
+                    <rect key="frame" x="8" y="54" width="45.5" height="17"/>
+                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nw8-LM-txh">
+                    <rect key="frame" x="148.5" y="526" width="163.5" height="34"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="bottom" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="4Rg-g3-Pdh">
+                            <rect key="frame" x="0.0" y="0.0" width="163.5" height="34"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Roe-XL-fZ0">
+                                    <rect key="frame" x="0.0" y="0.0" width="44" height="34"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Medium" family="Fira Sans" pointSize="38"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Weeks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KaY-em-C33">
+                                    <rect key="frame" x="49" y="19.5" width="35" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gtB-fe-bws">
+                                    <rect key="frame" x="89" y="0.0" width="44" height="34"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Medium" family="Fira Sans" pointSize="38"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Days" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="erh-Kd-bkm">
+                                    <rect key="frame" x="138" y="19.5" width="25.5" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="34" id="hwf-9W-IvI"/>
+                            </constraints>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="4Rg-g3-Pdh" firstAttribute="top" secondItem="Nw8-LM-txh" secondAttribute="top" id="KNE-1f-k4A"/>
+                        <constraint firstAttribute="trailing" secondItem="4Rg-g3-Pdh" secondAttribute="trailing" id="Luv-OH-I1G"/>
+                        <constraint firstItem="4Rg-g3-Pdh" firstAttribute="leading" secondItem="Nw8-LM-txh" secondAttribute="leading" id="nBG-wO-b0l"/>
+                        <constraint firstAttribute="bottom" secondItem="4Rg-g3-Pdh" secondAttribute="bottom" id="tbX-5e-1vo"/>
+                    </constraints>
+                </view>
+                <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ods-Qx-ZRB">
+                    <rect key="frame" x="55.5" y="508.5" width="256.5" height="51.5"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qkz-v5-ZxG">
+                            <rect key="frame" x="0.0" y="37" width="256.5" height="14.5"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Weeks" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aTS-LB-qlQ">
+                                    <rect key="frame" x="0.0" y="0.0" width="46" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Days" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EtD-sb-F3l">
+                                    <rect key="frame" x="46" y="0.0" width="60" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hours" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GLb-VE-l5X">
+                                    <rect key="frame" x="106" y="0.0" width="45.5" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Minutes" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gCu-Zh-ClW">
+                                    <rect key="frame" x="151.5" y="0.0" width="60" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Seconds" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zV7-xk-WIU">
+                                    <rect key="frame" x="211.5" y="0.0" width="45" height="14.5"/>
+                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="BAz-xP-8I2">
+                            <rect key="frame" x="0.0" y="-0.5" width="256" height="32"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OdB-U0-FMO">
+                                    <rect key="frame" x="0.0" y="0.0" width="45" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ct5-6Z-OFq">
+                                    <rect key="frame" x="45" y="0.0" width="8" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zI5-PA-xuv">
+                                    <rect key="frame" x="53" y="0.0" width="45" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KOz-0l-j79">
+                                    <rect key="frame" x="98" y="0.0" width="8" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2lK-tP-sV5">
+                                    <rect key="frame" x="106" y="0.0" width="44.5" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ai4-1s-oxu">
+                                    <rect key="frame" x="150.5" y="0.0" width="8" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wgi-QA-0VC">
+                                    <rect key="frame" x="158.5" y="0.0" width="45" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text=":" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w1t-Yx-ePF">
+                                    <rect key="frame" x="203.5" y="0.0" width="7.5" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bMG-RH-0dk">
+                                    <rect key="frame" x="211" y="0.0" width="45" height="32"/>
+                                    <fontDescription key="fontDescription" name="DS-Digital-Bold" family="DS-Digital" pointSize="32"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <constraints>
+                                <constraint firstItem="OdB-U0-FMO" firstAttribute="width" secondItem="2lK-tP-sV5" secondAttribute="width" id="BwK-0G-vTo"/>
+                                <constraint firstItem="OdB-U0-FMO" firstAttribute="width" secondItem="Wgi-QA-0VC" secondAttribute="width" id="C4x-jT-LHM"/>
+                                <constraint firstItem="ct5-6Z-OFq" firstAttribute="width" secondItem="w1t-Yx-ePF" secondAttribute="width" id="Kii-fd-xOC"/>
+                                <constraint firstItem="OdB-U0-FMO" firstAttribute="width" secondItem="bMG-RH-0dk" secondAttribute="width" id="YeW-jJ-rg6"/>
+                                <constraint firstItem="ct5-6Z-OFq" firstAttribute="width" secondItem="Ai4-1s-oxu" secondAttribute="width" id="l25-lp-ebx"/>
+                                <constraint firstItem="OdB-U0-FMO" firstAttribute="width" secondItem="zI5-PA-xuv" secondAttribute="width" id="mmO-Sa-a5x"/>
+                                <constraint firstItem="ct5-6Z-OFq" firstAttribute="width" secondItem="KOz-0l-j79" secondAttribute="width" id="s8p-ok-Squ"/>
+                            </constraints>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="Qkz-v5-ZxG" firstAttribute="top" secondItem="BAz-xP-8I2" secondAttribute="bottom" constant="5" id="1g2-1u-Afo"/>
+                        <constraint firstAttribute="trailing" secondItem="BAz-xP-8I2" secondAttribute="trailing" id="23r-0c-CS2"/>
+                        <constraint firstAttribute="bottom" secondItem="Qkz-v5-ZxG" secondAttribute="bottom" id="73X-0D-6hD"/>
+                        <constraint firstItem="Qkz-v5-ZxG" firstAttribute="leading" secondItem="ods-Qx-ZRB" secondAttribute="leading" id="CdL-m8-SXJ"/>
+                        <constraint firstItem="gCu-Zh-ClW" firstAttribute="centerX" secondItem="Wgi-QA-0VC" secondAttribute="centerX" id="Jnj-s3-6IU"/>
+                        <constraint firstItem="zV7-xk-WIU" firstAttribute="centerX" secondItem="bMG-RH-0dk" secondAttribute="centerX" id="MLB-x5-Cv0"/>
+                        <constraint firstItem="EtD-sb-F3l" firstAttribute="centerX" secondItem="zI5-PA-xuv" secondAttribute="centerX" id="N6S-XV-Kgo"/>
+                        <constraint firstAttribute="trailing" secondItem="Qkz-v5-ZxG" secondAttribute="trailing" id="NYq-pD-VvD"/>
+                        <constraint firstItem="BAz-xP-8I2" firstAttribute="top" secondItem="ods-Qx-ZRB" secondAttribute="top" id="ZOb-cL-OmW"/>
+                        <constraint firstItem="GLb-VE-l5X" firstAttribute="centerX" secondItem="2lK-tP-sV5" secondAttribute="centerX" id="sW6-6H-ojR"/>
+                        <constraint firstItem="aTS-LB-qlQ" firstAttribute="centerX" secondItem="OdB-U0-FMO" secondAttribute="centerX" id="yXV-pN-eID"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="Yd2-Ze-G9g" firstAttribute="top" secondItem="Ue3-Sf-TXv" secondAttribute="bottom" constant="4" id="B1g-Jk-poR"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="ods-Qx-ZRB" secondAttribute="bottom" constant="8" id="GkV-p9-waI"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="Nw8-LM-txh" secondAttribute="bottom" constant="8" id="ITg-HR-sEK"/>
+                <constraint firstItem="Ue3-Sf-TXv" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="P1A-oL-nIV"/>
+                <constraint firstItem="Ue3-Sf-TXv" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="8" id="UqE-Q4-7Zh"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="ods-Qx-ZRB" secondAttribute="trailing" constant="8" id="bqG-in-vVY"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ue3-Sf-TXv" secondAttribute="trailing" constant="8" id="cwu-uq-6Jk"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="Nw8-LM-txh" secondAttribute="trailing" constant="8" id="lkU-uP-18o"/>
+                <constraint firstItem="Yd2-Ze-G9g" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="o6D-Ag-FxZ"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Yd2-Ze-G9g" secondAttribute="trailing" constant="8" id="xPm-Yc-J5O"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="abridgedDaysLabel" destination="gtB-fe-bws" id="F13-in-d9E"/>
+                <outlet property="abridgedTimerContainerView" destination="Nw8-LM-txh" id="AxQ-uZ-lph"/>
+                <outlet property="abridgedTimerStackView" destination="4Rg-g3-Pdh" id="wms-Hn-36d"/>
+                <outlet property="abridgedWeeksLabel" destination="Roe-XL-fZ0" id="U7V-9g-1nP"/>
+                <outlet property="daysLabel" destination="zI5-PA-xuv" id="d8q-Ce-V6Z"/>
+                <outlet property="hoursLabel" destination="2lK-tP-sV5" id="X74-W8-yzm"/>
+                <outlet property="minutesLabel" destination="Wgi-QA-0VC" id="qDf-c6-ywp"/>
+                <outlet property="secondsLabel" destination="bMG-RH-0dk" id="7Bc-9S-sm6"/>
+                <outlet property="taglineLabel" destination="Yd2-Ze-G9g" id="StJ-6K-9pD"/>
+                <outlet property="timerContainerView" destination="ods-Qx-ZRB" id="dRU-Og-coO"/>
+                <outlet property="timerLabelsStackView" destination="Qkz-v5-ZxG" id="DSt-ar-JvX"/>
+                <outlet property="timerStackView" destination="BAz-xP-8I2" id="Ghe-2d-PTg"/>
+                <outlet property="titleLabel" destination="Ue3-Sf-TXv" id="XQu-rv-n7s"/>
+                <outlet property="weeksLabel" destination="OdB-U0-FMO" id="fFZ-YA-bNR"/>
+            </connections>
+        </view>
+    </objects>
+</document>

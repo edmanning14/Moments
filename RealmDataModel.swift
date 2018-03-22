@@ -33,48 +33,63 @@ let realmConfig = Realm.Configuration(
 // MARK: - Data Model
 //
 
-class SpecialEvent: Object {
-    @objc dynamic var title: String?
-    @objc dynamic var tagline: String?
-    @objc dynamic var date: Date?
-    @objc dynamic var category: EventCategory?
-    @objc dynamic var imageTitle: String?
-    @objc dynamic var traceImageTitle: String?
+class EventDate: Object {
+    @objc dynamic var date = Date()
+    @objc dynamic var dateOnly = true
+    
+    convenience init(date: Date, dateOnly: Bool) {
+        self.init()
+        self.date = date
+        self.dateOnly = dateOnly
+    }
+}
+
+class EventImageInfo: Object {
+    
+    // Stored Properties
+    @objc dynamic var title = ""
+    @objc dynamic var fileRootName = ""
+    @objc dynamic var category = ""
+    @objc dynamic var isAppImage = true
+    @objc dynamic var hasMask = true
+    
+    // Initializers
+    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String) {
+        self.init()
+        self.title = aTitle
+        self.fileRootName = fileRootName
+        self.category = category
+    }
+    
+    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String, isAppImage: Bool, hasMask: Bool) {
+        self.init()
+        self.title = aTitle
+        self.fileRootName = fileRootName
+        self.category = category
+        self.isAppImage = isAppImage
+        self.hasMask = hasMask
+    }
     
     override static func primaryKey() -> String? {return "title"}
+}
+
+class SpecialEvent: Object {
     
-    convenience init(category: EventCategory, title: String?, tagline: String?, date: Date?, imageTitle: String?) {
+    // Stored Properties
+    @objc dynamic var title = ""
+    @objc dynamic var tagline: String?
+    @objc dynamic var date: EventDate?
+    @objc dynamic var category = ""
+    @objc dynamic var image: EventImageInfo?
+    
+    convenience init(category: String, title: String, tagline: String?, date: EventDate, image: EventImageInfo?) {
         self.init()
         self.category = category
         self.title = title
         self.tagline = tagline
         self.date = date
-        self.imageTitle = imageTitle
+        self.image = image
     }
-}
-
-class EventCategory: Object {
-    @objc dynamic var title: String?
-    let includedSpecialEvents = List<SpecialEvent>()
     
-    override static func primaryKey() -> String? {return "title"}
-    
-    convenience init(title: String?, newEvent: SpecialEvent?) {
-        self.init()
-        self.title = title
-        if newEvent != nil {includedSpecialEvents.append(newEvent!)}
-    }
-}
-
-class Categories: Object {
-    let list = List<EventCategory>()
-}
-
-
-//
-// MARK: - Realm helper funcitons
-//
-
-public func deletePersistentData(atIndexPath: IndexPath) -> Void {
-    
+        override static func primaryKey() -> String? {return "title"}
 }

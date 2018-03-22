@@ -11,12 +11,15 @@ extension String {
     func removeCharsFromEnd(numberToRemove num: Int) -> String {
         if num == 0 {return self}
         else if num == 1 {
-            var stringToReturn = ""
-            stringToReturn = self
+            var stringToReturn = self
             stringToReturn.removeLast()
             return stringToReturn
         }
-        else {return removeCharsFromEnd(numberToRemove: num - 1)}
+        else {
+            var stringToReturn = self
+            stringToReturn.removeLast()
+            return stringToReturn.removeCharsFromEnd(numberToRemove: num - 1)
+        }
     }
     
     func index(_ i: String.Index, insetBy num: Int) -> String.Index {

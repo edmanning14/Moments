@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 import CoreGraphics
 import CloudKit
+import os.log
 
 open class ImageHandler {
     
@@ -28,9 +29,9 @@ open class ImageHandler {
     // Public Data Model
     //
     
-    var delegate: NewEventViewController?
+    var delegate: ImageHandlerDelegate?
     
-    open var eventImages: [EventImage] {
+    var eventImages: [EventImage] {
         var arrayToReturn = [EventImage]()
         for element in images {arrayToReturn.append(element.0)}
         return arrayToReturn
@@ -56,13 +57,14 @@ open class ImageHandler {
     
     open func fetchOriginalsFromCloud(_ previousNetworkFetchAttemps: Int = 0) -> Void {
         
-        if previousNetworkFetchAttemps == 0 {delegate?.cloudLoadBegan()}
+        if previousNetworkFetchAttemps == 0 {delegate?.cloudLoadBegan?()}
         
         publicCloudDatabase.perform(originalImagesQuerry, inZoneWith: nil) { [weak weakSelf = self] (records, error) in
             
             if error != nil {
                 // TODO: Add error handling, retry network errors gracefully.
                 if let nsError = error as NSError? {
+                    os_log("There was an error fetching images from CloudKit", log: OSLog.default, type: .error)
                     print(nsError.code)
                     print("There was an error fetching shit from the cloud: \(nsError.debugDescription)")
                     print(nsError.domain)
@@ -77,7 +79,7 @@ open class ImageHandler {
                         }
                         else {
                             DispatchQueue.main.async { [weak weakSelf = self] in
-                                weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false)
+                                weakSelf?.delegate?.cloudLoadEnded?(imagesLoaded: false)
                             }
                             return
                         }
@@ -100,9 +102,9 @@ open class ImageHandler {
                     
                     do {
                         let imageData = try Data(contentsOf: image.fileURL)
-                        let uiImage  = UIImage(data: imageData)!
                         
-                        let newImage = EventImage(title: imageTitle, image: uiImage, category: imageCategory, associatedTraceImage: nil, isTraceImage: boolIsTraceImage)
+                        let newImage = EventImage(imageTitle: imageTitle, imageData: imageData, imageCategory: imageCategory, isTraceImage: boolIsTraceImage, associatedTraceImage: nil)
+                        
                         arrayToReturn.append((newImage, recordID, associatedTraceImage))
                     }
                     catch {
@@ -111,13 +113,13 @@ open class ImageHandler {
                 }
                 weakSelf?.images = arrayToReturn
                 DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: true)
+                    weakSelf?.delegate?.cloudLoadEnded?(imagesLoaded: true)
                 }
             }
             else {
                 print("No records were returned, no error.")
                 DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.delegate?.cloudLoadEnded(imagesLoaded: false)
+                    weakSelf?.delegate?.cloudLoadEnded?(imagesLoaded: false)
                 }
             }
         }
@@ -127,7 +129,7 @@ open class ImageHandler {
         
     //}
     
-    open func saveLocal(imageTitled title: String) throws -> Bool {
+    /* open func saveLocal(imageTitled title: String) throws -> Bool {
         let imageExists = images.contains {$0.0.title == title}
         guard imageExists else {throw saveErrors.invalidImageTitle(message: "Image title was not found in my data model.  Please check image name.")}
         
@@ -151,9 +153,9 @@ open class ImageHandler {
         }
         catch {throw saveErrors.fileNotSaved(message: "There was an error checking the contents of the shared app directory.  Check file permisions", error: error)}
         return true
-    }
+    } */
     
-    open func hasAvailableOverlayImage(mainImage image: EventImage) -> Bool {
+    func hasAvailableOverlayImage(mainImage image: EventImage) -> Bool {
         if let arrayIndex = images.index(where: {$0.0.title == image.title}) {
             if images[arrayIndex].2 != nil {return true}
         }

@@ -8,14 +8,99 @@
 
 import UIKit
 import RealmSwift
+import Foundation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        UIApplication.shared.statusBarStyle = .lightContent
+        
+        // Perform initial app setup.
+        var localPersistentStore: Realm!
+        try! localPersistentStore = Realm(configuration: realmConfig)
+        let eventImages = localPersistentStore.objects(EventImageInfo.self)
+        
+        if eventImages.count == 0 {
+            
+            // Add image info for images on the disk to the persistent store
+            for imageInfo in EventImage.bundleMainImageInfo {
+                if let _ = Bundle.main.path(forResource: imageInfo.fileRootName, ofType: ".jpg") {
+                    if imageInfo.hasMask {
+                        if let _ = Bundle.main.path(forResource: imageInfo.fileRootName + "Mask", ofType: ".png") {
+                            do {
+                                try! localPersistentStore.write {
+                                    localPersistentStore.add(imageInfo)
+                                }
+                            }
+                        }
+                        else {
+                            let imageInfoToAdd = EventImageInfo(
+                                imageTitle: imageInfo.title,
+                                fileRootName: imageInfo.fileRootName,
+                                imageCategory: imageInfo.category,
+                                isAppImage: imageInfo.isAppImage,
+                                hasMask: imageInfo.hasMask
+                            )
+                            do {
+                                try! localPersistentStore.write {
+                                    localPersistentStore.add(imageInfoToAdd)
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        do {
+                            try! localPersistentStore.write {
+                                localPersistentStore.add(imageInfo)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Create the default event.
+            struct DefaultEvent {
+                static let category = "Holidays"
+                static let title = "New Years!"
+                static let tagline = "Party like it's 1989"
+                static var date: EventDate = {
+                    let calender = Calendar.current
+                    var dateComponents = DateComponents()
+                    dateComponents.second = 0
+                    dateComponents.minute = 0
+                    dateComponents.hour = 0
+                    dateComponents.day = 1
+                    dateComponents.month = 1
+                    dateComponents.year = calender.component(.year, from: Date()) + 1
+                    let newYearsDay = calender.date(from: dateComponents)!
+                    return EventDate(date: newYearsDay, dateOnly: true)
+                }()
+                static let imageTitle = "Desert Dunes"
+            }
+            
+            if let i = eventImages.index(where: {$0.title == DefaultEvent.imageTitle}) {
+                let defaultImageInfo = eventImages[i]
+                let defaultEvent = SpecialEvent(
+                    category: DefaultEvent.category,
+                    title: DefaultEvent.title,
+                    tagline: DefaultEvent.tagline,
+                    date: DefaultEvent.date,
+                    image: defaultImageInfo
+                )
+                try! localPersistentStore.write {localPersistentStore.add(defaultEvent)}
+            }
+            else {
+                // TODO: error handling
+                fatalError("Default Image for the default event was not on the disk!")
+            }
+            
+            
+        }
+        
         // Setup split view controller.
         let splitViewController = window!.rootViewController as! UISplitViewController
         let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
@@ -45,8 +130,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
+    
+    
+    //
     // MARK: - Split view
+    //
 
     func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController:UIViewController, onto primaryViewController:UIViewController) -> Bool {
         guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }

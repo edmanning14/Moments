@@ -17,9 +17,9 @@ class MasterViewController: UITableViewController {
     //
     
     // Data Model
-    var categories: Results<Categories>!
-    var activeCategories = [EventCategory]() {didSet {addOrRemoveNewCellPrompt()}}
-    let imageHandler = ImageHandler()
+    var specialEvents: Results<SpecialEvent>!
+    var activeCategories = [String]() {didSet {tableView.reloadData()}}
+    var allCategories = [String]() {didSet{updateActiveCategories()}}
 
     // Persistence
     var localPersistentStore: Realm!
@@ -42,10 +42,8 @@ class MasterViewController: UITableViewController {
         
         setupDataModel()
         
-        // Configure navigation controller
-        let editButton = editButtonItem
-        editButton.tintColor = UIColor.orange
-        navigationItem.leftBarButtonItem = editButton
+        let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
+        tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
         addButton.tintColor = UIColor.orange
@@ -77,7 +75,7 @@ class MasterViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
-                let eventToDetail = categories[0].list.filter("title = '\(activeCategories[indexPath.section].title!)'")[0].includedSpecialEvents[indexPath.row]
+                let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = eventToDetail
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
@@ -96,46 +94,24 @@ class MasterViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return activeCategories[section].includedSpecialEvents.count
+        return items(forSection: section).count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
-        cell.eventTitle = activeCategories[indexPath.section].includedSpecialEvents[indexPath.row].title
-        cell.eventDate = activeCategories[indexPath.section].includedSpecialEvents[indexPath.row].date
+        cell.configuration = .tableView
+        cell.eventTitle = items(forSection: indexPath.section)[indexPath.row].title
+        cell.eventTagline = items(forSection: indexPath.section)[indexPath.row].tagline
+        cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
+        if items(forSection: indexPath.section)[indexPath.row].image != nil {
+            cell.eventImage = EventImage(fromEventImageInfo: items(forSection: indexPath.section)[indexPath.row].image!)
+        }
         return cell
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 170.0
     }
-    
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
-        return .none
-    }
-    
-    override func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-    
-    /*override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            do {
-                let categoryToSearch = categories[0].list.filter("title = '\(activeCategories[indexPath.section].title!)'")[0]
-                try localPersistentStore.write {
-                    localPersistentStore.delete(categoryToSearch.includedSpecialEvents[indexPath.row])
-                }
-            }
-            catch {
-                // TODO: - Add some error handling
-                fatalError("Error deleting entry from database: \(error.localizedDescription)")
-            }
-        }
-    }*/
     
     
     //
@@ -157,44 +133,34 @@ class MasterViewController: UITableViewController {
         do {
             try localPersistentStore = Realm(configuration: realmConfig)
             
-            // If the realm is empty (first app load) enter in default categories.
-            if localPersistentStore.isEmpty {
-                let newDataModel = Categories()
-                newDataModel.list.append(objectsIn:
-                    [
-                        EventCategory(title: "Favorites", newEvent: nil),
-                        EventCategory(title: "Travel", newEvent: nil),
-                        EventCategory(title: "Business", newEvent: nil),
-                        EventCategory(title: "Pleasure", newEvent: nil),
-                        EventCategory(title: "Birthdays", newEvent: nil),
-                        EventCategory(title: "Wedding", newEvent: nil),
-                        EventCategory(title: "Family", newEvent: nil),
-                        EventCategory(title: "Other", newEvent: nil),
-                        EventCategory(title: "Previous", newEvent: nil)
-                    ]
-                )
-                try! localPersistentStore.write {localPersistentStore.add(newDataModel)}
-            }
-            
             syncRealmWithCloud()
             
-            // Get the data model from the database
-            categories = localPersistentStore!.objects(Categories.self)
-            updateActiveCategories()
+            specialEvents = localPersistentStore!.objects(SpecialEvent.self)
             
-            // Configure image handler
+            if let temp = userDefaultsContainer?.value(forKey: "Categories") as? [String] {allCategories = temp}
+            else { // Perform initial app load setup
+                if userDefaultsContainer != nil {
+                    userDefaultsContainer!.set(["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other"], forKey: "Categories")
+                }
+                else {
+                    // TODO: Error Handling
+                    fatalError("Unable to get the categories from the user defaults container.")
+                }
+            }
             
+            addOrRemoveNewCellPrompt()
             
             // Setup notification token for database changes
-            localPersistentStoreNotificationsToken = categories._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
+            localPersistentStoreNotificationsToken = specialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
                 guard let tableView = weakSelf?.tableView else {return}
                 if !weakSelf!.isUserChange {
                     switch changes {
                     case .error(let error):
                         fatalError("Error with Realm notifications: \(error.localizedDescription)")
                     default:
-                        weakSelf!.updateActiveCategories()
+                        weakSelf?.updateActiveCategories()
                         tableView.reloadData()
+                        weakSelf?.addOrRemoveNewCellPrompt()
                     }
                 }
                 else {weakSelf!.isUserChange = false}
@@ -203,19 +169,19 @@ class MasterViewController: UITableViewController {
         catch {
             // TODO: - Add a popup to user saying an error fetching timer data occured, please help the developer by submitting crash data.
             let realmCreationError = error as NSError
-            print("Unable to create local persistent store! Error: \(realmCreationError), \(realmCreationError.localizedDescription)")
+            fatalError("Unable to create local persistent store! Error: \(realmCreationError), \(realmCreationError.localizedDescription)")
         }
     }
     
     // Function to update the active categories when changes to the data model occur.
     fileprivate func updateActiveCategories() -> Void {
-        var arrayToReturn = [EventCategory]()
-        for category in categories[0].list {
-            if !category.includedSpecialEvents.isEmpty {
+        var arrayToReturn = [String]()
+        for event in specialEvents {if !arrayToReturn.contains(event.category) {arrayToReturn.append(event.category)}}
+        for category in allCategories {
+            if let i = arrayToReturn.index(of: category) {
+                arrayToReturn.remove(at: i)
                 arrayToReturn.append(category)
-                print(category.title! + " has " + String(category.includedSpecialEvents.count) + " special events")
             }
-            else {print(category.title! + " has no special events!")}
         }
         activeCategories = arrayToReturn
     }
@@ -224,11 +190,12 @@ class MasterViewController: UITableViewController {
     @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
     
     fileprivate func addOrRemoveNewCellPrompt() -> Void {
-        if activeCategories.isEmpty {
+        // TODO: Make this a soft and comfortable glyph instead of harsh text.
+        if specialEvents.isEmpty {
             let addNewCellPrompt = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: 300.0))
             addNewCellPrompt.text = "Tap the '+' in the upper right to create a new event!"
             addNewCellPrompt.textColor = UIColor.white
-            addNewCellPrompt.font = UIFont(name: "FiraSans-Light", size: 18.0)
+            addNewCellPrompt.font = UIFont(name: "FiraSans-Light", size: 16.0)
             addNewCellPrompt.numberOfLines = 0
             addNewCellPrompt.lineBreakMode = .byClipping
             addNewCellPrompt.textAlignment = .center
@@ -237,8 +204,8 @@ class MasterViewController: UITableViewController {
         else {self.tableView.backgroundView = nil}
     }
     
-    fileprivate func configureCell(atIndexPath indexPath: IndexPath) -> Void {
-        
+    fileprivate func items(forSection section: Int) -> Results<SpecialEvent> {
+        return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date")
     }
     
 }

@@ -21,7 +21,7 @@ class DetailViewController: UIViewController {
     func configureView() {
         if let detail = detailItem {
             if let label = detailDescriptionLabel {
-                label.text = detail.title ?? "No Title"
+                label.text = detail.title
             }
         }
     }

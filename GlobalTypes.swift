@@ -10,16 +10,16 @@ import Foundation
 import UIKit
 import CloudKit
 
-public struct EventDate {
+/*public struct EventDate {
     
     var date: Date
     var dateOnly: Bool
     
     init() {date = Date(); dateOnly = true}
     init(date aDate: Date, dateOnly aDateOnly: Bool) {date = aDate; dateOnly = aDateOnly}
-}
+}*/
 
-open class EventImage {
+/* open class EventImage {
     let title: String
     let uiImage: UIImage
     var cgImage: CGImage? {return uiImage.cgImage}
@@ -65,4 +65,4 @@ open class EventImage {
             associatedTraceImage: nil,
             isTraceImage: true)
     }
-}
+} */

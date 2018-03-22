@@ -33,23 +33,23 @@ class ButtonsView: UIView {
         if let button = subview as? NewEventInputsControl {
             if button.buttonRepresentsRequiredData {
                 requiredDataButtons.append(button)
-                if !requiredLabelInitialized {
+                /*if !requiredLabelInitialized {
                     addSubview(requiredLabel)
                     requiredLabel.text = "Required"
                     configure(label: requiredLabel)
                     requiredLabel.textColor = UIColor(displayP3Red: 0.8, green: 0.4, blue: 0.0, alpha: 1.0)
                     requiredLabelInitialized = true
-                }
+                }*/
             }
             else {
                 otherButtons.append(button)
-                if !optionalLabelInitialized {
+                /*if !optionalLabelInitialized {
                     addSubview(optionalLabel)
                     optionalLabel.text = "Optional"
                     configure(label: optionalLabel)
                     optionalLabel.textColor = UIColor.lightGray
                     optionalLabelInitialized = true
-                }
+                }*/
             }
         }
     }
@@ -86,7 +86,7 @@ class ButtonsView: UIView {
             path.move(to: separatorStartPoint)
             path.addLine(to: separatorEndPoint)
             path.lineWidth = 1.0
-            UIColor(displayP3Red: 255.0, green: 255.0, blue: 255.0, alpha: 100.0).setStroke()
+            UIColor(displayP3Red: 1.0, green: 1.0, blue: 1.0, alpha: 100.0/255.0).setStroke()
             path.stroke()
             
             // Locate labels
