@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreGraphics
+import Foundation
 
 class EventTableViewCell: UITableViewCell {
     
@@ -63,24 +64,24 @@ class EventTableViewCell: UITableViewCell {
             if !shadowsInitialized {initializeShadows()}
             if eventDate != nil {
                 if eventDate!.dateOnly {
-                    updateShadow(for: abridgedTimerContainerView)
                     if abridgedTimerContainerView.isHidden {
                         show(view: abridgedTimerContainerView)
                         if !timerContainerView.isHidden {hide(view: timerContainerView)}
                         if timerWaveEffectView != nil {hide(view: timerWaveEffectView!)}
                         if timerLabelsWaveEffectView != nil {hide(view: timerLabelsWaveEffectView!)}
                     }
+                    updateShadow(for: abridgedTimerContainerView)
                 }
                 else {
-                    updateShadow(for: timerContainerView)
                     if timerContainerView.isHidden {
                         show(view: timerContainerView)
                         if !abridgedTimerContainerView.isHidden {hide(view: abridgedTimerContainerView)}
                         if timerWaveEffectView != nil {hide(view: timerWaveEffectView!)}
                         if timerLabelsWaveEffectView != nil {hide(view: timerLabelsWaveEffectView!)}
                     }
+                    updateShadow(for: timerContainerView)
                 }
-                Update()
+                update()
             }
             else {
                 if !timerContainerView.isHidden {hide(view: timerContainerView)}
@@ -90,6 +91,8 @@ class EventTableViewCell: UITableViewCell {
             }
         }
     }
+    
+    var creationDate: Date? {didSet {updateMask()}}
     
     var eventImage: EventImage? {
         didSet {
@@ -103,12 +106,15 @@ class EventTableViewCell: UITableViewCell {
                     if mainImageView == nil {
                         switch configuration {
                         case .imagePreviewControllerCell, .newEventsController, .tableView:
-                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, displayMode: .cell)
+                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, locationForCellView: eventImage!.locationForCellView, displayMode: .cell)
                         case .imagePreviewControllerDetail, .detailView:
-                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, displayMode: .detail)
+                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, locationForCellView: eventImage!.locationForCellView, displayMode: .detail)
                         }
                     }
-                    else {mainImageView!.image = eventImage!.mainImage!.cgImage!}
+                    else {
+                        mainImageView!.image = eventImage!.mainImage!.cgImage!
+                        mainImageView!.locationForCellView = eventImage!.locationForCellView
+                    }
                     mainImageView!.translatesAutoresizingMaskIntoConstraints = false
                     insertSubview(mainImageView!, at: 0)
                     topAnchor.constraint(equalTo: mainImageView!.topAnchor).isActive = true
@@ -117,9 +123,8 @@ class EventTableViewCell: UITableViewCell {
                     leftAnchor.constraint(equalTo: mainImageView!.leftAnchor).isActive = true
                     
                     if eventImage?.maskImage?.cgImage != nil && useGradient {
-                        let percentMaskCoverage: CGFloat = 0.8
                         if gradientView == nil {
-                            gradientView = GradientMaskView(frame: self.bounds, percentMaskCoverage: percentMaskCoverage)
+                            gradientView = GradientMaskView(frame: self.bounds)
                             gradientView!.translatesAutoresizingMaskIntoConstraints = false
                             mainImageView!.addSubview(gradientView!)
                             gradientView!.backgroundColor = UIColor.clear
@@ -130,7 +135,7 @@ class EventTableViewCell: UITableViewCell {
                         }
                         
                         if maskImageView == nil {
-                            maskImageView = CountdownMaskImageView(frame: self.bounds, image: eventImage!.maskImage!.cgImage!, percentMaskCoverage: percentMaskCoverage)
+                            maskImageView = CountdownMaskImageView(frame: self.bounds, image: eventImage!.maskImage!.cgImage!, locationForCellView: eventImage!.locationForCellView)
                             maskImageView!.translatesAutoresizingMaskIntoConstraints = false
                             gradientView!.addSubview(maskImageView!)
                             maskImageView!.backgroundColor = UIColor.clear
@@ -139,7 +144,10 @@ class EventTableViewCell: UITableViewCell {
                             gradientView!.bottomAnchor.constraint(equalTo: maskImageView!.bottomAnchor).isActive = true
                             gradientView!.leftAnchor.constraint(equalTo: maskImageView!.leftAnchor).isActive = true
                         }
-                        else {maskImageView!.image = eventImage!.maskImage!.cgImage!}
+                        else {
+                            maskImageView!.image = eventImage!.maskImage!.cgImage!
+                            maskImageView!.locationForCellView = eventImage!.locationForCellView
+                        }
                     }
                     else {gradientView = nil; maskImageView = nil}
                 }
@@ -150,7 +158,40 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: States
     enum Configurations {case tableView, detailView, newEventsController, imagePreviewControllerCell, imagePreviewControllerDetail}
+    enum TimerStates: Int {case weeks = 0, days, hours, minutes, seconds}
+    
     var configuration: Configurations = .tableView {didSet {if configuration != oldValue {configureView()}}}
+    
+    var currentTimerState = TimerStates.weeks {
+        didSet {
+            if !isPastEvent {
+                if currentTimerState.rawValue > oldValue.rawValue {
+                    switch currentTimerState.rawValue {
+                    case 0: break // Should never happen
+                    case 1: weeksLabel.isHidden = true
+                    case 2: daysLabel.isHidden = true
+                    case 3: hoursLabel.isHidden = true
+                    case 4: minutesLabel.isHidden = true
+                    default: break // Should never happen
+                    }
+                }
+            }
+            else {
+                if currentTimerState.rawValue < oldValue.rawValue {
+                    switch currentTimerState.rawValue {
+                    case 0: weeksLabel.isHidden = false
+                    case 1: daysLabel.isHidden = false
+                    case 2: hoursLabel.isHidden = false
+                    case 3: minutesLabel.isHidden = false
+                    case 4: break // Should never happen
+                    default: break // Should never happen
+                    }
+                }
+            }
+        }
+    }
+    
+    var oldPercentCompletion = 0
     
     
     //
@@ -214,52 +255,73 @@ class EventTableViewCell: UITableViewCell {
     //
     
     // Function to update the displayed event times and masks.
-    internal func Update() {
-        if let timeInterval = eventDate?.date.timeIntervalSince(Date()) {
-             
-            if timeInterval > 0.0 {isPastEvent = false} else {
-                isPastEvent = true
-                eventDate = EventDate(date: eventDate!.date, dateOnly: true)
-            }
-            
-            func formatNumber(number: Double) -> String {
-                let intNumber = Int(number)
-                if intNumber < 10 {return "0" + String(intNumber)}
-                else {return String(intNumber)}
-            }
-            
-            if eventDate!.dateOnly {
-                let weeks = (timeInterval/604800.0).rounded(.down)
-                let remainder = timeInterval - (weeks * 604800.0)
-                let days = (remainder/86400.0).rounded(.down)
-                
-                abridgedWeeksLabel.text = formatNumber(number: weeks)
-                abridgedDaysLabel.text = formatNumber(number: days)
-            }
-            else {
-                let weeks = (timeInterval/604800.0).rounded(.down)
-                var remainder = timeInterval - (weeks * 604800.0)
-                let days = (remainder/86400.0).rounded(.down)
-                remainder -= days * 86400.0
-                let hours = (remainder/3600.0).rounded(.down)
-                remainder -= hours * 3600.0
-                let minutes = (remainder/60.0).rounded(.down)
-                remainder -= minutes * 60.0
-                let seconds = remainder.rounded(.down)
-                
-                weeksLabel.text = formatNumber(number: weeks)
-                daysLabel.text = formatNumber(number: days)
-                hoursLabel.text = formatNumber(number: hours)
-                minutesLabel.text = formatNumber(number: minutes)
-                secondsLabel.text = formatNumber(number: seconds)
-            }
+    internal func update() {
+        
+        let now = Date()
+        var timeInterval = eventDate!.date.timeIntervalSince(now)
+        if timeInterval < 0.0 {
+            isPastEvent = true
+            timeInterval = now.timeIntervalSince(eventDate!.date)
         }
+        
+        func format(label: UILabel, withNumber number: Double) {
+            let intNumber = Int(number)
+            if intNumber < 10 {label.text = "0" + String(intNumber)}
+            else {label.text = String(intNumber)}
+        }
+        
+        if eventDate!.dateOnly {
+            let weeks = (timeInterval/604800.0).rounded(.down)
+            let remainder = timeInterval - (weeks * 604800.0)
+            let days = (remainder/86400.0).rounded(.down)
+            
+            format(label: abridgedWeeksLabel, withNumber: weeks)
+            format(label: abridgedDaysLabel, withNumber: days)
+        }
+        else {
+            let weeks = (timeInterval/604800.0).rounded(.down)
+            if !isPastEvent {if weeks == 0 {currentTimerState = .days}} else {if weeks != 0 {currentTimerState = .weeks}}
+            
+            var remainder = timeInterval - (weeks * 604800.0)
+            let days = (remainder/86400.0).rounded(.down)
+            if !isPastEvent {if days == 0 {currentTimerState = .hours}} else {if days != 0 {currentTimerState = .days}}
+            
+            remainder -= days * 86400.0
+            let hours = (remainder/3600.0).rounded(.down)
+            if !isPastEvent {if hours == 0 {currentTimerState = .minutes}} else {if hours != 0 {currentTimerState = .hours}}
+            
+            remainder -= hours * 3600.0
+            let minutes = (remainder/60.0).rounded(.down)
+            if !isPastEvent {if minutes == 0 {currentTimerState = .seconds}} else {if minutes != 0 {currentTimerState = .minutes}}
+            
+            remainder -= minutes * 60.0
+            let seconds = remainder.rounded(.down)
+            
+            format(label: weeksLabel, withNumber: weeks)
+            format(label: daysLabel, withNumber: days)
+            format(label: hoursLabel, withNumber: hours)
+            format(label: minutesLabel, withNumber: minutes)
+            format(label: secondsLabel, withNumber: seconds)
+        }
+        
+        updateMask()
     }
     
     
     //
     // MARK: - Helper Functions
     //
+    
+    fileprivate func updateMask() {
+        if creationDate != nil {
+            let percentCompletion = CGFloat(Date().timeIntervalSince(creationDate!) / eventDate!.date.timeIntervalSince(creationDate!))
+            if Int(percentCompletion) != oldPercentCompletion {
+                gradientView?.percentMaskCoverage = 1 / percentCompletion
+                maskImageView?.percentMaskCoverage = 1 / percentCompletion
+                oldPercentCompletion = Int(percentCompletion)
+            }
+        }
+    }
     
     fileprivate func configureView() {
         switch configuration {
@@ -350,7 +412,9 @@ class EventTableViewCell: UITableViewCell {
     }
     
     func updateShadow(for view: UIView) {
-        view.layer.shadowPath = UIBezierPath(roundedRect: view.bounds, cornerRadius: 3.0).cgPath
+        if !view.isHidden {
+            view.layer.shadowPath = UIBezierPath(roundedRect: view.bounds, cornerRadius: 3.0).cgPath
+        }
     }
     
     fileprivate func hide(view: UIView) {view.isHidden = true; view.isUserInteractionEnabled = false}

@@ -16,10 +16,30 @@ class MasterViewController: UITableViewController {
     // MARK: - Properties
     //
     
+    // Typealiases
+    typealias ActiveCategory = String
+    
+    //
+    // Types
+    enum EventSortMethods {
+        case chronologicalNewestFirst, chronologicalOldestFirst
+        
+        var sortPredicate: (SpecialEvent, SpecialEvent) -> Bool {
+            switch self {
+            case .chronologicalNewestFirst:
+                return {$0.date!.date < $1.date!.date}
+            case .chronologicalOldestFirst:
+                return {$0.date!.date > $1.date!.date}
+            }
+        }
+    }
+    
     // Data Model
     var specialEvents: Results<SpecialEvent>!
-    var activeCategories = [String]() {didSet {tableView.reloadData()}}
-    var allCategories = [String]() {didSet{updateActiveCategories()}}
+    var activeCategories = [String]()
+    var allCategories = [String]()
+    var eventSortMethod = EventSortMethods.chronologicalNewestFirst
+    var lastIndexPath = IndexPath(row: 0, section: 0)
 
     // Persistence
     var localPersistentStore: Realm!
@@ -29,18 +49,32 @@ class MasterViewController: UITableViewController {
     //References and Outlets
     var detailViewController: DetailViewController? = nil
     
-    // Other
+    //
+    // Constants
+    fileprivate struct SegueIdentifiers {
+        static let showDetail = "ShowDetail"
+        static let addNewEventSegue = "Add New Event Segue"
+    }
+    
+    // Flags
     var isUserChange = false
+    
+    // Timers
+    var eventTimer: Timer?
     
     
     //
     // MARK: - View Controller Lifecycle
     //
     
+    fileprivate func extractedFunc() {
+        setupDataModel()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupDataModel()
+        extractedFunc()
         
         let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
@@ -49,7 +83,13 @@ class MasterViewController: UITableViewController {
         addButton.tintColor = UIColor.orange
         navigationItem.rightBarButtonItem = addButton
         
+        let editButton = editButtonItem
+        editButton.tintColor = UIColor.orange
+        navigationItem.leftBarButtonItem = editButton
+        
         tableView.tableFooterView = UIView() // To get rid of extra row separators
+        tableView.rowHeight = 170.0
+        tableView.sectionHeaderHeight = 45.0
         
         // Reference to detail view controller
         if let split = splitViewController {
@@ -59,13 +99,25 @@ class MasterViewController: UITableViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        if !specialEvents.isEmpty && eventTimer == nil {
+            eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
+        }
+        
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        eventTimer?.invalidate()
+        eventTimer = nil
+    }
+    
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
     
-    deinit {localPersistentStoreNotificationsToken?.invalidate()}
+    deinit {
+        localPersistentStoreNotificationsToken?.invalidate()
+        eventTimer?.invalidate()
+    }
     
     
     //
@@ -73,7 +125,8 @@ class MasterViewController: UITableViewController {
     //
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showDetail" {
+        switch segue.identifier! {
+        case SegueIdentifiers.showDetail:
             if let indexPath = tableView.indexPathForSelectedRow {
                 let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
@@ -81,6 +134,13 @@ class MasterViewController: UITableViewController {
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
+        case SegueIdentifiers.addNewEventSegue:
+            if let cell = sender as? EventTableViewCell {
+                let navController = segue.destination as! UINavigationController
+                let dest = navController.viewControllers[0] as! NewEventViewController
+                dest.selectedImage = cell.eventImage
+            }
+        default: break
         }
     }
     
@@ -89,12 +149,27 @@ class MasterViewController: UITableViewController {
     // MARK: - Table View Functions
     //
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return activeCategories.count
-    }
+    override func numberOfSections(in tableView: UITableView) -> Int {return activeCategories.count}
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items(forSection: section).count
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = UIColor.black.withAlphaComponent(0.75)
+        
+        let headerLabel = UILabel(frame: CGRect(x: 5.0, y: 5.0, width: 100.0, height: 100.0))
+        headerLabel.backgroundColor = UIColor.clear
+        headerLabel.textColor = UIColor.white
+        headerLabel.font = UIFont(name: "FiraSans-Light", size: 30.0)
+        headerLabel.text = activeCategories[section]
+        headerLabel.textAlignment = .left
+        
+        headerView.addSubview(headerLabel)
+        headerLabel.sizeToFit()
+        
+        return headerView
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -103,14 +178,47 @@ class MasterViewController: UITableViewController {
         cell.eventTitle = items(forSection: indexPath.section)[indexPath.row].title
         cell.eventTagline = items(forSection: indexPath.section)[indexPath.row].tagline
         cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
+        cell.creationDate = items(forSection: indexPath.section)[indexPath.row].creationDate
         if items(forSection: indexPath.section)[indexPath.row].image != nil {
             cell.eventImage = EventImage(fromEventImageInfo: items(forSection: indexPath.section)[indexPath.row].image!)
+        }
+        
+        if indexPath == lastIndexPath {
+            if eventTimer == nil {
+                eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
+            }
         }
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    /*override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 170.0
+    }*/
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
+        return false
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            try! localPersistentStore.write {
+                localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
+            }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)!
+        if tableView.isEditing {
+            performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
+        }
+        else {
+            splitViewController?.showDetailViewController(detailViewController!, sender: cell)
+        }
     }
     
     
@@ -120,8 +228,16 @@ class MasterViewController: UITableViewController {
     
     
     //
-    // MARK: - Helper Methods
+    // MARK: - Private Methods
     //
+    
+    //
+    // MARK: Target-action methods
+    @objc fileprivate func timerBlock(timerFireMethod: Timer) {
+        for cell in tableView.visibleCells {
+            if let eventCell = cell as? EventTableViewCell {eventCell.update()}
+        }
+    }
     
     // Function to check cloud for updates on startup.
     fileprivate func syncRealmWithCloud () -> Void {
@@ -131,16 +247,11 @@ class MasterViewController: UITableViewController {
     // Function to setup data model on startup.
     fileprivate func setupDataModel() -> Void {
         do {
-            try localPersistentStore = Realm(configuration: realmConfig)
-            
-            syncRealmWithCloud()
-            
-            specialEvents = localPersistentStore!.objects(SpecialEvent.self)
             
             if let temp = userDefaultsContainer?.value(forKey: "Categories") as? [String] {allCategories = temp}
             else { // Perform initial app load setup
                 if userDefaultsContainer != nil {
-                    userDefaultsContainer!.set(["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other"], forKey: "Categories")
+                    userDefaultsContainer!.set(["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"], forKey: "Categories")
                 }
                 else {
                     // TODO: Error Handling
@@ -148,19 +259,29 @@ class MasterViewController: UITableViewController {
                 }
             }
             
+            try localPersistentStore = Realm(configuration: realmConfig)
+            syncRealmWithCloud()
+            
+            specialEvents = localPersistentStore!.objects(SpecialEvent.self)
+            updateActiveCategories()
+            tableView.reloadData()
+            
             addOrRemoveNewCellPrompt()
             
             // Setup notification token for database changes
             localPersistentStoreNotificationsToken = specialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
-                guard let tableView = weakSelf?.tableView else {return}
                 if !weakSelf!.isUserChange {
                     switch changes {
                     case .error(let error):
                         fatalError("Error with Realm notifications: \(error.localizedDescription)")
-                    default:
-                        weakSelf?.updateActiveCategories()
-                        tableView.reloadData()
-                        weakSelf?.addOrRemoveNewCellPrompt()
+                    case .initial: break
+                    case .update(_, _, _, _):
+                        DispatchQueue.main.async { [weak weakSelf = self] in
+                            if weakSelf != nil {
+                                weakSelf!.updateActiveCategories()
+                                weakSelf!.tableView.reloadData()
+                            }
+                        }
                     }
                 }
                 else {weakSelf!.isUserChange = false}
@@ -174,16 +295,30 @@ class MasterViewController: UITableViewController {
     }
     
     // Function to update the active categories when changes to the data model occur.
-    fileprivate func updateActiveCategories() -> Void {
-        var arrayToReturn = [String]()
-        for event in specialEvents {if !arrayToReturn.contains(event.category) {arrayToReturn.append(event.category)}}
+    fileprivate func updateActiveCategories() {
+        activeCategories.removeAll()
+        for event in specialEvents {
+            if !activeCategories.contains(event.category) {activeCategories.append(event.category)}
+        }
+        
+        if !activeCategories.isEmpty {
+            orderActiveCategories()
+            
+            let lastSection = activeCategories.count - 1
+            let lastRow = items(forSection: lastSection).count - 1
+            lastIndexPath = IndexPath(row: lastRow, section: lastSection)
+        }
+        else {eventTimer = nil}
+    }
+    
+    fileprivate func orderActiveCategories() {
+        let unorderedCategories = activeCategories
+        activeCategories.removeAll()
         for category in allCategories {
-            if let i = arrayToReturn.index(of: category) {
-                arrayToReturn.remove(at: i)
-                arrayToReturn.append(category)
+            if unorderedCategories.contains(category) {
+                activeCategories.append(category)
             }
         }
-        activeCategories = arrayToReturn
     }
     
     // Function to add a new event from the events page.
@@ -205,9 +340,13 @@ class MasterViewController: UITableViewController {
     }
     
     fileprivate func items(forSection section: Int) -> Results<SpecialEvent> {
-        return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date")
+        switch eventSortMethod {
+        case .chronologicalNewestFirst:
+            return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: true)
+        case .chronologicalOldestFirst:
+            return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: false)
+        }
     }
-    
 }
 
 

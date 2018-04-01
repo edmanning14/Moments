@@ -51,6 +51,8 @@ class EventImageInfo: Object {
     @objc dynamic var fileRootName = ""
     @objc dynamic var category = ""
     @objc dynamic var isAppImage = true
+    @objc dynamic var recordName: String? = nil
+    @objc dynamic var locationForCellView = 50
     @objc dynamic var hasMask = true
     
     // Initializers
@@ -61,13 +63,26 @@ class EventImageInfo: Object {
         self.category = category
     }
     
-    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String, isAppImage: Bool, hasMask: Bool) {
+    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String, isAppImage: Bool, recordName: String?, locationForCellView: Int, hasMask: Bool) {
         self.init()
         self.title = aTitle
         self.fileRootName = fileRootName
         self.category = category
         self.isAppImage = isAppImage
+        self.recordName = recordName
+        self.locationForCellView = locationForCellView
         self.hasMask = hasMask
+    }
+    
+    convenience init(fromEventImage image: EventImage) {
+        self.init()
+        self.title = image.title
+        self.fileRootName = image.fileRootName
+        self.category = image.category
+        self.isAppImage = image.isAppImage
+        self.recordName = image.recordName
+        self.locationForCellView = Int(image.locationForCellView * 100.0)
+        self.hasMask = {if image.maskImage != nil {return true} else {return false}}()
     }
     
     override static func primaryKey() -> String? {return "title"}
@@ -78,6 +93,7 @@ class SpecialEvent: Object {
     // Stored Properties
     @objc dynamic var title = ""
     @objc dynamic var tagline: String?
+    @objc dynamic var creationDate = Date()
     @objc dynamic var date: EventDate?
     @objc dynamic var category = ""
     @objc dynamic var image: EventImageInfo?
@@ -91,5 +107,5 @@ class SpecialEvent: Object {
         self.image = image
     }
     
-        override static func primaryKey() -> String? {return "title"}
+    override static func primaryKey() -> String? {return "title"}
 }

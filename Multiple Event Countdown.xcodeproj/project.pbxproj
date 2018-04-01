@@ -38,7 +38,6 @@
 		6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */; };
 		6477FB122016F8C100EDFF50 /* LabelBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */; };
 		6487089D20515288007FFC1A /* SoftBackgroundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6487089C20515288007FFC1A /* SoftBackgroundButton.swift */; };
-		6487089F20591C01007FFC1A /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6487089E20591C01007FFC1A /* ImageManager.swift */; };
 		64B1D9942022B8930034FE21 /* Raleway-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */; };
 		64B1D9952022B8930034FE21 /* Raleway-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9832022B88E0034FE21 /* Raleway-ExtraBold.ttf */; };
 		64B1D9962022B8930034FE21 /* Raleway-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9842022B88E0034FE21 /* Raleway-Bold.ttf */; };
@@ -119,7 +118,6 @@
 		6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CGSizeExtensions.swift; path = Extensions/CGSizeExtensions.swift; sourceTree = SOURCE_ROOT; };
 		6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelBackgroundView.swift; sourceTree = "<group>"; };
 		6487089C20515288007FFC1A /* SoftBackgroundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftBackgroundButton.swift; sourceTree = "<group>"; };
-		6487089E20591C01007FFC1A /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-BoldItalic.ttf"; sourceTree = "<group>"; };
 		64B1D9832022B88E0034FE21 /* Raleway-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-ExtraBold.ttf"; sourceTree = "<group>"; };
 		64B1D9842022B88E0034FE21 /* Raleway-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-Bold.ttf"; sourceTree = "<group>"; };
@@ -307,7 +305,6 @@
 		6477FB102016F89000EDFF50 /* Custom Classes */ = {
 			isa = PBXGroup;
 			children = (
-				6487089E20591C01007FFC1A /* ImageManager.swift */,
 				6487089C20515288007FFC1A /* SoftBackgroundButton.swift */,
 				64691C1D201EC2FD00ADA4C3 /* WaveEffectView.swift */,
 				6477FB132016F8CD00EDFF50 /* Pill Background Button */,
@@ -625,7 +622,6 @@
 				645A8A9F20294FD200E5934D /* ImageClasses.swift in Sources */,
 				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,
 				6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */,
-				6487089F20591C01007FFC1A /* ImageManager.swift in Sources */,
 				6487089D20515288007FFC1A /* SoftBackgroundButton.swift in Sources */,
 				644BBAB6204BC67B00CF0C29 /* CountdownMaskImageView.swift in Sources */,
 				6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */,

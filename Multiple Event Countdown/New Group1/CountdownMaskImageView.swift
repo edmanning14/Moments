@@ -11,13 +11,14 @@ import UIKit
 class CountdownMaskImageView: UIView {
 
     var image: CGImage! {didSet{setNeedsDisplay()}}
+    var locationForCellView: CGFloat!
     var percentMaskCoverage: CGFloat = 1.0
     fileprivate let sizeOfGradientArea: CGFloat = 0.15
     
-    convenience init(frame: CGRect, image: CGImage, percentMaskCoverage: CGFloat) {
+    convenience init(frame: CGRect, image: CGImage, locationForCellView: CGFloat) {
         self.init(frame: frame)
         self.image = image
-        self.percentMaskCoverage = percentMaskCoverage
+        self.locationForCellView = locationForCellView
     }
     
     override func draw(_ rect: CGRect) {
@@ -28,7 +29,7 @@ class CountdownMaskImageView: UIView {
         let croppingRectHeight = Int(CGFloat(image.width) / contextAR)
         let croppingRectSize = CGSize(width: image.width, height: croppingRectHeight)
         
-        let croppingRectY = CGFloat(image.height / 2) - (croppingRectSize.height / 2)
+        let croppingRectY = (CGFloat(image.height) * locationForCellView) - (croppingRectSize.height / 2)
         let croppingRectOrigin = CGPoint(x: 0.0, y: croppingRectY)
         
         let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)

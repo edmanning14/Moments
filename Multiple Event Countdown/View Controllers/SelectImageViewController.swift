@@ -232,13 +232,10 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             if !catalogImages.contains(where: {$0.title == selectedImage!.title}) {
                 catalogImages.append(selectedImage!)
             }
-            selectedImageIndexPath = IndexPath(row: catalogImages.count - 1, section: 0)
+            let i = catalogImages.index(where: {$0.title == selectedImage!.title})!
+            selectedImageIndexPath = IndexPath(row: i, section: 0)
             imagesCollectionView.selectItem(at: selectedImageIndexPath, animated: true, scrollPosition: .top)
         }
-        
-        /*initializeRealm()
-        fetchLocalImages()
-        fetchProductIDs()*/
     }
     
     override func viewWillAppear(_ animated: Bool) {UIApplication.shared.statusBarStyle = .default}
@@ -371,34 +368,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         }
     }
     
-
-    //
-    // MARK: - Delegate Methods
-    //
-    
-    //
-    // Store Kit
-    
-    /*func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-        if request == productRequest! {
-            for id in response.invalidProductIdentifiers {
-                for productID in productIDs {
-                    if productID.id == id {productIDs.remove(productID); break}
-                }
-            }
-            var recordsToFetch = [CKRecordID]()
-            for product in productIDs {
-                for record in product.includedRecords {
-                    if !recordsToFetch.contains(record) {recordsToFetch.append(record)}
-                }
-            }
-            for (i, record) in recordsToFetch.enumerated() {
-                if catalogImages.contains(where: {$0.recordID == record}) {recordsToFetch.remove(at: i)}
-            }
-            fetchCloudImages(records: recordsToFetch, imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
-        }
-    }*/
-    
     //
     // UICollectionViewDelegate
 
@@ -516,198 +485,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     
     //
-    // MARK: - Private Helper Methods
+    // MARK: - Private helper methods
     //
-    
-    /*fileprivate func initializeRealm() {
-        do {try localPersistentStore = Realm(configuration: realmConfig)}
-        catch {
-            // TODO: - Add a popup to user saying an error fetching timer data occured, please help the developer by submitting crash data.
-            let realmCreationError = error as NSError
-            fatalError("Unable to create local persistent store! Error: \(realmCreationError), \(realmCreationError.localizedDescription)")
-        }
-    }
-    
-    fileprivate func fetchLocalImages() {
-        
-        localImageInfo = localPersistentStore.objects(EventImageInfo.self)
-        
-        var imagesToReturn = [EventImage]()
-
-        for imageInfo in localImageInfo {
-            if !catalogImages.contains(where: {$0.title == imageInfo.title}) {
-                if let newEventImage = EventImage(fromEventImageInfo: imageInfo) {imagesToReturn.append(newEventImage)}
-                else {
-                    // TODO: - Error handling
-                    fatalError("Unable to locate \(imageInfo.title)'s thumbnail image on the disk!")
-                }
-            }
-        }
-        catalogImages.append(contentsOf: imagesToReturn)
-    }
-    
-    fileprivate func fetchProductIDs(_ previousNetworkFetchAtempts: Int = 0) {
-        
-        // Get productIdentifiers from cloud
-        let getAllPredicate = NSPredicate(value: true)
-        let productIdsQuerry = CKQuery(recordType: "Product", predicate: getAllPredicate)
-        
-        publicCloudDatabase.perform(productIdsQuerry, inZoneWith: nil) { [weak weakSelf = self] (records, error) in
-            
-            if error != nil {
-                // TODO: Add error handling, retry network errors gracefully.
-                if let nsError = error as NSError? {
-                    os_log("There was an error fetching products from CloudKit", log: OSLog.default, type: .error)
-                    print("Error Code: \(nsError.code)")
-                    print("Error Description: \(nsError.debugDescription)")
-                    print("Error Domain: \(nsError.domain)")
-                    print("Error Recovery Suggestions: \(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")")
-                    
-                    switch nsError.code {
-                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
-                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
-                    // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
-                    case 1, 4, 4097:
-                        if previousNetworkFetchAtempts <= 1 {
-                            weakSelf?.fetchProductIDs(previousNetworkFetchAtempts + 1)
-                            return
-                        }
-                        else {
-                            DispatchQueue.main.async { [weak weakSelf = self] in
-                                weakSelf?.catalogLoadComplete = true
-                                weakSelf?.handleNetworkError(nsError)
-                            }
-                            return
-                        }
-                    default: break
-                    }
-                }
-            }
-            
-            if let returnedRecords = records {
-                var setToReturn = Set<Product>()
-                for record in returnedRecords {
-                    let productId = record.object(forKey: "productIdentifier") as! String
-                    let containedRecords = record.object(forKey: "containedRecords") as! [CKReference]
-                    var recordsArray = [CKRecordID]()
-                    for reference in containedRecords {recordsArray.append(reference.recordID)}
-                    let newProduct = Product(id: productId, includedRecords: recordsArray)
-                    setToReturn.insert(newProduct)
-                }
-                guard !setToReturn.isEmpty else {
-                    print("Check internet connection")
-                    DispatchQueue.main.async { [weak weakSelf = self] in
-                        weakSelf?.catalogLoadComplete = true
-                    }
-                    return
-                }
-                weakSelf?.productIDs = setToReturn
-                weakSelf?.checkStoreProductIds()
-            }
-            else {
-                print("No products for sale!")
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.catalogLoadComplete = true
-                }
-            }
-        }
-    }
-    
-    fileprivate func checkStoreProductIds() {
-        guard !productIDs.isEmpty else {fatalError("products was empty when querry to store was made!")} // TODO: Error handling
-        var setToQuerry = Set<String>()
-        for product in productIDs {setToQuerry.insert(product.id)}
-        productRequest = SKProductsRequest(productIdentifiers: setToQuerry)
-        productRequest!.delegate = self
-        productRequest!.start()
-    }
-    
-    fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: EventImage?, _ error: CloudErrors?) -> Void) {
-        
-        let fetchOperation = CKFetchRecordsOperation(recordIDs: ids)
-        
-        var desiredKeys = [
-            EventImage.CloudKitKeys.EventImageKeys.title,
-            EventImage.CloudKitKeys.EventImageKeys.fileRootName,
-            EventImage.CloudKitKeys.EventImageKeys.category,
-        ]
-        for imageType in imageTypes {
-            desiredKeys.append(contentsOf: [imageType.recordKey, imageType.extensionRecordKey])
-        }
-        fetchOperation.desiredKeys = desiredKeys
-        
-        fetchOperation.fetchRecordsCompletionBlock = { (_records, error) in
-            if let records = _records {
-                if records.isEmpty {completion(nil, .noRecords)}
-                for record in records {
-                    let recordID = record.key
-                    let title = record.value[EventImage.CloudKitKeys.EventImageKeys.title] as! String
-                    let fileRootName = record.value[EventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
-                    let category = record.value[EventImage.CloudKitKeys.EventImageKeys.category] as! String
-                    
-                    var images = [CountdownImage]()
-                    var cloudError: CloudErrors?
-                    for imageType in imageTypes {
-                        let imageAsset = record.value[imageType.recordKey] as! CKAsset
-                        let imageFileExtension = record.value[imageType.extensionRecordKey] as! String
-                        
-                        do {
-                            let imageData = try Data(contentsOf: imageAsset.fileURL)
-                            if let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData) {
-                                images.append(newImage)
-                            }
-                        }
-                        catch {cloudError = .imageCreationFailure; break}
-                    }
-                    
-                    if let newEventImage = EventImage(title: title, fileRootName: fileRootName, category: category, recordID: recordID, images: images), cloudError == nil {
-                        completion(newEventImage, nil)
-                    }
-                    else {completion(nil, cloudError)}
-                }
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.catalogLoadComplete = true
-                    weakSelf?.imagesCollectionView.reloadData()
-                    weakSelf?.imagesCollectionView.selectItem(at: weakSelf?.selectedImageIndexPath, animated: false, scrollPosition: .top)
-                }
-            }
-            else {completion(nil, .noRecords)}
-        }
-        publicCloudDatabase.add(fetchOperation)
-    }
-    
-    fileprivate func thumbnailLoadComplete(_ image: EventImage?, _ error: CloudErrors?) {
-        if image != nil && error == nil {
-            DispatchQueue.main.async { [weak weakSelf = self] in
-                weakSelf?.catalogImages.append(image!)
-            }
-        }
-        else {
-            if error == .noRecords {
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.catalogLoadComplete = true
-                    weakSelf?.imagesCollectionView.reloadData()
-                    weakSelf?.imagesCollectionView.selectItem(at: weakSelf?.selectedImageIndexPath, animated: false, scrollPosition: .top)
-                }
-            }
-            else {
-                // TODO: - Error handling
-                fatalError("There was an error fetching images from the cloud")
-            }
-        }
-    }
-    
-    fileprivate func handleNetworkError(_ error: NSError) {
-        // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
-        // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
-        // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
-        // TODO: add error handling
-        print(error.localizedDescription)
-        print(error.localizedFailureReason ?? "No Failure Reason.")
-        print(error.localizedRecoveryOptions ?? "No Recovery Options.")
-        print(error.localizedRecoverySuggestion ?? "No Recovery Suggestions.")
-        fatalError("See console for error description.")
-    }*/
     
     fileprivate func configure(cell: SelectImageCollectionViewCell) {
         let cellBackgroundView = UIView()

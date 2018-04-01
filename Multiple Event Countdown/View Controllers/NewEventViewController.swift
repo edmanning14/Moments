@@ -23,6 +23,18 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: Data Model
     
+    var specialEvent: SpecialEvent? {
+        didSet {
+            if specialEvent != nil {
+                eventCategory = specialEvent!.category
+                eventTitle = specialEvent!.title
+                eventTagline = specialEvent!.tagline
+                eventDate = specialEvent!.date
+                if specialEvent!.image != nil {selectedImage = EventImage(fromEventImageInfo: specialEvent!.image!)}
+            }
+        }
+    }
+    
     var eventCategory: String? {
         didSet {
             if eventCategory != nil && eventCategory != "" {
@@ -42,12 +54,15 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
+    var eventTitle: String? {didSet {specialEventView?.eventTitle = eventTitle}}
+    var eventTagline: String? {didSet {specialEventView?.eventTagline = eventTagline}}
+    
     var eventDate: EventDate? {
         didSet {
             specialEventView?.eventDate = eventDate
             if eventDate != nil && oldValue == nil {
                 eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak weakSelf = self] (timer) in
-                    weakSelf?.specialEventView.Update()
+                    weakSelf?.specialEventView?.update()
                 }
             }
             else if eventDate == nil && oldValue != nil {
@@ -57,7 +72,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    var selectedImage: EventImage? {didSet{specialEventView.eventImage = selectedImage}}
+    var selectedImage: EventImage? {didSet{specialEventView?.eventImage = selectedImage}}
     
     var cachedImages = [EventImage]() {
         didSet {
@@ -98,10 +113,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
     
     //
-    // UI Elements
+    // MARK: UI Elements
+    
+    @IBOutlet weak var doneButton: UIBarButtonItem!
     
     @IBOutlet weak var specialEventViewContainer: UIView!
-    fileprivate var specialEventView: EventTableViewCell!
+    fileprivate var specialEventView: EventTableViewCell?
     
     @IBOutlet weak var buttonsView: ButtonsView!
     fileprivate var textInputAccessoryView: TextInputAccessoryView?
@@ -180,8 +197,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 
                 if activationTable[currentInputViewState.rawValue][UIElements.firstResponder.rawValue] == true {
                     textInputAccessoryView?.textInputField.becomeFirstResponder()
-                    if currentInputViewState == .title {textInputAccessoryView?.textInputField.text = specialEventView.eventTitle}
-                    else if currentInputViewState == .tagline {textInputAccessoryView?.textInputField.text = specialEventView.eventTagline}
+                    if currentInputViewState == .title {textInputAccessoryView?.textInputField.text = eventTitle}
+                    else if currentInputViewState == .tagline {textInputAccessoryView?.textInputField.text = eventTagline}
                     if textInputAccessoryView != nil {swapStateOf(view: textInputAccessoryView!)}
                 }
                 else {
@@ -338,6 +355,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEventViewContainer.bottomAnchor.constraint(equalTo: specialEventView!.bottomAnchor).isActive = true
                 specialEventViewContainer.leftAnchor.constraint(equalTo: specialEventView!.leftAnchor).isActive = true
                 specialEventView!.configuration = .newEventsController
+                
+                specialEventView!.eventTitle = eventTitle
+                specialEventView!.eventTagline = eventTagline
+                specialEventView!.eventDate = eventDate
+                specialEventView!.eventImage = selectedImage
             }
         }
         setAccessibilityIdentifiers()
@@ -349,7 +371,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         if let categories = userDefaultsContainer?.value(forKey: "Categories") as? [String] {
             for category in categories {
-                if category != "Favorites" || category != "Previous" {selectableCategories.append(category)}
+                if category != "Favorites" || category != "Previous" || category != "Uncategorized" {selectableCategories.append(category)}
             }
         }
         else {
@@ -382,6 +404,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
     
+    deinit {eventTimer?.invalidate()}
+    
     
     //
     // MARK: - Delegate Methods
@@ -404,7 +428,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 }
             }
             for (i, record) in recordsToFetch.enumerated() {
-                if cachedImages.contains(where: {$0.recordID == record}) {recordsToFetch.remove(at: i)}
+                if cachedImages.contains(where: {$0.recordName == record.recordName}) {recordsToFetch.remove(at: i)}
             }
             fetchCloudImages(records: recordsToFetch, imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
         }
@@ -441,12 +465,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if currentInputViewState == .title {
-            if string.isEmpty {specialEventView.eventTitle = specialEventView.eventTitle?.removeCharsFromEnd(numberToRemove: range.length)}
-            else {specialEventView.eventTitle = (textInputAccessoryView?.textInputField.text ?? "") + string}
+            if string.isEmpty {eventTitle = eventTitle?.removeCharsFromEnd(numberToRemove: range.length)}
+            else {eventTitle = (textInputAccessoryView?.textInputField.text ?? "") + string}
         }
         else if currentInputViewState == .tagline {
-            if string.isEmpty {specialEventView.eventTagline = specialEventView.eventTagline?.removeCharsFromEnd(numberToRemove: range.length)}
-            else {specialEventView.eventTagline = (textInputAccessoryView?.textInputField.text ?? "") + string}
+            if string.isEmpty {eventTagline = eventTagline?.removeCharsFromEnd(numberToRemove: range.length)}
+            else {eventTagline = (textInputAccessoryView?.textInputField.text ?? "") + string}
         }
         return true
     }
@@ -509,7 +533,50 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    @objc fileprivate func handleButtonTap(_ sender: UIButton) {
+    @objc fileprivate func handleDoneButtonTap(_ sender: UIButton) {
+        
+        guard eventTitle != nil && eventDate != nil else {
+            // TODO: Throw an alert to user that title and event date are requrired.
+            let alert = UIAlertController(title: "Missing Information", message: "Please populate the event title and date.", preferredStyle: .alert)
+            let action = UIAlertAction(title: "Okay", style: .default) { (action) in
+                self.dismiss(animated: true, completion: nil)
+            }
+            alert.addAction(action)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if editing {
+            
+        }
+        
+        var image: EventImageInfo?
+        if selectedImage != nil {
+            if !selectedImage!.imagesAreSavedToDisk {
+                let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
+                if results.contains(false) {
+                    // TODO: Error Handling
+                    fatalError("Images were unable to be saved to the disk!")
+                }
+            }
+            image = EventImageInfo(fromEventImage: selectedImage!)
+        }
+        
+        let newEvent = SpecialEvent(
+            category: eventCategory ?? "Uncatagorized",
+            title: eventTitle!,
+            tagline: eventTagline,
+            date: eventDate!,
+            image: image
+        )
+        
+        
+        try! localPersistentStore.write {localPersistentStore.add(newEvent, update: true)}
+        
+        navigationController!.navigationController?.popViewController(animated: true)
+    }
+    
+    @objc fileprivate func handleInputButtonTap(_ sender: UIButton) {
         if !sender.isSelected {
             if let id = sender.accessibilityIdentifier {
                 for entry in accessibilityTitlesToStateAssociations {
@@ -569,8 +636,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     @objc fileprivate func dismissKeyboard() {
         switch currentInputViewState {
-        case .title: specialEventView.updateShadow(for: specialEventView.titleLabel)
-        case .tagline: specialEventView.updateShadow(for: specialEventView.taglineLabel)
+        case .title: specialEventView!.updateShadow(for: specialEventView!.titleLabel)
+        case .tagline: specialEventView!.updateShadow(for: specialEventView!.taglineLabel)
         default: break
         }
         textInputAccessoryView?.textInputField.resignFirstResponder()
@@ -627,17 +694,21 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     
     fileprivate func configureButtons() {
+        
+        doneButton.target = self
+        doneButton.action = #selector(handleDoneButtonTap(_:))
+        
         buttonsView.addSubview(categoryButton)
         buttonsView.addSubview(titleButton)
         buttonsView.addSubview(dateButton)
         buttonsView.addSubview(taglineButton)
         buttonsView.addSubview(imageButton)
         
-        categoryButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
-        titleButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
-        dateButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
-        taglineButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
-        imageButton.addTarget(self, action: #selector(handleButtonTap(_:)), for: .touchUpInside)
+        categoryButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
+        titleButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
+        dateButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
+        taglineButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
+        imageButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
     }
     
     fileprivate func configureInputView() -> Void {
@@ -715,18 +786,17 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     print("Error Recovery Suggestions: \(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")")
                     
                     switch nsError.code {
-                        // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
-                        // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+                    // Error code 3: Network Unavailable.
+                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
                     // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
                     case 1, 4, 4097:
-                        if previousNetworkFetchAtempts <= 1 {
-                            weakSelf?.fetchProductIDs(previousNetworkFetchAtempts + 1)
-                            return
-                        }
-                        else {
-                            return
-                        }
-                    default: break
+                        if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchProductIDs(previousNetworkFetchAtempts + 1); return}
+                        else {return}
+                    case 3:
+                        // TODO: Need to tell user to check network connection on select image view controller.
+                        return
+                    default: return
                     }
                 }
             }
@@ -745,7 +815,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 weakSelf?.productIDs = setToReturn
                 weakSelf?.checkStoreProductIds()
             }
-            else {os_log("Nothing for sale!", log: .default, type: .error)}
+            else {os_log("No network error, but found no productID's!", log: .default, type: .error)}
         }
     }
     
@@ -760,6 +830,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: EventImage?, _ error: CloudErrors?) -> Void) {
         
+        guard !ids.isEmpty else {completion(nil, .noRecords); return}
+        
         cloudThumbnailsFetched = false
         
         let fetchOperation = CKFetchRecordsOperation(recordIDs: ids)
@@ -768,6 +840,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             EventImage.CloudKitKeys.EventImageKeys.title,
             EventImage.CloudKitKeys.EventImageKeys.fileRootName,
             EventImage.CloudKitKeys.EventImageKeys.category,
+            EventImage.CloudKitKeys.EventImageKeys.locationForCellView
             ]
         for imageType in imageTypes {
             desiredKeys.append(contentsOf: [imageType.recordKey, imageType.extensionRecordKey])
@@ -782,6 +855,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     let title = record.value[EventImage.CloudKitKeys.EventImageKeys.title] as! String
                     let fileRootName = record.value[EventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
                     let category = record.value[EventImage.CloudKitKeys.EventImageKeys.category] as! String
+                    let locationForCellView = record.value[EventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
                     
                     var images = [CountdownImage]()
                     var cloudError: CloudErrors?
@@ -798,7 +872,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         catch {cloudError = .imageCreationFailure; break}
                     }
                     
-                    if let newEventImage = EventImage(title: title, fileRootName: fileRootName, category: category, recordID: recordID, images: images), cloudError == nil {
+                    if let newEventImage = EventImage(title: title, fileRootName: fileRootName, category: category, isAppImage: true, locationForCellView: locationForCellView, recordName: recordID.recordName, images: images), cloudError == nil {
                         completion(newEventImage, nil)
                     }
                     else {completion(nil, cloudError)}

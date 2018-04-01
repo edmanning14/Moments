@@ -43,6 +43,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                                 fileRootName: imageInfo.fileRootName,
                                 imageCategory: imageInfo.category,
                                 isAppImage: imageInfo.isAppImage,
+                                recordName: nil,
+                                locationForCellView: imageInfo.locationForCellView,
                                 hasMask: imageInfo.hasMask
                             )
                             do {

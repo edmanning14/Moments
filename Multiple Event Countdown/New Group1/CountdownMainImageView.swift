@@ -12,12 +12,14 @@ import CoreGraphics
 class CountdownMainImageView: UIView {
 
     var image: CGImage! {didSet{setNeedsDisplay()}}
+    var locationForCellView: CGFloat!
     enum DisplayModes {case cell, detail}
     var displayMode = DisplayModes.cell
     
-    convenience init(frame: CGRect, image: CGImage, displayMode: DisplayModes) {
+    convenience init(frame: CGRect, image: CGImage, locationForCellView: CGFloat, displayMode: DisplayModes) {
         self.init(frame: frame)
         self.image = image
+        self.locationForCellView = locationForCellView
         self.displayMode = displayMode
     }
     
@@ -40,7 +42,7 @@ class CountdownMainImageView: UIView {
             let croppingRectWidth = Int(CGFloat(imageHeight) / contextAR)
             let croppingRectSize = CGSize(width: croppingRectWidth, height: imageHeight)
             
-            let croppingRectX = CGFloat(imageWidth / 2) - (croppingRectSize.width / 2)
+            let croppingRectX = (CGFloat(imageWidth) * locationForCellView) - (croppingRectSize.width / 2)
             let croppingRectOrigin = CGPoint(x: croppingRectX, y: 0.0)
             
             let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)

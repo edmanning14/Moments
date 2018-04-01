@@ -14,11 +14,6 @@ class GradientMaskView: UIView {
     var percentMaskCoverage: CGFloat = 1.0
     fileprivate let sizeOfGradientArea: CGFloat = 0.15
     
-    convenience init(frame: CGRect, percentMaskCoverage: CGFloat) {
-        self.init(frame: frame)
-        self.percentMaskCoverage = percentMaskCoverage
-    }
-
     override func draw(_ rect: CGRect) {
         let ctx = UIGraphicsGetCurrentContext()!
         

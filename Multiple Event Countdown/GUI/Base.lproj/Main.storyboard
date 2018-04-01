@@ -217,12 +217,14 @@
                     </view>
                     <navigationItem key="navigationItem" title="New Event" id="rXl-U0-HEy">
                         <barButtonItem key="backBarButtonItem" title="Cancel" id="a96-gX-abq"/>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="e43-Sl-Kjb"/>
                     </navigationItem>
                     <connections>
                         <outlet property="buttonsView" destination="QNg-Dd-Gzy" id="VhB-GA-U6j"/>
                         <outlet property="categoryLabel" destination="Sdn-lm-0aG" id="SgA-Zb-pmF"/>
                         <outlet property="categoryPickerView" destination="qOn-cK-Utl" id="rtk-b0-eOO"/>
                         <outlet property="datePickerStackView" destination="YuW-yC-lu6" id="8XR-dQ-i4L"/>
+                        <outlet property="doneButton" destination="e43-Sl-Kjb" id="xNX-yO-ixq"/>
                         <outlet property="eventDateButtonsStackView" destination="ybY-kM-Dj1" id="UdU-Ws-Nzv"/>
                         <outlet property="eventDatePicker" destination="Yps-aP-RAL" id="JwS-Hg-UQN"/>
                         <outlet property="selectImageButton" destination="tKf-OE-k0Z" id="Mv0-KP-Kr6"/>
@@ -452,7 +454,7 @@
         <scene sceneID="smW-Zh-WAh">
             <objects>
                 <tableViewController title="Master" clearsSelectionOnViewWillAppear="NO" id="7bK-jq-Zjz" customClass="MasterViewController" customModule="Multiple_Event_Countdown" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="r7i-6Z-zg0">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelectionDuringEditing="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="r7i-6Z-zg0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -568,6 +570,6 @@
         <image name="ShoppingCart" width="15" height="15"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="Tll-UG-LXB"/>
+        <segue reference="6S0-TO-JiA"/>
     </inferredMetricsTieBreakers>
 </document>
