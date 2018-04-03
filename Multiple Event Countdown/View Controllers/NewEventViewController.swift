@@ -23,17 +23,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: Data Model
     
-    var specialEvent: SpecialEvent? {
-        didSet {
-            if specialEvent != nil {
-                eventCategory = specialEvent!.category
-                eventTitle = specialEvent!.title
-                eventTagline = specialEvent!.tagline
-                eventDate = specialEvent!.date
-                if specialEvent!.image != nil {selectedImage = EventImage(fromEventImageInfo: specialEvent!.image!)}
-            }
-        }
-    }
+    var specialEvent: SpecialEvent?
     
     var eventCategory: String? {
         didSet {
@@ -61,8 +51,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         didSet {
             specialEventView?.eventDate = eventDate
             if eventDate != nil && oldValue == nil {
-                eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak weakSelf = self] (timer) in
-                    weakSelf?.specialEventView?.update()
+                eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
+                    DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
                 }
             }
             else if eventDate == nil && oldValue != nil {
@@ -84,6 +74,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate var selectableCategories = [String]()
     fileprivate var productIDs = Set<Product>()
     fileprivate weak var selectImageController: SelectImageViewController?
+    var editingEvent = false
     
     //
     // Types
@@ -137,7 +128,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     @IBOutlet weak var eventDatePicker: UIDatePicker!
     @IBOutlet weak var eventDateButtonsStackView: UIStackView!
     @IBOutlet weak var setTimeButton: UIButton!
-    var cancelSetTimeButton: UIButton?
+    fileprivate var cancelSetTimeButton: UIButton?
     @IBOutlet weak var selectImageButton: UIButton!
     
     //
@@ -221,6 +212,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 if activationTable[currentInputViewState.rawValue][UIElements.datePicker.rawValue] == true {
                     datePickerStackView.isHidden = false
                     datePickerStackView.isUserInteractionEnabled = true
+                    
                 }
                 else {
                     datePickerStackView.isHidden = true
@@ -260,11 +252,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     override var canBecomeFirstResponder: Bool {return true}
     override var canResignFirstResponder: Bool {return true}
     override var inputAccessoryView: UIView? {return textInputAccessoryView}
-    let dateFormatter = DateFormatter()
-    let timeFormatter = DateFormatter()
-    var calendarDayHolder: Date?
-    var timeHolder: Date?
-    var eventTimer: Timer?
+    fileprivate let dateFormatter = DateFormatter()
+    fileprivate let timeFormatter = DateFormatter()
+    fileprivate var calendarDayHolder: Date?
+    fileprivate var timeHolder: Date?
+    fileprivate var eventTimer: Timer?
     
     //
     // Static Types
@@ -390,16 +382,33 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         buttonToStateAssociations[.tagline] = taglineButton
         buttonToStateAssociations[.image] = imageButton
         
+        if specialEvent != nil {
+            eventCategory = specialEvent!.category
+            eventTitle = specialEvent!.title
+            eventTagline = specialEvent!.tagline
+            eventDate = specialEvent!.date
+            
+            calendarDayHolder = eventDate?.date
+            deconstructDateAndTime()
+            switch eventDatePicker.datePickerMode {
+            case .date: if calendarDayHolder != nil {eventDatePicker.date = calendarDayHolder!}
+            case .time: if timeHolder != nil {eventDatePicker.date = timeHolder!}
+            default:
+                // TODO: Error Handling
+                os_log("DatePicker in NewEventController somehow got in an undefined mode.", log: OSLog.default, type: .error)
+                fatalError()
+            }
+            
+            if specialEvent!.image != nil {selectedImage = EventImage(fromEventImageInfo: specialEvent!.image!)}
+        }
+        
         localPersistentStore = try! Realm(configuration: realmConfig)
         fetchLocalImages()
         fetchProductIDs()
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if initialLoad {
-            currentInputViewState = .category
-            initialLoad = false
-        }
+        if !editingEvent {currentInputViewState = .category}
     }
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
@@ -535,6 +544,17 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     @objc fileprivate func handleDoneButtonTap(_ sender: UIButton) {
         
+        func createEventImageInfo() -> EventImageInfo {
+            if !selectedImage!.imagesAreSavedToDisk {
+                let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
+                if results.contains(false) {
+                    // TODO: Error Handling
+                    fatalError("Images were unable to be saved to the disk!")
+                }
+            }
+             return EventImageInfo(fromEventImage: selectedImage!)
+        }
+        
         guard eventTitle != nil && eventDate != nil else {
             // TODO: Throw an alert to user that title and event date are requrired.
             let alert = UIAlertController(title: "Missing Information", message: "Please populate the event title and date.", preferredStyle: .alert)
@@ -546,32 +566,34 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             return
         }
         
-        if editing {
-            
-        }
-        
-        var image: EventImageInfo?
-        if selectedImage != nil {
-            if !selectedImage!.imagesAreSavedToDisk {
-                let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
-                if results.contains(false) {
-                    // TODO: Error Handling
-                    fatalError("Images were unable to be saved to the disk!")
+        if editingEvent {
+            try! localPersistentStore.write {
+                specialEvent!.category = eventCategory ?? "Uncatagorized"
+                specialEvent!.title = eventTitle!
+                specialEvent!.tagline = eventTagline
+                specialEvent!.date = eventDate!
+                if selectedImage != nil && specialEvent!.image != nil {
+                    if selectedImage!.title != specialEvent!.image!.title {
+                        let image = createEventImageInfo()
+                        specialEvent!.image = image
+                        // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
+                    }
                 }
             }
-            image = EventImageInfo(fromEventImage: selectedImage!)
         }
-        
-        let newEvent = SpecialEvent(
-            category: eventCategory ?? "Uncatagorized",
-            title: eventTitle!,
-            tagline: eventTagline,
-            date: eventDate!,
-            image: image
-        )
-        
-        
-        try! localPersistentStore.write {localPersistentStore.add(newEvent, update: true)}
+        else {
+            if selectedImage != nil {
+                let image = createEventImageInfo()
+                let newEvent = SpecialEvent(
+                    category: eventCategory ?? "Uncatagorized",
+                    title: eventTitle!,
+                    tagline: eventTagline,
+                    date: eventDate!,
+                    image: image
+                )
+                try! localPersistentStore.write {localPersistentStore.add(newEvent, update: true)}
+            }
+        }
         
         navigationController!.navigationController?.popViewController(animated: true)
     }
@@ -919,5 +941,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         selectedDate -= timeIntervalFromMidnight2
         
         return Date(timeIntervalSinceReferenceDate: timeIntervalFromMidnight + selectedDate)
+    }
+    
+    fileprivate func deconstructDateAndTime() {
+        guard eventDate != nil else {return}
+        calendarDayHolder = eventDate!.date
+        if !eventDate!.dateOnly {timeHolder = eventDate!.date}
     }
 }

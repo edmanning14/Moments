@@ -158,38 +158,34 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: States
     enum Configurations {case tableView, detailView, newEventsController, imagePreviewControllerCell, imagePreviewControllerDetail}
-    enum TimerStates: Int {case weeks = 0, days, hours, minutes, seconds}
+    //enum TimerStates: Int {case weeks = 0, days, hours, minutes, seconds}
+    /*func label(forState state: TimerStates) -> UILabel {
+        switch state {
+        case .weeks: return weeksLabel
+        case .days: return daysLabel
+        case .hours: return hoursLabel
+        case .minutes: return minutesLabel
+        case .seconds: return secondsLabel
+        }
+    }*/
     
     var configuration: Configurations = .tableView {didSet {if configuration != oldValue {configureView()}}}
-    
-    var currentTimerState = TimerStates.weeks {
+    /*var currentTimerState: TimerStates = .weeks {
         didSet {
-            if !isPastEvent {
+            if currentTimerState != oldValue { // Remove subviews
                 if currentTimerState.rawValue > oldValue.rawValue {
-                    switch currentTimerState.rawValue {
-                    case 0: break // Should never happen
-                    case 1: weeksLabel.isHidden = true
-                    case 2: daysLabel.isHidden = true
-                    case 3: hoursLabel.isHidden = true
-                    case 4: minutesLabel.isHidden = true
-                    default: break // Should never happen
+                    for i in oldValue.rawValue..<currentTimerState.rawValue {
+                        timerStackView.removeArrangedSubview(label(forState: TimerStates(rawValue: i)!))
                     }
                 }
-            }
-            else {
-                if currentTimerState.rawValue < oldValue.rawValue {
-                    switch currentTimerState.rawValue {
-                    case 0: weeksLabel.isHidden = false
-                    case 1: daysLabel.isHidden = false
-                    case 2: hoursLabel.isHidden = false
-                    case 3: minutesLabel.isHidden = false
-                    case 4: break // Should never happen
-                    default: break // Should never happen
+                else { // Add subviews
+                    for i in currentTimerState.rawValue...oldValue.rawValue {
+                        timerStackView.addArrangedSubview(label(forState: TimerStates(rawValue: i)!))
                     }
                 }
             }
         }
-    }
+    }*/
     
     var oldPercentCompletion = 0
     
@@ -197,7 +193,18 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: Flags
     var useGradient = true
-    fileprivate var isPastEvent = false
+    fileprivate var isPastEvent = false {
+        didSet {
+            if isPastEvent && oldValue == !isPastEvent {
+                hide(view: inLabel); show(view: agoLabel)
+                hide(view: abridgedInLabel); abridgedDaysTextLabel.text = "Days Ago"
+            }
+            else if !isPastEvent && oldValue == isPastEvent {
+                show(view: inLabel); hide(view: agoLabel)
+                show(view: abridgedInLabel); abridgedDaysTextLabel.text = "Days"
+            }
+        }
+    }
     fileprivate var shadowsInitialized = false
     
     //
@@ -208,20 +215,34 @@ class EventTableViewCell: UITableViewCell {
     // MARK: UI Elements
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var taglineLabel: UILabel!
+    @IBOutlet weak var tomorrowLabel: UILabel!
     
     @IBOutlet weak var timerContainerView: UIView!
     @IBOutlet weak var timerStackView: UIStackView!
+    @IBOutlet weak var inLabel: UILabel!
     @IBOutlet weak var weeksLabel: UILabel!
     @IBOutlet weak var daysLabel: UILabel!
     @IBOutlet weak var hoursLabel: UILabel!
     @IBOutlet weak var minutesLabel: UILabel!
     @IBOutlet weak var secondsLabel: UILabel!
+    @IBOutlet weak var agoLabel: UILabel!
     @IBOutlet weak var timerLabelsStackView: UIStackView!
+    @IBOutlet weak var weeksColon: UILabel!
+    @IBOutlet weak var daysColon: UILabel!
+    @IBOutlet weak var hoursColon: UILabel!
+    @IBOutlet weak var minutesColon: UILabel!
+    @IBOutlet weak var weeksTextLabel: UILabel!
+    @IBOutlet weak var daysTextLabel: UILabel!
+    @IBOutlet weak var hoursTextLabel: UILabel!
+    @IBOutlet weak var minutesTextLabel: UILabel!
     
     @IBOutlet weak var abridgedTimerContainerView: UIView!
     @IBOutlet weak var abridgedTimerStackView: UIStackView!
+    @IBOutlet weak var abridgedInLabel: UILabel!
     @IBOutlet weak var abridgedWeeksLabel: UILabel!
     @IBOutlet weak var abridgedDaysLabel: UILabel!
+    @IBOutlet weak var abridgedWeeksTextLabel: UILabel!
+    @IBOutlet weak var abridgedDaysTextLabel: UILabel!
     
     var titleWaveEffectView: WaveEffectView?
     var taglineWaveEffectView: WaveEffectView?
@@ -263,6 +284,7 @@ class EventTableViewCell: UITableViewCell {
             isPastEvent = true
             timeInterval = now.timeIntervalSince(eventDate!.date)
         }
+        else {isPastEvent = false}
         
         func format(label: UILabel, withNumber number: Double) {
             let intNumber = Int(number)
@@ -272,35 +294,99 @@ class EventTableViewCell: UITableViewCell {
         
         if eventDate!.dateOnly {
             let weeks = (timeInterval/604800.0).rounded(.down)
-            let remainder = timeInterval - (weeks * 604800.0)
-            let days = (remainder/86400.0).rounded(.down)
+            if weeks == 0 {
+                abridgedWeeksLabel.isHidden = true
+                abridgedWeeksTextLabel.isHidden = true
+            }
+            else {
+                abridgedWeeksLabel.isHidden = false
+                abridgedWeeksTextLabel.isHidden = false
+                format(label: abridgedWeeksLabel, withNumber: weeks)
+            }
             
-            format(label: abridgedWeeksLabel, withNumber: weeks)
-            format(label: abridgedDaysLabel, withNumber: days)
+            let remainder = timeInterval - (weeks * 604800.0)
+            var days = 0.0
+            if !isPastEvent {days = (remainder/86400.0).rounded(.down)}
+            else {days = (remainder/86400.0).rounded(.up)}
+            if !isPastEvent && days == 1.0 && weeks == 0.0 {
+                hide(view: abridgedTimerStackView)
+                show(view: tomorrowLabel)
+                tomorrowLabel.text = "Tomorrow!!!"
+            }
+            else if !isPastEvent && days == 0.0 && weeks == 0.0 {
+                hide(view: abridgedTimerStackView)
+                show(view: tomorrowLabel)
+                tomorrowLabel.text = "Today!!!"
+            }
+            else if isPastEvent && days == 1.0 && weeks == 0.0 {
+                hide(view: abridgedTimerStackView)
+                show(view: tomorrowLabel)
+                tomorrowLabel.text = "Yesterday"
+            }
+            else {
+                hide(view: tomorrowLabel)
+                show(view: abridgedTimerStackView)
+                format(label: abridgedDaysLabel, withNumber: days)
+            }
         }
         else {
             let weeks = (timeInterval/604800.0).rounded(.down)
-            if !isPastEvent {if weeks == 0 {currentTimerState = .days}} else {if weeks != 0 {currentTimerState = .weeks}}
+            if weeks == 0 {
+                weeksLabel.isHidden = true
+                weeksTextLabel.isHidden = true
+                weeksColon.isHidden = true
+            }
+            else {
+                weeksLabel.isHidden = false
+                weeksTextLabel.isHidden = false
+                weeksColon.isHidden = false
+                format(label: weeksLabel, withNumber: weeks)
+            }
             
             var remainder = timeInterval - (weeks * 604800.0)
             let days = (remainder/86400.0).rounded(.down)
-            if !isPastEvent {if days == 0 {currentTimerState = .hours}} else {if days != 0 {currentTimerState = .days}}
+            if days == 0.0 && weeks == 0.0 {
+                daysLabel.isHidden = true
+                daysTextLabel.isHidden = true
+                daysColon.isHidden = true
+            }
+            else {
+                daysLabel.isHidden = false
+                daysTextLabel.isHidden = false
+                daysColon.isHidden = false
+                format(label: daysLabel, withNumber: days)
+            }
             
             remainder -= days * 86400.0
             let hours = (remainder/3600.0).rounded(.down)
-            if !isPastEvent {if hours == 0 {currentTimerState = .minutes}} else {if hours != 0 {currentTimerState = .hours}}
+            if hours == 0.0 && days == 0.0 && weeks == 0.0 {
+                hoursLabel.isHidden = true
+                hoursTextLabel.isHidden = true
+                hoursColon.isHidden = true
+            }
+            else {
+                hoursLabel.isHidden = false
+                hoursTextLabel.isHidden = false
+                hoursColon.isHidden = false
+                format(label: hoursLabel, withNumber: hours)
+            }
             
             remainder -= hours * 3600.0
             let minutes = (remainder/60.0).rounded(.down)
-            if !isPastEvent {if minutes == 0 {currentTimerState = .seconds}} else {if minutes != 0 {currentTimerState = .minutes}}
+            if minutes == 0.0 && hours == 0.0 && days == 0.0 && weeks == 0.0 {
+                minutesLabel.isHidden = true
+                minutesTextLabel.isHidden = true
+                minutesColon.isHidden = true
+            }
+            else {
+                minutesLabel.isHidden = false
+                minutesTextLabel.isHidden = false
+                minutesColon.isHidden = false
+                format(label: minutesLabel, withNumber: minutes)
+            }
             
             remainder -= minutes * 60.0
             let seconds = remainder.rounded(.down)
-            
-            format(label: weeksLabel, withNumber: weeks)
-            format(label: daysLabel, withNumber: days)
-            format(label: hoursLabel, withNumber: hours)
-            format(label: minutesLabel, withNumber: minutes)
             format(label: secondsLabel, withNumber: seconds)
         }
         

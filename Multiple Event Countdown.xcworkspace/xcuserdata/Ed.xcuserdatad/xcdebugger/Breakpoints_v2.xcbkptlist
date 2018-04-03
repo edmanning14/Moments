@@ -48,11 +48,11 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "544192642.722235"
+            timestampString = "544415730.410481"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "99"
@@ -64,11 +64,11 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "544192642.72233"
+            timestampString = "544415730.411359"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "107"
@@ -84,7 +84,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "544192642.7224129"
+            timestampString = "544415730.411736"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "114"
@@ -100,45 +100,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "544192642.722486"
+            timestampString = "544415730.412102"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "184"
-            endingLineNumber = "184"
+            startingLineNumber = "186"
+            endingLineNumber = "186"
             landmarkName = "tableView(_:cellForRowAt:)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "544192642.722596"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "333"
-            endingLineNumber = "333"
-            landmarkName = "unknown"
-            landmarkType = "0">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "544193635.771309"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "395"
-            endingLineNumber = "395"
-            landmarkName = "unknown"
-            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

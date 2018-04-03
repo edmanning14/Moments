@@ -67,14 +67,10 @@ class MasterViewController: UITableViewController {
     // MARK: - View Controller Lifecycle
     //
     
-    fileprivate func extractedFunc() {
-        setupDataModel()
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        extractedFunc()
+        setupDataModel()
         
         let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
@@ -136,9 +132,11 @@ class MasterViewController: UITableViewController {
             }
         case SegueIdentifiers.addNewEventSegue:
             if let cell = sender as? EventTableViewCell {
+                let ip = tableView.indexPath(for: cell)!
                 let navController = segue.destination as! UINavigationController
                 let dest = navController.viewControllers[0] as! NewEventViewController
-                dest.selectedImage = cell.eventImage
+                dest.specialEvent = items(forSection: ip.section)[ip.row]
+                dest.editingEvent = true
             }
         default: break
         }
@@ -251,12 +249,14 @@ class MasterViewController: UITableViewController {
             if let temp = userDefaultsContainer?.value(forKey: "Categories") as? [String] {allCategories = temp}
             else { // Perform initial app load setup
                 if userDefaultsContainer != nil {
-                    userDefaultsContainer!.set(["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"], forKey: "Categories")
+                    allCategories = ["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"]
+                    userDefaultsContainer!.set(allCategories, forKey: "Categories")
                 }
                 else {
                     // TODO: Error Handling
                     fatalError("Unable to get the categories from the user defaults container.")
                 }
+                
             }
             
             try localPersistentStore = Realm(configuration: realmConfig)
