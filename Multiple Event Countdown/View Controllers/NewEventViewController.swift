@@ -7,13 +7,14 @@
 //
 
 import UIKit
+import Foundation
 import RealmSwift
 import QuartzCore
 import os.log
 import CloudKit
 import StoreKit
 
-class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, SKProductsRequestDelegate {
+class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate, SKProductsRequestDelegate, CAAnimationDelegate {
 
     
     //
@@ -27,29 +28,86 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     var eventCategory: String? {
         didSet {
+            if editingEvent {
+                let master = navigationController!.navigationController!.viewControllers[0] as! MasterViewController
+                master.categoryDidChange = true
+            }
             if eventCategory != nil && eventCategory != "" {
-                if !categoryWaveEffectView.isHidden {
-                    swapStateOf(view: categoryWaveEffectView)
-                    swapStateOf(view: categoryLabel)
-                }
+                categoryLabel.layer.add(labelTransition, forKey: nil)
                 categoryLabel.text = eventCategory
+                categoryLabel.textColor = secondaryTextRegularColor
+                categoryProgressImageView?.tintColor = taskCompleteColor
+                if !categoryWaveEffectView.isHidden {
+                    viewTransition(from: categoryWaveEffectView, to: categoryLabel)
+                }
             }
             else {
-                if categoryWaveEffectView.isHidden {
-                    swapStateOf(view: categoryWaveEffectView)
-                    swapStateOf(view: categoryLabel)
-                }
-                categoryLabel.text = nil
+                categoryLabel.layer.add(labelTransition, forKey: nil)
+                categoryLabel.text = "Category"
+                categoryLabel.textColor = inactiveColor
+                categoryProgressImageView?.tintColor = inactiveColor
             }
+            
+            checkFinishButtonEnable()
         }
     }
     
-    var eventTitle: String? {didSet {specialEventView?.eventTitle = eventTitle}}
-    var eventTagline: String? {didSet {specialEventView?.eventTagline = eventTagline}}
+    var eventTitle: String? {
+        didSet {
+            specialEventView?.eventTitle = eventTitle
+            if eventTitle != oldValue && !initialLoad && specialEvent != nil {
+                try! localPersistentStore.write {
+                    localPersistentStore.delete(specialEvent!)
+                    specialEvent = nil
+                }
+                needNewObject = true
+            }
+            if eventTitle != nil {
+                titleProgressImageView?.tintColor = taskCompleteColor
+                /*if let waveView = specialEventView!.titleWaveEffectView, !waveView.isHidden {
+                    viewTransition(from: waveView, to: specialEventView!.titleLabel)
+                }*/
+            }
+            else {titleProgressImageView?.tintColor = inactiveColor}
+            checkFinishButtonEnable()
+        }
+    }
+    var eventTagline: String? {
+        didSet {
+            specialEventView?.eventTagline = eventTagline
+            checkFinishButtonEnable()
+            if eventTagline != nil {
+                taglineProgressImageView?.tintColor = taskCompleteColor
+                /*if let waveView = specialEventView!.taglineWaveEffectView, !waveView.isHidden {
+                    viewTransition(from: waveView, to: specialEventView!.taglineLabel)
+                }*/
+            }
+            else {taglineProgressImageView?.tintColor = inactiveColor}
+        }
+    }
     
     var eventDate: EventDate? {
         didSet {
             specialEventView?.eventDate = eventDate
+            if editingEvent {
+                let master = navigationController!.navigationController!.viewControllers[0] as! MasterViewController
+                master.dateDidChange = true
+            }
+            if eventDate != nil {
+                if eventDate!.dateOnly {longDateFormater.timeStyle = .none}
+                else {longDateFormater.timeStyle = .short}
+                dateLabel.text = longDateFormater.string(from: eventDate!.date)
+                if !isUserChange {
+                    eventDatePicker.datePickerMode = .date
+                    eventDatePicker.date = eventDate!.date
+                }
+                dateProgressImageView?.tintColor = taskCompleteColor
+                /*if let waveView1 = specialEventView!.timerWaveEffectView, let waveView2 = specialEventView!.timerLabelsWaveEffectView, !waveView1.isHidden {
+                    specialEventView!.viewTransition(from: [waveView1, waveView2], to: specialEventView!.titleLabel)
+                }*/
+            }
+            else {isUserChange = false; dateProgressImageView?.tintColor = optionalTaskIncompleteColor}
+            
             if eventDate != nil && oldValue == nil {
                 eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
                     DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
@@ -59,25 +117,103 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 eventTimer?.invalidate()
                 eventTimer = nil
             }
+            checkFinishButtonEnable()
         }
     }
     
-    var selectedImage: EventImage? {didSet{specialEventView?.eventImage = selectedImage}}
+    var creationDate = Date() {didSet {specialEventView!.creationDate = creationDate}}
     
-    var cachedImages = [EventImage]() {
+    var abridgedDisplayMode = false {didSet {specialEventView?.abridgedDisplayMode = abridgedDisplayMode}}
+    
+    var selectedImage: UserEventImage? {
+        didSet {
+            specialEventView?.eventImage = selectedImage
+            if selectedImage != nil {
+                imageTitleLabel.layer.add(labelTransition, forKey: nil)
+                imageTitleLabel.textColor = primaryTextRegularColor
+                imageProgressImageView?.tintColor = taskCompleteColor
+                enableButton(editImageButton)
+                enableButton(useImageButton)
+                
+                if let appImage = selectedImage as? AppEventImage {
+                    imageTitleLabel.text = "\"\(appImage.title)\""
+                    if appImage.maskImage!.cgImage != nil {enableButton(useMaskButton)}
+                }
+                else {imageTitleLabel.text = "Your moment!"}
+            }
+            else {
+                if imagePlaceholderView == nil {
+                    specialEventView!.creationDate = creationDate
+                    let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
+                    let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
+                    imagePlaceholderView = UIImageView(image: templateImage)
+                    imagePlaceholderView!.tintColor = UIColor.lightText
+                    imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
+                    specialEventView!.addSubview(imagePlaceholderView!)
+                    specialEventView!.topAnchor.constraint(equalTo: imagePlaceholderView!.topAnchor, constant: specialEventView!.bounds.height / 3).isActive = true
+                    specialEventView!.rightAnchor.constraint(equalTo: imagePlaceholderView!.rightAnchor, constant: specialEventView!.bounds.width / 3).isActive = true
+                }
+                imageTitleLabel.layer.add(labelTransition, forKey: nil)
+                imageTitleLabel.text = noImageSelectedTextForTitle
+                imageTitleLabel.textColor = inactiveColor
+                imageProgressImageView?.tintColor = optionalTaskIncompleteColor
+                disableButton(editImageButton)
+                disableButton(useImageButton)
+                disableButton(useMaskButton)
+            }
+            isUserChange = false
+            checkFinishButtonEnable()
+        }
+    }
+    
+    var useMask = true {didSet {specialEventView!.useMask = useMask}}
+    
+    var cachedImages = [AppEventImage]() {
         didSet {
             selectImageController?.catalogImages = cachedImages
         }
     }
     
     fileprivate let defaultImageTitle = "Desert Dunes"
+    fileprivate let noImageSelectedTextForTitle = "Select an image"
+    fileprivate var defaultEventDate: EventDate = {
+        let eventDate = EventDate()
+        
+        let calendar = Calendar.current
+        let today = Date()
+        var dateComponents = DateComponents()
+        dateComponents.second = 0
+        dateComponents.minute = 0
+        dateComponents.hour = 12
+        dateComponents.day = calendar.component(.day, from: today) + 1
+        dateComponents.month = calendar.component(.month, from: today)
+        dateComponents.year = calendar.component(.year, from: today)
+        let tomorrowAtNoon = calendar.date(from: dateComponents)!
+        
+        eventDate.date = tomorrowAtNoon
+        eventDate.dateOnly = false
+        return eventDate
+    }()
     fileprivate var selectableCategories = [String]()
     fileprivate var productIDs = Set<Product>()
     fileprivate weak var selectImageController: SelectImageViewController?
     var editingEvent = false
+    var isUserChange = false
     
     //
-    // Types
+    // MARK: Calendar
+    
+    fileprivate let currentCalendar = Calendar.current
+    fileprivate let calendarComponentsOfInterest: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+    fileprivate let ymdCalendarComponents: Set<Calendar.Component> = [.year, .month, .day]
+    fileprivate let hmsCalendarComponents: Set<Calendar.Component> = [.hour, .minute, .second]
+    fileprivate let longDateFormater = DateFormatter()
+    fileprivate let dateFormatter = DateFormatter()
+    fileprivate let timeFormatter = DateFormatter()
+    fileprivate var eventTimer: Timer?
+    
+    //
+    // MARK: Types
     
     fileprivate struct Product: Hashable {
         var hashValue: Int
@@ -94,6 +230,32 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate enum CloudErrors: Error {
         case imageCreationFailure, assetCreationFailure, noRecords
     }
+    enum NetworkStates: Equatable {
+        static func ==(lhs: NetworkStates, rhs: NetworkStates) -> Bool {
+            switch lhs {
+            case .complete:
+                switch rhs {
+                case .complete: return true
+                default: break
+                }
+            case .loading:
+                switch rhs {
+                case .loading: return true
+                default: break
+                }
+            case .failed(_):
+                switch rhs {
+                case .failed(_): return true
+                default: break
+                }
+            }
+            return false
+        }
+        case loading, complete, failed(String?)
+    }
+    fileprivate var currentNetworkState = NetworkStates.loading {
+        didSet{selectImageController?.networkState = currentNetworkState}
+    }
     
     //
     // MARK: Persistence
@@ -106,35 +268,52 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: UI Elements
     
-    @IBOutlet weak var doneButton: UIBarButtonItem!
-    
     @IBOutlet weak var specialEventViewContainer: UIView!
     fileprivate var specialEventView: EventTableViewCell?
+    fileprivate var imagePlaceholderView: UIImageView?
     
-    @IBOutlet weak var buttonsView: ButtonsView!
     fileprivate var textInputAccessoryView: TextInputAccessoryView?
-    
-    fileprivate var categoryButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Category", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "CategoryButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
-    fileprivate var titleButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Title", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "TitleButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 50.0, height: 30.0))
-    fileprivate var dateButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Date", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "DateButtonImage", isDataRequired: true, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
-    fileprivate var taglineButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Tagline", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "TaglineButtonImage", isDataRequired: false, sizeOfGlyph: CGSize(width: 50.0, height: 30.0))
-    fileprivate var imageButton = NewEventInputsControl(frame: CGRect(x: 0.0, y: 0.0, width: 90.0, height: 50.0) , buttonTitle: "Image", font: UIFont(name: "FiraSans-Light", size: 14.0), buttonImageTitled: "ImageButtonImage", isDataRequired: false, sizeOfGlyph: CGSize(width: 30.0, height: 30.0))
     
     @IBOutlet weak var categoryLabel: UILabel!
     let categoryWaveEffectView = WaveEffectView()
+    @IBOutlet weak var imageTitleLabel: UILabel!
     
+    @IBOutlet weak var categoryButton: UIButton!
+    @IBOutlet weak var titleButton: UIButton!
+    @IBOutlet weak var dateButton: UIButton!
+    @IBOutlet weak var taglineButton: UIButton!
+    @IBOutlet weak var imageButton: UIButton!
+    @IBOutlet weak var finishButton: UIButton!
+    
+    fileprivate var categoryProgressImageView: UIImageView?
+    fileprivate var titleProgressImageView: UIImageView?
+    fileprivate var dateProgressImageView: UIImageView?
+    fileprivate var taglineProgressImageView: UIImageView?
+    fileprivate var imageProgressImageView: UIImageView?
+    fileprivate var finishProgressImageView: UIImageView?
+    
+    @IBOutlet weak var dataInputView: UIView!
+    
+    @IBOutlet weak var currentInputLabel: UILabel!
+    @IBOutlet weak var inputHelpButton: UIButton!
+    @IBOutlet weak var nextInputButton: UIButton!
+    @IBOutlet weak var enterDataButton: UIButton!
+    @IBOutlet weak var cancelDataButton: UIButton!
+    
+    @IBOutlet weak var optionsView: UIView!
+    @IBOutlet weak var categoryInputView: UIView!
     @IBOutlet weak var categoryPickerView: UIPickerView!
-    @IBOutlet weak var datePickerStackView: UIStackView!
+    
+    @IBOutlet weak var dateInputView: UIView!
     @IBOutlet weak var eventDatePicker: UIDatePicker!
-    @IBOutlet weak var eventDateButtonsStackView: UIStackView!
-    @IBOutlet weak var setTimeButton: UIButton!
-    fileprivate var cancelSetTimeButton: UIButton?
+    @IBOutlet weak var dateLabel: UILabel!
+    
+    @IBOutlet weak var imageInputView: UIView!
     @IBOutlet weak var selectImageButton: UIButton!
+    @IBOutlet weak var editImageButton: UIButton!
+    @IBOutlet weak var useImageButton: UIButton!
+    @IBOutlet weak var useMaskButton: UIButton!
     
-    //
-    // Gesture Recognizers
-    
-    let cellTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapsInCell(_:)))
     
     //
     // Other
@@ -147,143 +326,146 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
         }
     }
+    
+    let labelTransition = CATransition()
 
     fileprivate var currentInputViewState: Inputs = .none {
         didSet {
             if currentInputViewState != oldValue {
                 
-                buttonToStateAssociations[oldValue]?.isSelected = false
-                buttonToStateAssociations[currentInputViewState]?.isSelected = true
-                
-                switch currentInputViewState {
+                switch oldValue {
                 case .category:
-                    if initialLoad {
-                        categoryWaveEffectView.animate()
-                        if let titleWaveView = specialEventView?.titleWaveEffectView {titleWaveView.animate()}
-                        if let timerWaveView = specialEventView?.timerWaveEffectView {timerWaveView.animate()}
-                        if let timerLabelsWaveView = specialEventView?.timerLabelsWaveEffectView {timerLabelsWaveView.animate()}
-                        if let taglineWaveView = specialEventView?.taglineWaveEffectView {taglineWaveView.animate()}
-                    }
-                    else if !categoryWaveEffectView.isHidden {
-                        categoryWaveEffectView.animate()
-                    }
+                    if eventCategory == nil {viewTransition(from: categoryLabel, to: categoryWaveEffectView)}
                 case .title:
-                    if let titleWaveView = specialEventView?.titleWaveEffectView {
-                        if !titleWaveView.isHidden {titleWaveView.animate()}
-                    }
-                case .date:
-                    if let timerWaveView = specialEventView?.timerWaveEffectView {
-                        if !timerWaveView.isHidden {timerWaveView.animate()}
-                    }
-                    if let timerLabelsWaveView = specialEventView?.timerLabelsWaveEffectView {
-                        if !timerLabelsWaveView.isHidden {timerLabelsWaveView.animate()}
-                    }
+                    if eventTitle == nil {viewTransition(from: specialEventView!.titleLabel, to: specialEventView!.titleWaveEffectView!)}
                 case .tagline:
-                    if let taglineWaveView = specialEventView?.taglineWaveEffectView {
-                        if !taglineWaveView.isHidden {taglineWaveView.animate()}
+                    if eventTagline == nil {viewTransition(from: specialEventView!.taglineLabel, to: specialEventView!.taglineWaveEffectView!)}
+                case .date:
+                    if eventDate == nil {
+                        if let timerView = specialEventView?.timerContainerView {
+                            specialEventView!.viewTransition(from: [timerView], to: [specialEventView!.timerWaveEffectView!, specialEventView!.timerLabelsWaveEffectView!])
+                        }
+                        else if let abridgedTimerView = specialEventView?.abridgedTimerContainerView {
+                            specialEventView!.viewTransition(from: [abridgedTimerView], to: [specialEventView!.timerWaveEffectView!, specialEventView!.timerLabelsWaveEffectView!])
+                        }
                     }
-                case .image: break
+                case .image:
+                    if selectedImage == nil {
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.30,
+                            delay: 0.0,
+                            options: .curveLinear,
+                            animations: { [weak self] in
+                                self?.specialEventView!.viewWithMargins.layer.backgroundColor = self?.lightBackgroundColor.cgColor
+                                self?.imagePlaceholderView!.layer.opacity = 1.0
+                            },
+                            completion: nil
+                        )
+                    }
                 case .none: break
                 }
                 
-                if activationTable[currentInputViewState.rawValue][UIElements.firstResponder.rawValue] == true {
-                    textInputAccessoryView?.textInputField.becomeFirstResponder()
-                    if currentInputViewState == .title {textInputAccessoryView?.textInputField.text = eventTitle}
-                    else if currentInputViewState == .tagline {textInputAccessoryView?.textInputField.text = eventTagline}
-                    if textInputAccessoryView != nil {swapStateOf(view: textInputAccessoryView!)}
-                }
-                else {
-                    if textInputAccessoryView?.textInputField.isFirstResponder ?? false {
-                        textInputAccessoryView!.textInputField.resignFirstResponder()
-                        textInputAccessoryView!.isHidden = true
-                        textInputAccessoryView!.textInputField.text = nil
+                switch currentInputViewState {
+                case .category:
+                    if !categoryWaveEffectView.isHidden && !ignoreWaveView {
+                        viewTransition(from: categoryWaveEffectView, to: categoryLabel)
                     }
+                    oldDataValue = eventCategory
+                    ignoreWaveView = false
+                case .title:
+                    if let titleWaveView = specialEventView?.titleWaveEffectView, !ignoreWaveView {
+                        if !titleWaveView.isHidden {
+                            viewTransition(from: titleWaveView, to: specialEventView!.titleLabel)
+                        }
+                    }
+                    oldDataValue = eventTitle
+                    ignoreWaveView = false
+                case .tagline:
+                    if let taglineWaveView = specialEventView?.taglineWaveEffectView, !ignoreWaveView {
+                        if !taglineWaveView.isHidden {
+                            viewTransition(from: taglineWaveView, to: specialEventView!.taglineLabel)
+                        }
+                        else if specialEventView!.taglineLabel.isHidden {fadeIn(view: specialEventView!.taglineLabel)}
+                    }
+                    oldDataValue = eventTagline
+                    ignoreWaveView = false
+                case .date:
+                    oldDataValue = eventDate
+                    if eventDate == nil {eventDate = defaultEventDate}
+                    if let timerWaveView = specialEventView?.timerWaveEffectView, !ignoreWaveView {
+                        if let timerLabelsWaveView = specialEventView?.timerLabelsWaveEffectView {
+                            if !timerLabelsWaveView.isHidden && !timerWaveView.isHidden {
+                                if abridgedDisplayMode {
+                                    specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [specialEventView!.abridgedTimerContainerView])
+                                }
+                                else {
+                                    specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [specialEventView!.timerContainerView])
+                                }
+                            }
+                        }
+                    }
+                    ignoreWaveView = false
+                case .image:
+                    if selectedImage != nil {oldDataValue = EventImageInfo(fromEventImage: selectedImage!)}
+                    else {
+                        oldDataValue = nil
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.30,
+                            delay: 0.0,
+                            options: .curveLinear,
+                            animations: { [weak self] in
+                                self?.specialEventView!.viewWithMargins.layer.backgroundColor = UIColor.black.cgColor
+                                self?.imagePlaceholderView!.layer.opacity = 0.0
+                            },
+                            completion: nil
+                        )
+                    }
+                case .none: break
                 }
                 
-                if activationTable[currentInputViewState.rawValue][UIElements.pickerView.rawValue] == true {
-                    categoryPickerView.isHidden = false
-                    categoryPickerView.isUserInteractionEnabled = true
-                }
-                else {
-                    categoryPickerView.isHidden = true
-                    categoryPickerView.isUserInteractionEnabled = false
-                }
-                
-                if activationTable[currentInputViewState.rawValue][UIElements.datePicker.rawValue] == true {
-                    datePickerStackView.isHidden = false
-                    datePickerStackView.isUserInteractionEnabled = true
-                    
-                }
-                else {
-                    datePickerStackView.isHidden = true
-                    datePickerStackView.isUserInteractionEnabled = false
-                }
-                
-                if activationTable[currentInputViewState.rawValue][UIElements.imageSelector.rawValue] == true {
-                    selectImageButton.isHidden = false
-                    selectImageButton.isUserInteractionEnabled = true
-                }
-                else {
-                    selectImageButton.isHidden = true
-                    selectImageButton.isUserInteractionEnabled = false
-                }
-                
-                if currentInputViewState == .none {
-                    categoryButton.isSelected = false
-                    titleButton.isSelected = false
-                    dateButton.isSelected = false
-                    taglineButton.isSelected = false
-                    imageButton.isSelected = false
-                }
+                transitionInputView(fromState: oldValue, toState: currentInputViewState)
             }
         }
     }
     
+    var oldDataValue: Any?
+    
+    //
+    // MARK: Design
+    
+    // MARK: Colors
+    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
+    let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
+    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
+    let secondaryTextLightColor = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
+    let lightBackgroundColor = UIColor(red: 33/255, green: 33/255, blue: 33/255, alpha: 1.0)
+    let taskCompleteColor = UIColor.green
+    let optionalTaskIncompleteColor = UIColor.darkGray
+    let inactiveColor = UIColor.lightText
+    
+    // MARK: Fonts
+    let headingsFontName = "Comfortaa-Light"
+    let contentSecondaryFontName = "Raleway-Regular"
+    
+    //
+    // MARK: Gesture recognizer stuff
+    var panGestureLastXLocation: CGFloat = 0.0
+    var panGestureLastDirection: CGFloat?
+    var panComplete = false
+    var touchBegan: TimeInterval = 0.0
+    
+    //
+    // MARK: Flags
     var initialLoad = true
-    
-    var cloudThumbnailsFetched = false {
-        didSet {
-            if cloudThumbnailsFetched != oldValue {
-                selectImageController?.catalogLoadComplete = cloudThumbnailsFetched
-            }
-        }
-    }
+    var needNewObject = true
+    fileprivate var ignoreWaveView = false
     
     override var canBecomeFirstResponder: Bool {return true}
     override var canResignFirstResponder: Bool {return true}
     override var inputAccessoryView: UIView? {return textInputAccessoryView}
-    fileprivate let dateFormatter = DateFormatter()
-    fileprivate let timeFormatter = DateFormatter()
-    fileprivate var calendarDayHolder: Date?
-    fileprivate var timeHolder: Date?
-    fileprivate var eventTimer: Timer?
     
     //
     // Static Types
-    
-    struct StringConstants {
-        static let eventImageViewAccessibilityIdentifier = "Event Image"
-        
-        static let categoryVisualEffectViewAccessibilityIdentifier = "Category Blur"
-        static let titleVisualEffectViewAccessibilityIdentifier = "Title Blur"
-        static let taglineVisualEffectViewAccessibilityIdentifier = "Tagline Blur"
-        static let timerVisualEffectViewAccessibilityIdentifier = "Timer Blur"
-        static let labelsVisualEffectViewAccessibilityIdentifier = "Labels Blur"
-        
-        static let categoryLabelAccessibilityIdentifier = "Category Label"
-        static let titleLabelAccessibilityIdentifier = "Title Label"
-        static let taglineLabelAccessibilityIdentifier = "Tagline Label"
-        static let timerStackViewAccessibilityIdentifier = "Timer Stack View"
-        static let labelsStackViewAccessibilityIdentifier = "Labels Stack View"
-        static let abridgedTimerAccessibilityIdentifier = "Abridged Timer"
-        
-        static let categoryButtonAccessibilityIdentifier = "Category Button"
-        static let titleButtonAccessibilityIdentifier = "Title Button"
-        static let dateButtonAccessibilityIdentifier = "Date Button"
-        static let taglineButtonAccessibilityIdentifier = "Tagline Button"
-        static let imageButtonAccessibilityIdentifier = "Image Button"
-    }
-    
     enum Inputs: Int {
         case category = 0
         case title
@@ -292,34 +474,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         case image
         case none
     }
-    enum UIElements: Int {
-        case firstResponder = 0
-        case pickerView
-        case datePicker
-        case imageSelector
-    }
-    
-    var buttonToStateAssociations: [Inputs: NewEventInputsControl] = [:]
-    
-    let accessibilityTitlesToStateAssociations = [
-        Inputs.category: [StringConstants.categoryLabelAccessibilityIdentifier, StringConstants.categoryButtonAccessibilityIdentifier, StringConstants.categoryVisualEffectViewAccessibilityIdentifier],
-        Inputs.title: [StringConstants.titleLabelAccessibilityIdentifier, StringConstants.titleButtonAccessibilityIdentifier, StringConstants.titleVisualEffectViewAccessibilityIdentifier],
-        Inputs.date: [StringConstants.dateButtonAccessibilityIdentifier, StringConstants.timerStackViewAccessibilityIdentifier, StringConstants.timerVisualEffectViewAccessibilityIdentifier, StringConstants.abridgedTimerAccessibilityIdentifier, StringConstants.labelsStackViewAccessibilityIdentifier, StringConstants.labelsVisualEffectViewAccessibilityIdentifier],
-        Inputs.tagline: [StringConstants.taglineLabelAccessibilityIdentifier, StringConstants.taglineButtonAccessibilityIdentifier, StringConstants.taglineVisualEffectViewAccessibilityIdentifier],
-        Inputs.image: [StringConstants.imageButtonAccessibilityIdentifier, StringConstants.eventImageViewAccessibilityIdentifier]
-    ]
-    
-    let activationTable = [
-        // FR    PV     DP     IS
-        [false, true, false, false], // Category
-        [true, false, false, false], // Title
-        [false, false, true, false], // Date
-        [true, false, false, false], // Tagline
-        [false, false, false, true], // Image
-        [false, false, false, false] // None
-    ]
-    
-    
     
     
     //
@@ -335,11 +489,14 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 textInputAccessoryView = textInputView
                 textInputAccessoryView!.textInputField.delegate = self
                 textInputAccessoryView!.doneButton.addTarget(self, action: #selector(dismissKeyboard), for: .touchUpInside)
+                textInputAccessoryView!.isHidden = true
+                textInputAccessoryView!.isUserInteractionEnabled = false
             }
         }
         if let specialEventNib = Bundle.main.loadNibNamed("SpecialEventCell", owner: self, options: nil) {
             if let view = specialEventNib[0] as? EventTableViewCell {
                 specialEventView = view
+                specialEventView!.isUserInteractionEnabled = true
                 specialEventView!.translatesAutoresizingMaskIntoConstraints = false
                 specialEventViewContainer.addSubview(specialEventView!)
                 specialEventViewContainer.topAnchor.constraint(equalTo: specialEventView!.topAnchor).isActive = true
@@ -348,18 +505,43 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEventViewContainer.leftAnchor.constraint(equalTo: specialEventView!.leftAnchor).isActive = true
                 specialEventView!.configuration = .newEventsController
                 
+                specialEventView!.viewWithMargins.layer.cornerRadius = 3.0
+                specialEventView!.viewWithMargins.layer.masksToBounds = true
+                specialEventView!.viewWithMargins.layer.backgroundColor = lightBackgroundColor.cgColor
+                
+                let bottomAnchorConstraint = specialEventView!.constraints.first {$0.secondAnchor == specialEventView!.viewWithMargins.bottomAnchor}
+                bottomAnchorConstraint!.isActive = false
+                specialEventView!.bottomAnchor.constraint(equalTo: specialEventView!.viewWithMargins.bottomAnchor, constant: 0.0).isActive = true
+                
                 specialEventView!.eventTitle = eventTitle
                 specialEventView!.eventTagline = eventTagline
                 specialEventView!.eventDate = eventDate
+                specialEventView!.useMask = useMask
                 specialEventView!.eventImage = selectedImage
             }
         }
-        setAccessibilityIdentifiers()
+        
+        let navItemTitleLabel = UILabel()
+        if editingEvent {
+            navItemTitleLabel.text = "Edit Event"
+            finishButton.setTitle("CONFIRM CHANGES", for: .normal)
+        }
+        else {
+            navItemTitleLabel.text = "New Event"
+            finishButton.setTitle("CREATE EVENT", for: .normal)
+        }
+        navItemTitleLabel.backgroundColor = UIColor.clear
+        navItemTitleLabel.textColor = primaryTextRegularColor
+        navItemTitleLabel.font = UIFont(name: headingsFontName, size: 20.0)
+        navigationItem.titleView = navItemTitleLabel
+        
+        labelTransition.duration = 0.3
+        labelTransition.type = kCATransitionFade
+
         configureCategoryWaveEffectView()
-        setupTapGestureRecognizers()
-        configureButtons()
+        setupGestureRecognizers()
         configureInputView()
-        hideStuff()
+        configureOptionsView()
         
         if let categories = userDefaultsContainer?.value(forKey: "Categories") as? [String] {
             for category in categories {
@@ -376,44 +558,136 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         categoryPickerView.dataSource = self
         categoryPickerView.reloadAllComponents()
         
-        buttonToStateAssociations[.category] = categoryButton
-        buttonToStateAssociations[.title] = titleButton
-        buttonToStateAssociations[.date] = dateButton
-        buttonToStateAssociations[.tagline] = taglineButton
-        buttonToStateAssociations[.image] = imageButton
-        
-        if specialEvent != nil {
-            eventCategory = specialEvent!.category
-            eventTitle = specialEvent!.title
-            eventTagline = specialEvent!.tagline
-            eventDate = specialEvent!.date
-            
-            calendarDayHolder = eventDate?.date
-            deconstructDateAndTime()
-            switch eventDatePicker.datePickerMode {
-            case .date: if calendarDayHolder != nil {eventDatePicker.date = calendarDayHolder!}
-            case .time: if timeHolder != nil {eventDatePicker.date = timeHolder!}
-            default:
-                // TODO: Error Handling
-                os_log("DatePicker in NewEventController somehow got in an undefined mode.", log: OSLog.default, type: .error)
-                fatalError()
-            }
-            
-            if specialEvent!.image != nil {selectedImage = EventImage(fromEventImageInfo: specialEvent!.image!)}
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
         
         localPersistentStore = try! Realm(configuration: realmConfig)
         fetchLocalImages()
-        fetchProductIDs()
+        
+        if specialEvent != nil {
+            needNewObject = false
+            
+            categoryWaveEffectView.isHidden = true
+            categoryWaveEffectView.isUserInteractionEnabled = false
+            categoryLabel.isHidden = false
+            categoryLabel.isUserInteractionEnabled = true
+            eventCategory = specialEvent!.category
+            
+            specialEventView!.titleWaveEffectView?.isHidden = true
+            specialEventView!.titleWaveEffectView?.isUserInteractionEnabled = false
+            specialEventView!.titleLabel.isHidden = false
+            specialEventView!.titleLabel.isUserInteractionEnabled = true
+            eventTitle = specialEvent!.title
+            
+            specialEventView!.taglineWaveEffectView?.isHidden = true
+            specialEventView!.taglineWaveEffectView?.isUserInteractionEnabled = false
+            specialEventView!.taglineLabel.isHidden = false
+            specialEventView!.taglineLabel.isUserInteractionEnabled = true
+            if let tagline = specialEvent!.tagline {eventTagline = tagline}
+            
+            specialEventView!.timerWaveEffectView?.isHidden = true
+            specialEventView!.timerWaveEffectView?.isUserInteractionEnabled = false
+            specialEventView!.timerLabelsWaveEffectView?.isHidden = true
+            specialEventView!.timerLabelsWaveEffectView?.isUserInteractionEnabled = false
+            eventDate = EventDate(date: specialEvent!.date!.date, dateOnly: specialEvent!.date!.dateOnly)
+            creationDate = specialEvent!.creationDate
+            abridgedDisplayMode = specialEvent!.abridgedDisplayMode
+            
+            if let imageInfo = specialEvent!.image {
+                if imageInfo.isAppImage {
+                    useMask = specialEvent!.useMask
+                    selectedImage = AppEventImage(fromEventImageInfo: imageInfo)
+                }
+                else {
+                    useMask = false
+                    selectedImage = UserEventImage(fromEventImageInfo: imageInfo)
+                }
+            }
+        }
+        else {
+            specialEventView!.creationDate = creationDate
+            let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
+            let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
+            imagePlaceholderView = UIImageView(image: templateImage)
+            imagePlaceholderView!.tintColor = UIColor.lightText
+            imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
+            specialEventView!.addSubview(imagePlaceholderView!)
+            specialEventView!.centerXAnchor.constraint(equalTo: imagePlaceholderView!.centerXAnchor).isActive = true
+            specialEventView!.centerYAnchor.constraint(equalTo: imagePlaceholderView!.centerYAnchor).isActive = true
+        }
+        
+        fetchProductIDs(fetchFailHandler: networkErrorHandler)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if eventDate != nil && eventTimer == nil {
+            specialEventView?.update()
+            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
+                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if !editingEvent {currentInputViewState = .category}
+        if initialLoad {
+            categoryWaveEffectView.animate {}
+            specialEventView!.titleWaveEffectView!.animate {}
+            specialEventView!.taglineWaveEffectView!.animate {}
+            specialEventView!.timerWaveEffectView!.animate {}
+            specialEventView!.timerLabelsWaveEffectView!.animate {}
+            initialLoad = false
+        }
+    }
+    
+    @objc fileprivate func applicationDidBecomeActive(notification: NSNotification) {
+        if eventDate != nil && eventTimer == nil {
+            specialEventView?.update()
+            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
+                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
     
-    deinit {eventTimer?.invalidate()}
+    override func viewWillDisappear(_ animated: Bool) {
+        eventTimer?.invalidate()
+        eventTimer = nil
+    }
+    
+    @objc fileprivate func applicationWillResignActive(notification: NSNotification) {
+        eventTimer?.invalidate()
+        eventTimer = nil
+    }
+    
+    deinit {
+        eventTimer?.invalidate()
+        eventTimer = nil
+        productRequest?.cancel()
+        productRequest?.delegate = nil
+        
+        let backgroundThread = DispatchQueue(label: "background", qos: .background, target: nil)
+        backgroundThread.async {
+            let realm = try! Realm(configuration: realmConfig)
+            let allImages = realm.objects(EventImageInfo.self)
+            for imageInfo in allImages {
+                if imageInfo.specialEvents.isEmpty && imageInfo.isAppImage == false {
+                    let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    let fileName = imageInfo.title.convertToFileName()
+                    let saveDest = documentsURL.appendingPathComponent(fileName + ".jpg", isDirectory: false)
+                    do {
+                        try FileManager.default.removeItem(at: saveDest)
+                        try realm.write {realm.delete(imageInfo)}
+                    }
+                    catch {
+                        // TODO: Error Handling
+                        print(error.localizedDescription)
+                        fatalError()
+                    }
+                }
+            }
+        }
+    }
     
     
     //
@@ -421,7 +695,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     
     //
-    // Store Kit
+    // MARK: Store Kit Delegate
     
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         if request == productRequest! {
@@ -447,19 +721,26 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // Date Picker
     
     @IBAction func datePickerDateDidChange(_ sender: UIDatePicker) {
+        isUserChange = true
+        var currentDateComponents: DateComponents!
+        currentDateComponents = currentCalendar.dateComponents(calendarComponentsOfInterest, from: eventDate!.date)
         switch eventDatePicker.datePickerMode {
         case .date:
-            calendarDayHolder = eventDatePicker.date
-            if timeHolder == nil {eventDate = EventDate(date: calendarDayHolder!, dateOnly: true)}
-            else {eventDate = EventDate(date: combineDateAndTime(), dateOnly: false)}
+            let ymdDateComponents = currentCalendar.dateComponents(ymdCalendarComponents, from: eventDatePicker.date)
+            currentDateComponents.year = ymdDateComponents.year!
+            currentDateComponents.month = ymdDateComponents.month!
+            currentDateComponents.day = ymdDateComponents.day!
         case .time:
-            timeHolder = eventDatePicker.date
-            eventDate = EventDate(date: combineDateAndTime(), dateOnly: false)
+            let hmsDateComponents = currentCalendar.dateComponents(hmsCalendarComponents, from: eventDatePicker.date)
+            currentDateComponents.hour = hmsDateComponents.hour!
+            currentDateComponents.minute = hmsDateComponents.minute!
+            currentDateComponents.second = hmsDateComponents.second!
         default:
             // TODO: Error Handling
             os_log("DatePicker in NewEventController somehow got in an undefined mode.", log: OSLog.default, type: .error)
             fatalError()
         }
+        eventDate = EventDate(date: currentCalendar.date(from: currentDateComponents)!, dateOnly: eventDate!.dateOnly)
     }
     
     //
@@ -474,12 +755,56 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if currentInputViewState == .title {
-            if string.isEmpty {eventTitle = eventTitle?.removeCharsFromEnd(numberToRemove: range.length)}
-            else {eventTitle = (textInputAccessoryView?.textInputField.text ?? "") + string}
+            specialEventView?.titleLabel.textColor = UIColor.white
+            
+            if string.isEmpty {
+                if eventTitle != nil {
+                    var stringRange: Range<String.Index>!
+                    if range.location + range.length > eventTitle!.count {
+                        stringRange = eventTitle!.index(eventTitle!.endIndex, insetBy: range.length)..<eventTitle!.endIndex
+                    }
+                    else {
+                        stringRange = eventTitle!.index(eventTitle!.startIndex, offsetBy: range.location)..<eventTitle!.index(eventTitle!.startIndex, offsetBy: range.location + range.length)
+                    }
+                    eventTitle!.removeSubrange(stringRange)
+                    if eventTitle!.isEmpty {eventTitle = nil}
+                }
+            }
+            else {
+                if eventTitle != nil {
+                    eventTitle = textInputAccessoryView!.textInputField.text
+                    if range.location > eventTitle!.count {eventTitle!.append(string)}
+                    else {
+                        eventTitle!.insert(contentsOf: string, at: eventTitle!.index(eventTitle!.startIndex, offsetBy: range.location))
+                    }
+                }
+                else {eventTitle = string}
+            }
         }
         else if currentInputViewState == .tagline {
-            if string.isEmpty {eventTagline = eventTagline?.removeCharsFromEnd(numberToRemove: range.length)}
-            else {eventTagline = (textInputAccessoryView?.textInputField.text ?? "") + string}
+            if string.isEmpty {
+                if eventTagline != nil {
+                    var stringRange: Range<String.Index>!
+                    if range.location + range.length > eventTagline!.count {
+                        stringRange = eventTagline!.index(eventTagline!.endIndex, insetBy: range.length)..<eventTagline!.endIndex
+                    }
+                    else {
+                        stringRange = eventTagline!.index(eventTagline!.startIndex, offsetBy: range.location)..<eventTagline!.index(eventTagline!.startIndex, offsetBy: range.location + range.length)
+                    }
+                    eventTagline!.removeSubrange(stringRange)
+                    if eventTagline!.isEmpty {eventTagline = nil}
+                }
+            }
+            else {
+                if eventTagline != nil {
+                    eventTagline = textInputAccessoryView!.textInputField.text
+                    if range.location > eventTagline!.count {eventTagline!.append(string)}
+                    else {
+                        eventTagline!.insert(contentsOf: string, at: eventTagline!.index(eventTagline!.startIndex, offsetBy: range.location))
+                    }
+                }
+                else {eventTagline = string}
+            }
         }
         return true
     }
@@ -487,6 +812,44 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         dismissKeyboard()
         return true
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        if currentInputViewState == .title {eventTitle = nil}
+        else if currentInputViewState == .tagline {eventTagline = nil}
+        return true
+    }
+    
+    //
+    // MARK: UIGestureRecognizerDelegate
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        touchBegan = touch.timestamp; return true
+    }
+    
+    //
+    // MARK: CAAnimationDelegate
+    
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        if let fadeOut = anim as? CABasicAnimation, let endValue = fadeOut.toValue as? Double {
+            if fadeOut.keyPath == "opacity" && endValue == 0.0 {
+                view.isHidden = true
+                view.isUserInteractionEnabled = false
+            }
+        }
+    }
+    
+    //
+    // MARK: From storyboard actions
+    @IBAction func unwindToViewController(segue: UIStoryboardSegue) {
+        if let sender = segue.source as? ImagePreviewViewController {
+            selectedImage = sender.selectedImage
+            currentInputViewState = .none
+        }
     }
     
     
@@ -503,7 +866,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
         let stringToReturn = selectableCategories[row]
-        return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor:UIColor.white])
+        return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor:primaryTextRegularColor])
     }
     
     //
@@ -511,12 +874,31 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let navController = segue.destination as! UINavigationController
-        let destination = navController.viewControllers[0] as! SelectImageViewController
-        destination.selectedImage = selectedImage
-        destination.catalogImages = cachedImages
-        destination.catalogLoadComplete = cloudThumbnailsFetched
-        selectImageController = destination
+        if let ident = segue.identifier {
+            let cancelButton = UIBarButtonItem()
+            cancelButton.tintColor = primaryTextDarkColor
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+            cancelButton.setTitleTextAttributes(attributes, for: .normal)
+            cancelButton.title = "CANCEL"
+            navigationItem.backBarButtonItem = cancelButton
+            switch ident {
+            case "EditImageSegue":
+                let navController = segue.destination as! UINavigationController
+                let destination = navController.viewControllers[0] as! ImagePreviewViewController
+                destination.selectedImage = selectedImage
+            case "Choose Image":
+                let navController = segue.destination as! UINavigationController
+                let destination = navController.viewControllers[0] as! SelectImageViewController
+                destination.selectedImage = selectedImage
+                destination.catalogImages = cachedImages
+                destination.networkState = currentNetworkState
+                selectImageController = destination
+            default:
+                // TODO: Error Handling
+                print("Unhandled Segue: \(ident)")
+                fatalError()
+            }
+        }
     }
 
     
@@ -524,36 +906,28 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // MARK: - Target-Action Methods
     //
     
-    @objc fileprivate func handleTapsInCell(_ sender: UIView) -> Void {
-        if sender.accessibilityIdentifier != nil {
-            switch sender.accessibilityIdentifier! {
-            case StringConstants.categoryVisualEffectViewAccessibilityIdentifier, StringConstants.categoryLabelAccessibilityIdentifier:
-                categoryButton.sendActions(for: .touchUpInside)
-            case StringConstants.titleVisualEffectViewAccessibilityIdentifier, StringConstants.titleLabelAccessibilityIdentifier:
-                titleButton.sendActions(for: .touchUpInside)
-            case StringConstants.taglineVisualEffectViewAccessibilityIdentifier, StringConstants.taglineLabelAccessibilityIdentifier:
-                taglineButton.sendActions(for: .touchUpInside)
-            case StringConstants.timerStackViewAccessibilityIdentifier, StringConstants.labelsStackViewAccessibilityIdentifier, StringConstants.abridgedTimerAccessibilityIdentifier:
-                dateButton.sendActions(for: .touchUpInside)
-            case StringConstants.eventImageViewAccessibilityIdentifier:
-                imageButton.sendActions(for: .touchUpInside)
-            default: break // Should never happen
+    @objc fileprivate func handleTapsInCell(_ sender: UIGestureRecognizer) -> Void {
+        
+        if sender.view! == specialEventView {
+            if specialEventView!.titleLabel.frame.contains(sender.location(in: specialEventView!)) {
+                currentInputViewState = .title
+            }
+            else if specialEventView!.taglineLabel.frame.contains(sender.location(in: specialEventView!)) {
+                currentInputViewState = .tagline
+            }
+            else if specialEventView!.timerContainerView.frame.contains(sender.location(in: specialEventView!)) || specialEventView!.abridgedTimerContainerView.frame.contains(sender.location(in: specialEventView!)) {
+                if currentInputViewState == .date {abridgedDisplayMode = !abridgedDisplayMode}
+                else {currentInputViewState = .date}
+            }
+            else if specialEventView!.frame.contains(sender.location(in: specialEventView!)) {
+                currentInputViewState = .image
             }
         }
+        else if sender.view! == categoryWaveEffectView {currentInputViewState = .category}
+        else if sender.view! == categoryLabel {currentInputViewState = .category}
     }
     
-    @objc fileprivate func handleDoneButtonTap(_ sender: UIButton) {
-        
-        func createEventImageInfo() -> EventImageInfo {
-            if !selectedImage!.imagesAreSavedToDisk {
-                let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
-                if results.contains(false) {
-                    // TODO: Error Handling
-                    fatalError("Images were unable to be saved to the disk!")
-                }
-            }
-             return EventImageInfo(fromEventImage: selectedImage!)
-        }
+    @objc fileprivate func finish(_ sender: UIButton) {
         
         guard eventTitle != nil && eventDate != nil else {
             // TODO: Throw an alert to user that title and event date are requrired.
@@ -566,100 +940,211 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             return
         }
         
-        if editingEvent {
+        if needNewObject {
+            let titlePredicate = NSPredicate(format: "title = %@", argumentArray: [eventTitle!])
+            let existingEvent = localPersistentStore.objects(SpecialEvent.self).filter(titlePredicate)
+            guard existingEvent.isEmpty else {
+                let alert = UIAlertController(title: "Event Already Exists", message: "An event with this title already exists. Did you want to replace that event with this one?", preferredStyle: .alert)
+                let yesAction = UIAlertAction(title: "Yes please!", style: .default) { (action) in
+                    self.dismiss(animated: true, completion: nil)
+                    self.createNewObject(overwrite: true)
+                    self.navigationController!.navigationController!.popViewController(animated: true)
+                }
+                let noAction = UIAlertAction(title: "No, Thanks.", style: .default) { (action) in
+                    self.dismiss(animated: true, completion: nil)
+                    let alert = UIAlertController(title: "Okay Then!", message: "Please create a different event title.", preferredStyle: .alert)
+                    let action = UIAlertAction(title: "Okay", style: .default) { (action) in
+                        self.dismiss(animated: true, completion: nil)
+                        self.currentInputViewState = .title
+                    }
+                    alert.addAction(action)
+                    self.present(alert, animated: true, completion: nil)
+                }
+                alert.addAction(yesAction)
+                alert.addAction(noAction)
+                self.present(alert, animated: true, completion: nil)
+                return
+            }
+            createNewObject(overwrite: false)
+        }
+        else {
             try! localPersistentStore.write {
                 specialEvent!.category = eventCategory ?? "Uncatagorized"
-                specialEvent!.title = eventTitle!
                 specialEvent!.tagline = eventTagline
                 specialEvent!.date = eventDate!
+                specialEvent!.abridgedDisplayMode = abridgedDisplayMode
                 if selectedImage != nil && specialEvent!.image != nil {
                     if selectedImage!.title != specialEvent!.image!.title {
                         let image = createEventImageInfo()
                         specialEvent!.image = image
+                        specialEvent!.useMask = useMask
                         // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
                     }
                 }
             }
         }
-        else {
-            if selectedImage != nil {
-                let image = createEventImageInfo()
-                let newEvent = SpecialEvent(
-                    category: eventCategory ?? "Uncatagorized",
-                    title: eventTitle!,
-                    tagline: eventTagline,
-                    date: eventDate!,
-                    image: image
-                )
-                try! localPersistentStore.write {localPersistentStore.add(newEvent, update: true)}
-            }
-        }
         
-        navigationController!.navigationController?.popViewController(animated: true)
+        navigationController!.navigationController!.popViewController(animated: true)
     }
     
-    @objc fileprivate func handleInputButtonTap(_ sender: UIButton) {
-        if !sender.isSelected {
-            if let id = sender.accessibilityIdentifier {
-                for entry in accessibilityTitlesToStateAssociations {
-                    if entry.value.contains(id) {
-                        currentInputViewState = entry.key
+    @objc fileprivate func handleInputToolbarButtonTap(_ sender: UIButton) {
+        if sender == nextInputButton {
+            if eventCategory == nil {
+                if !categoryWaveEffectView.isHidden {
+                    categoryWaveEffectView.animate {[weak self] in self?.viewTransition(from: self!.categoryWaveEffectView, to: self!.categoryLabel)}
+                    ignoreWaveView = true
+                }
+                currentInputViewState = .category
+            }
+            else if eventTitle == nil {
+                if let titleWaveView = specialEventView?.titleWaveEffectView {
+                    if !titleWaveView.isHidden {
+                        titleWaveView.animate {[weak self] in self?.viewTransition(from: titleWaveView, to: self!.specialEventView!.titleLabel)}
+                    }
+                    ignoreWaveView = true
+                }
+                currentInputViewState = .title
+            }
+            else if eventDate == nil {
+                if let timerWaveView = specialEventView?.timerWaveEffectView {
+                    if let timerLabelsWaveView = specialEventView?.timerLabelsWaveEffectView {
+                        if !timerWaveView.isHidden && !timerLabelsWaveView.isHidden {
+                            timerWaveView.animate {}
+                            timerLabelsWaveView.animate {[weak self] in
+                                if self!.abridgedDisplayMode {
+                                    self?.specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [self!.specialEventView!.abridgedTimerContainerView])
+                                }
+                                else {
+                                    self?.specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [self!.specialEventView!.timerContainerView])
+                                }
+                            }
+                        }
+                        ignoreWaveView = true
                     }
                 }
+                currentInputViewState = .date
             }
+            else if eventTagline == nil {
+                if let taglineWaveView = specialEventView?.taglineWaveEffectView {
+                    if !taglineWaveView.isHidden {
+                        taglineWaveView.animate {[weak self] in self?.viewTransition(from: taglineWaveView, to: self!.specialEventView!.taglineLabel)}
+                    }
+                    ignoreWaveView = true
+                }
+                currentInputViewState = .tagline
+            }
+            else if selectedImage == nil {currentInputViewState = .image}
+            else {currentInputViewState = .none}
         }
-        else {currentInputViewState = .none}
+        else if sender == enterDataButton {currentInputViewState = .none}
+        else if sender == cancelDataButton {
+            switch currentInputViewState {
+            case .category:
+                if let oldCategory = oldDataValue as? String {
+                    if oldCategory != eventCategory {eventCategory = oldCategory}
+                }
+            case .title:
+                if let oldTitle = oldDataValue as? String {
+                    if oldTitle != eventTitle {eventTitle = oldTitle}
+                }
+            case .tagline:
+                if let oldTagline = oldDataValue as? String {
+                    if oldTagline != eventTagline {eventTagline = oldTagline}
+                }
+            case .date:
+                if let oldDate = oldDataValue as? EventDate {
+                    if oldDate != eventDate {eventDate = EventDate(date: oldDate.date, dateOnly: oldDate.dateOnly)}
+                }
+                else {eventDate = nil}
+            case .image:
+                if let oldImageInfo = oldDataValue as? EventImageInfo, selectedImage != nil {
+                    if oldImageInfo.title != selectedImage!.title {
+                        selectedImage = AppEventImage(fromEventImageInfo: oldImageInfo)
+                    }
+                }
+                else {selectedImage = nil}
+            case .none: break
+            }
+            currentInputViewState = .none
+        }
+        else if sender == inputHelpButton {
+            
+        }
     }
     
-    @objc fileprivate func handleDatePickerButtonTap(_ sender: UIButton?) {
-        if let button = sender {
-            if button == setTimeButton {
-                switch eventDatePicker.datePickerMode {
-                case .date:
-                    if calendarDayHolder == nil {
-                        calendarDayHolder = eventDatePicker.date
-                        eventDate = EventDate(date: calendarDayHolder!, dateOnly: true)
+    @objc fileprivate func handleDatePickerSingleTap(_ sender: UIGestureRecognizer) {
+        if let tapGesture = sender as? UITapGestureRecognizer {
+            switch tapGesture.state {
+            case .ended:
+                let timeIntervalSinceSystemStart = ProcessInfo.processInfo.systemUptime
+                if timeIntervalSinceSystemStart - touchBegan < 0.3 {
+                    switch eventDatePicker.datePickerMode {
+                    case .date:
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.15,
+                            delay: 0.0,
+                            options: .curveLinear,
+                            animations: {[weak self] in self!.eventDatePicker.layer.opacity = 0.0},
+                            completion: { [weak self] (position) in
+                                self!.eventDatePicker.datePickerMode = .time
+                                if self!.eventDate!.dateOnly {
+                                    var components = DateComponents()
+                                    components.year = self!.currentCalendar.component(.year, from: self!.eventDate!.date)
+                                    components.month = self!.currentCalendar.component(.month, from: self!.eventDate!.date)
+                                    components.day = self!.currentCalendar.component(.day, from: self!.eventDate!.date)
+                                    components.hour = 12
+                                    components.minute = 0
+                                    components.second = 0
+                                    self!.eventDate = EventDate(date: self!.currentCalendar.date(from: components)!, dateOnly: false)
+                                    self!.eventDatePicker.date = self!.eventDate!.date
+                                    self!.abridgedDisplayMode = false
+                                }
+                                else {self!.eventDatePicker.date = self!.eventDate!.date}
+                                UIViewPropertyAnimator.runningPropertyAnimator(
+                                    withDuration: 0.15,
+                                    delay: 0.0,
+                                    options: .curveLinear,
+                                    animations: {[weak self] in self!.eventDatePicker.layer.opacity = 1.0},
+                                    completion: nil
+                                )
+                            }
+                        )
+                    case .time:
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.15,
+                            delay: 0.0,
+                            options: .curveLinear,
+                            animations: {[weak self] in self!.eventDatePicker.layer.opacity = 0.0},
+                            completion: { [weak self] (position) in
+                                self!.eventDatePicker.datePickerMode = .date
+                                self!.eventDatePicker.date = self!.eventDate!.date
+                                UIViewPropertyAnimator.runningPropertyAnimator(
+                                    withDuration: 0.15,
+                                    delay: 0.0,
+                                    options: .curveLinear,
+                                    animations: {[weak self] in self!.eventDatePicker.layer.opacity = 1.0},
+                                    completion: nil
+                                )
+                            }
+                        )
+                    default: // Should never happen
+                        os_log("WARNING: Date picker somehow got into an undefined state, noted during handleDatePickerButtonTap", log: .default, type: .error)
+                        eventDatePicker.datePickerMode = .date
+                        eventDatePicker.date = eventDate!.date
                     }
-                    button.isSelected = true
-                    button.setTitle(dateFormatter.string(from: calendarDayHolder!), for: UIControlState.selected)
-                    eventDatePicker.datePickerMode = .time
-                    eventDatePicker.date = timeHolder ?? setDefaultTime()
-                    if cancelSetTimeButton == nil {initializeCancelSetTimeButton()}
-                    if !cancelSetTimeButton!.isDescendant(of: eventDateButtonsStackView) {
-                        eventDateButtonsStackView.addArrangedSubview(cancelSetTimeButton!)
-                        eventDateButtonsStackView.sizeToFit()
-                    }
-                case .time:
-                    if timeHolder == nil {
-                        timeHolder = eventDatePicker.date
-                        eventDate = EventDate(date: combineDateAndTime(), dateOnly: false)
-                    }
-                    button.setTitle(timeFormatter.string(from: timeHolder!), for: UIControlState.selected)
-                    eventDatePicker.datePickerMode = .date
-                    eventDatePicker.date = calendarDayHolder ?? Date()
-                default: // Should never happen
-                    os_log("WARNING: Date picker somehow got into an undefined state, noted during handleDatePickerButtonTap", log: .default, type: .error)
-                    eventDatePicker.datePickerMode = .date
+                    if eventDate!.dateOnly == true {eventDate = EventDate(date: eventDate!.date, dateOnly: false)}
                 }
-            }
-            else if button == cancelSetTimeButton {
-                timeHolder = nil
-                eventDate = EventDate(date: calendarDayHolder!, dateOnly: true)
-                setTimeButton.isSelected = false
-                if eventDatePicker.datePickerMode != .date {
-                    eventDatePicker.datePickerMode = .date
-                    eventDatePicker.date = calendarDayHolder ?? Date()
-                }
-                cancelSetTimeButton!.removeFromSuperview()
-                eventDateButtonsStackView.sizeToFit()
+            default: break
             }
         }
     }
     
     @objc fileprivate func dismissKeyboard() {
         switch currentInputViewState {
-        case .title: specialEventView!.updateShadow(for: specialEventView!.titleLabel)
-        case .tagline: specialEventView!.updateShadow(for: specialEventView!.taglineLabel)
+        case .title:
+            if eventTitle == nil {viewTransition(from: specialEventView!.titleLabel, to: specialEventView!.titleWaveEffectView!)}
+        case .tagline:
+            if eventTagline == nil {viewTransition(from: specialEventView!.taglineLabel, to: specialEventView!.taglineWaveEffectView!)}
         default: break
         }
         textInputAccessoryView?.textInputField.resignFirstResponder()
@@ -667,119 +1152,426 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         textInputAccessoryView?.textInputField.text = nil
         currentInputViewState = .none
     }
+    
+    @objc fileprivate func handleOptionsButtonTap(_ sender: UIButton) {
+        switch sender.title(for: .selected) {
+        case "CATEGORY":
+            if !categoryWaveEffectView.isHidden {
+                categoryWaveEffectView.animate {[weak self] in self?.viewTransition(from: self!.categoryWaveEffectView, to: self!.categoryLabel)}
+                ignoreWaveView = true
+            }
+            currentInputViewState = .category
+        case "TITLE":
+            if let titleWaveView = specialEventView?.titleWaveEffectView {
+                if !titleWaveView.isHidden {
+                    titleWaveView.animate {[weak self] in self?.viewTransition(from: titleWaveView, to: self!.specialEventView!.titleLabel)}
+                }
+                ignoreWaveView = true
+            }
+            currentInputViewState = .title
+        case "TAGLINE":
+            if let taglineWaveView = specialEventView?.taglineWaveEffectView {
+                if !taglineWaveView.isHidden {
+                    taglineWaveView.animate {[weak self] in self?.viewTransition(from: taglineWaveView, to: self!.specialEventView!.taglineLabel)}
+                }
+                ignoreWaveView = true
+            }
+            currentInputViewState = .tagline
+        case "DATE":
+            if let timerWaveView = specialEventView?.timerWaveEffectView {
+                if let timerLabelsWaveView = specialEventView?.timerLabelsWaveEffectView {
+                    if !timerWaveView.isHidden && !timerLabelsWaveView.isHidden {
+                        timerWaveView.animate {}
+                        timerLabelsWaveView.animate {[weak self] in
+                            if self!.abridgedDisplayMode {
+                                self?.specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [self!.specialEventView!.abridgedTimerContainerView])
+                            }
+                            else {
+                                self?.specialEventView!.viewTransition(from: [timerWaveView, timerLabelsWaveView], to: [self!.specialEventView!.timerContainerView])
+                            }
+                        }
+                    }
+                    ignoreWaveView = true
+                }
+            }
+            currentInputViewState = .date
+        case "IMAGE": currentInputViewState = .image
+        default: fatalError()
+        }
+    }
+    
+    @objc fileprivate func handleDatePan(_ sender: UIGestureRecognizer) {
+        if let panGesture = sender as? UIPanGestureRecognizer {
+            switch panGesture.state {
+            case .began: panGestureLastXLocation = panGesture.location(in: nil).x
+            case .changed:
+                if !panComplete {
+                    if let lastDirection = panGestureLastDirection {
+                        panGestureLastDirection = panGestureLastXLocation - panGesture.location(in: nil).x
+                        if panGestureLastDirection! * lastDirection < 0 {
+                            panComplete = true
+                            panGestureLastXLocation = 0.0
+                            panGestureLastDirection = nil
+                        }
+                        if panGestureLastDirection == 0.0 {panGestureLastDirection = lastDirection}
+                    }
+                    else {panGestureLastDirection = panGestureLastXLocation - panGesture.location(in: nil).x}
+                    panGestureLastXLocation = panGesture.location(in: nil).x
+                }
+            case .ended:
+                if panComplete {
+                    isUserChange = true
+                    var components = currentCalendar.dateComponents(calendarComponentsOfInterest, from: eventDate!.date)
+                    components.hour = 0; components.minute = 0; components.second = 0
+                    eventDate = EventDate(date: currentCalendar.date(from: components)!, dateOnly: true)
+                    abridgedDisplayMode = true
+                    if eventDatePicker.datePickerMode != .date {eventDatePicker.datePickerMode = .date}
+                    panComplete = false
+                }
+                panGestureLastXLocation = 0.0
+                panGestureLastDirection = nil
+            default: break
+            }
+        }
+    }
+    
+    @objc fileprivate func cancel() {self.dismiss(animated: true, completion: nil)}
 
     
     //
     // MARK: - Helper Functions
     //
     
-    fileprivate func setAccessibilityIdentifiers() -> Void {
+    //
+    // MARK: Initialization helpers
+    
+    fileprivate func setupGestureRecognizers() -> Void {
         
-        categoryWaveEffectView.accessibilityIdentifier = StringConstants.categoryVisualEffectViewAccessibilityIdentifier
-        specialEventView?.titleWaveEffectView?.accessibilityIdentifier = StringConstants.titleVisualEffectViewAccessibilityIdentifier
-        specialEventView?.taglineWaveEffectView?.accessibilityIdentifier = StringConstants.taglineVisualEffectViewAccessibilityIdentifier
-        specialEventView?.timerWaveEffectView?.accessibilityIdentifier = StringConstants.timerVisualEffectViewAccessibilityIdentifier
-        specialEventView?.timerLabelsWaveEffectView?.accessibilityIdentifier = StringConstants.labelsVisualEffectViewAccessibilityIdentifier
+        let specialEventViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapsInCell(_:)))
+        let categoryLabelTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapsInCell(_:)))
+        let categoryWaveEffectViewTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapsInCell(_:)))
+        let singleTapDatePickerTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDatePickerSingleTap(_:)))
+        singleTapDatePickerTapGestureRecognizer.delegate = self
+        let datePanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handleDatePan(_:)))
+        datePanGestureRecognizer.minimumNumberOfTouches = 1
+        datePanGestureRecognizer.maximumNumberOfTouches = 1
         
-        categoryLabel.accessibilityIdentifier = StringConstants.categoryLabelAccessibilityIdentifier
-        specialEventView?.titleLabel.accessibilityIdentifier = StringConstants.titleLabelAccessibilityIdentifier
-        specialEventView?.taglineLabel.accessibilityIdentifier = StringConstants.taglineLabelAccessibilityIdentifier
-        specialEventView?.timerContainerView.accessibilityIdentifier = StringConstants.timerStackViewAccessibilityIdentifier
-        specialEventView?.timerLabelsStackView.accessibilityIdentifier = StringConstants.labelsStackViewAccessibilityIdentifier
-        specialEventView?.abridgedTimerContainerView.accessibilityIdentifier = StringConstants.abridgedTimerAccessibilityIdentifier
-        
-        categoryButton.accessibilityIdentifier = StringConstants.categoryButtonAccessibilityIdentifier
-        titleButton.accessibilityIdentifier = StringConstants.titleButtonAccessibilityIdentifier
-        dateButton.accessibilityIdentifier = StringConstants.dateButtonAccessibilityIdentifier
-        taglineButton.accessibilityIdentifier = StringConstants.taglineButtonAccessibilityIdentifier
-        imageButton.accessibilityIdentifier = StringConstants.imageButtonAccessibilityIdentifier
+        specialEventView?.addGestureRecognizer(specialEventViewTapGestureRecognizer)
+        categoryLabel.addGestureRecognizer(categoryLabelTapGestureRecognizer)
+        categoryWaveEffectView.addGestureRecognizer(categoryWaveEffectViewTapGestureRecognizer)
+        eventDatePicker.addGestureRecognizer(singleTapDatePickerTapGestureRecognizer)
+        dateLabel.addGestureRecognizer(datePanGestureRecognizer)
     }
     
-    fileprivate func hideStuff() -> Void {
-        swapStateOf(view: datePickerStackView)
-        swapStateOf(view: categoryPickerView)
-        if textInputAccessoryView != nil {swapStateOf(view: textInputAccessoryView!)}
+    @objc fileprivate func handleImageOptionsButtonsTap(_ sender: UIButton) {
+        switch sender.titleLabel!.text! {
+        case "EDIT IMAGE":
+            performSegue(withIdentifier: "EditImageSegue", sender: self)
+        case "CLEAR IMAGE":
+            isUserChange = true
+            selectedImage = nil
+        case "TOGGLE MASK": useMask = !useMask
+        default:
+            // TODO: Error Handling, should never happen.
+            fatalError("Fatal Error: Encountered and unknown image options button title")
+        }
     }
     
-    fileprivate func setupTapGestureRecognizers() -> Void {
-        categoryLabel.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.titleLabel.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.taglineLabel.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.timerContainerView.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.abridgedTimerContainerView.addGestureRecognizer(cellTapGestureRecognizer)
+    fileprivate func configureOptionsView() {
         
-        categoryWaveEffectView.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.titleWaveEffectView?.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.taglineWaveEffectView?.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.timerWaveEffectView?.addGestureRecognizer(cellTapGestureRecognizer)
-        specialEventView?.timerLabelsWaveEffectView?.addGestureRecognizer(cellTapGestureRecognizer)
-    }
-    
-    fileprivate func configureButtons() {
+        categoryButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
+        titleButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
+        taglineButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
+        dateButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
+        imageButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
         
-        doneButton.target = self
-        doneButton.action = #selector(handleDoneButtonTap(_:))
+        configureButton(finishButton)
         
-        buttonsView.addSubview(categoryButton)
-        buttonsView.addSubview(titleButton)
-        buttonsView.addSubview(dateButton)
-        buttonsView.addSubview(taglineButton)
-        buttonsView.addSubview(imageButton)
+        let progressImage = #imageLiteral(resourceName: "InputProgressImage")
+        let finishButtonProgressImage = #imageLiteral(resourceName: "FinishButtonProgressImage")
+        let spacing: CGFloat = 15.0
         
-        categoryButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
-        titleButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
-        dateButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
-        taglineButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
-        imageButton.addTarget(self, action: #selector(handleInputButtonTap(_:)), for: .touchUpInside)
+        categoryProgressImageView = UIImageView(image: progressImage)
+        categoryProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        categoryProgressImageView!.tintColor = inactiveColor
+        optionsView.addSubview(categoryProgressImageView!)
+        categoryButton.centerYAnchor.constraint(equalTo: categoryProgressImageView!.centerYAnchor).isActive = true
+        categoryButton.leftAnchor.constraint(equalTo: categoryProgressImageView!.rightAnchor, constant: spacing).isActive = true
+        
+        titleProgressImageView = UIImageView(image: progressImage)
+        titleProgressImageView!.tintColor = inactiveColor
+        titleProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        optionsView.addSubview(titleProgressImageView!)
+        titleButton.centerYAnchor.constraint(equalTo: titleProgressImageView!.centerYAnchor).isActive = true
+        titleButton.leftAnchor.constraint(equalTo: titleProgressImageView!.rightAnchor, constant: spacing).isActive = true
+        
+        dateProgressImageView = UIImageView(image: progressImage)
+        dateProgressImageView!.tintColor = inactiveColor
+        dateProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        optionsView.addSubview(dateProgressImageView!)
+        dateButton.centerYAnchor.constraint(equalTo: dateProgressImageView!.centerYAnchor).isActive = true
+        dateButton.leftAnchor.constraint(equalTo: dateProgressImageView!.rightAnchor, constant: spacing).isActive = true
+        
+        taglineProgressImageView = UIImageView(image: progressImage)
+        taglineProgressImageView!.tintColor = optionalTaskIncompleteColor
+        taglineProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        optionsView.addSubview(taglineProgressImageView!)
+        taglineButton.centerYAnchor.constraint(equalTo: taglineProgressImageView!.centerYAnchor).isActive = true
+        taglineButton.leftAnchor.constraint(equalTo: taglineProgressImageView!.rightAnchor, constant: spacing).isActive = true
+        
+        imageProgressImageView = UIImageView(image: progressImage)
+        imageProgressImageView!.tintColor = optionalTaskIncompleteColor
+        imageProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        optionsView.addSubview(imageProgressImageView!)
+        imageButton.centerYAnchor.constraint(equalTo: imageProgressImageView!.centerYAnchor).isActive = true
+        imageButton.leftAnchor.constraint(equalTo: imageProgressImageView!.rightAnchor, constant: spacing).isActive = true
+        
+        finishProgressImageView = UIImageView(image: finishButtonProgressImage)
+        finishProgressImageView!.tintColor = inactiveColor
+        finishProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
+        optionsView.addSubview(finishProgressImageView!)
+        finishButton.centerYAnchor.constraint(equalTo: finishProgressImageView!.centerYAnchor).isActive = true
+        finishButton.leftAnchor.constraint(equalTo: finishProgressImageView!.rightAnchor, constant: spacing).isActive = true
     }
     
     fileprivate func configureInputView() -> Void {
+    
+        nextInputButton.addTarget(self, action: #selector(handleInputToolbarButtonTap(_:)), for: .touchUpInside)
+        enterDataButton.addTarget(self, action: #selector(handleInputToolbarButtonTap(_:)), for: .touchUpInside)
+        cancelDataButton.addTarget(self, action: #selector(handleInputToolbarButtonTap(_:)), for: .touchUpInside)
+        
+        inputHelpButton.addTarget(self, action: #selector(handleInputToolbarButtonTap(_:)), for: .touchUpInside)
+        finishButton.addTarget(self, action: #selector(finish(_:)), for: .touchUpInside)
+        
+        configureButton(selectImageButton)
+        
+        editImageButton.addTarget(self, action: #selector(handleImageOptionsButtonsTap(_:)), for: .touchUpInside)
+        useImageButton.addTarget(self, action: #selector(handleImageOptionsButtonsTap(_:)), for: .touchUpInside)
+        useMaskButton.addTarget(self, action: #selector(handleImageOptionsButtonsTap(_:)), for: .touchUpInside)
+        
+        disableButton(editImageButton)
+        disableButton(useImageButton)
+        disableButton(useMaskButton)
+        
         eventDatePicker.backgroundColor = UIColor.clear
         eventDatePicker.isOpaque = false
-        eventDatePicker.setValue(UIColor.white, forKey: "textColor")
+        eventDatePicker.setValue(primaryTextRegularColor, forKey: "textColor")
         
+        longDateFormater.dateStyle = .full
+        longDateFormater.timeStyle = .short
         dateFormatter.dateStyle = .long
         dateFormatter.timeStyle = .none
         timeFormatter.dateStyle = .none
         timeFormatter.timeStyle = .short
-        setTimeButton.addTarget(self, action: #selector(handleDatePickerButtonTap(_:)), for: .touchUpInside)
     }
     
     fileprivate func configureCategoryWaveEffectView() {
         categoryWaveEffectView.translatesAutoresizingMaskIntoConstraints = false
+        categoryWaveEffectView.isUserInteractionEnabled = true
         view.addSubview(categoryWaveEffectView)
-        categoryWaveEffectView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8.0).isActive = true
-        categoryWaveEffectView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 8.0).isActive = true
-        categoryWaveEffectView.heightAnchor.constraint(equalToConstant: 17.0).isActive = true
-        categoryWaveEffectView.widthAnchor.constraint(equalToConstant: 60.0).isActive = true
-        if eventCategory != nil {swapStateOf(view: categoryWaveEffectView)}
+        categoryWaveEffectView.topAnchor.constraint(equalTo: categoryLabel.topAnchor, constant: 8.0).isActive = true
+        categoryWaveEffectView.leftAnchor.constraint(equalTo: categoryLabel.leftAnchor).isActive = true
+        categoryWaveEffectView.rightAnchor.constraint(equalTo: categoryLabel.rightAnchor).isActive = true
+        categoryWaveEffectView.bottomAnchor.constraint(equalTo: categoryLabel.bottomAnchor, constant: -8.0).isActive = true
+        if eventCategory != nil {
+            categoryWaveEffectView.isHidden = true
+            categoryWaveEffectView.isUserInteractionEnabled = false
+        }
     }
     
-    fileprivate func swapStateOf(view: UIView) -> Void {
-        if view.isHidden {view.isHidden = false; view.isUserInteractionEnabled = true}
-        else {view.isHidden = true; view.isUserInteractionEnabled = false}
+    fileprivate func configureButton(_ button: UIButton) {
+        button.layer.borderWidth = 1.0
+        button.layer.borderColor = primaryTextDarkColor.cgColor
+        button.layer.cornerRadius = 3.0
     }
     
-    fileprivate func initializeCancelSetTimeButton() -> Void {
-        cancelSetTimeButton = UIButton(type: .system)
-        cancelSetTimeButton!.setTitle("Clear Time", for: UIControlState.normal)
-        cancelSetTimeButton!.sizeToFit()
-        cancelSetTimeButton!.addTarget(self, action: #selector(handleDatePickerButtonTap(_:)), for: .touchUpInside)
-        cancelSetTimeButton!.titleLabel!.font = UIFont(name: "FiraSans-Light", size: 18.0)
-        cancelSetTimeButton!.titleLabel!.textColor = UIColor.white
+    //
+    // MARK: Animation helpers
+    
+    fileprivate func viewTransition(from view1: UIView, to view2: UIView) {
+        let transition = CATransition()
+        transition.type = kCATransitionFade
+        transition.duration = 0.5
+        
+        view1.layer.add(transition, forKey: "transition")
+        view2.layer.add(transition, forKey: "transition")
+        
+        view1.isHidden = true
+        view1.isUserInteractionEnabled = false
+        view2.isHidden = false
+        view2.isUserInteractionEnabled = true
     }
+    
+    fileprivate func transitionInputView(fromState state1: Inputs, toState state2: Inputs) {
+        let duration = 0.15
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: duration,
+            delay: 0.0,
+            options: [.curveLinear],
+            animations: { [weak self] in
+                self!.dataInputView.layer.opacity = 0.0
+                self!.currentInputLabel.layer.opacity = 0.0
+                self!.inputHelpButton.layer.opacity = 0.0
+            },
+            completion: { [weak self] (position) in
+                if self != nil {
+                    if state2 == .none {
+                        self!.cancelDataButton.layer.add(self!.labelTransition, forKey: nil)
+                        self!.enterDataButton.layer.add(self!.labelTransition, forKey: nil)
+                        self!.cancelDataButton.isEnabled = false
+                        self!.enterDataButton.isEnabled = false
+                    }
+                    self!.dataInputView.isUserInteractionEnabled = false
+                    switch state1 {
+                    case .category:
+                        self!.categoryInputView.isHidden = true
+                        self!.categoryInputView.isUserInteractionEnabled = false
+                    case .date:
+                        self!.dateInputView.isHidden = true
+                        self!.dateInputView.isUserInteractionEnabled = false
+                    case .image:
+                        self!.imageInputView.isHidden = true
+                        self!.imageInputView.isUserInteractionEnabled = false
+                    case .title, .tagline:
+                        if self!.textInputAccessoryView?.textInputField.isFirstResponder ?? false {
+                            self!.textInputAccessoryView!.textInputField.resignFirstResponder()
+                            self!.textInputAccessoryView!.isHidden = true
+                            self!.textInputAccessoryView!.textInputField.text = nil
+                        }
+                    case .none:
+                        self!.optionsView.isHidden = true
+                        self!.optionsView.isUserInteractionEnabled = false
+                    }
+                    
+                    switch state2 {
+                    case .category:
+                        self!.currentInputLabel.text = "Category"
+                        if self!.eventCategory != nil {self!.categoryPickerView.selectRow(self!.selectableCategories.index(of: self!.eventCategory!) ?? 0, inComponent: 0, animated: false)}
+                        self!.categoryInputView.isHidden = false
+                        self!.categoryInputView.isUserInteractionEnabled = true
+                    case .date:
+                        self!.currentInputLabel.text = "Date"
+                        self!.dateInputView.isHidden = false
+                        self!.dateInputView.isUserInteractionEnabled = true
+                    case .image:
+                        self!.currentInputLabel.text = "Image"
+                        self!.imageInputView.isHidden = false
+                        self!.imageInputView.isUserInteractionEnabled = true
+                    case .title, .tagline:
+                        if state2 == .title {
+                            self!.currentInputLabel.text = "Title"
+                            self!.textInputAccessoryView!.textInputField.autocapitalizationType = .words
+                        }
+                        else {
+                            self!.currentInputLabel.text = "Tagline"
+                            self!.textInputAccessoryView!.textInputField.autocapitalizationType = .sentences
+                        }
+                        self!.textInputAccessoryView?.textInputField.becomeFirstResponder()
+                        if self!.currentInputViewState == .title {self!.textInputAccessoryView?.textInputField.text = self!.eventTitle}
+                        else if self!.currentInputViewState == .tagline {self!.textInputAccessoryView?.textInputField.text = self!.eventTagline}
+                        if self!.textInputAccessoryView != nil {
+                            if self!.textInputAccessoryView!.isHidden {
+                                self!.textInputAccessoryView!.isHidden = false
+                                self!.textInputAccessoryView!.isUserInteractionEnabled = true
+                            }
+                        }
+                    case .none:
+                        self!.currentInputLabel.text = "Select Option"
+                        self!.optionsView.isHidden = false
+                        self!.optionsView.isUserInteractionEnabled = true
+                    }
+                }
+                
+                self!.dataInputView.isHidden = false
+                self!.dataInputView.isUserInteractionEnabled = true
+                
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: duration,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: { [weak self] in
+                        self!.dataInputView.layer.opacity = 1.0
+                        self!.currentInputLabel.layer.opacity = 1.0
+                        self!.inputHelpButton.layer.opacity = 1.0
+                    },
+                    completion: { [weak self] (position) in
+                        if state2 != .none {
+                            self!.cancelDataButton.layer.add(self!.labelTransition, forKey: nil)
+                            self!.enterDataButton.layer.add(self!.labelTransition, forKey: nil)
+                            self!.cancelDataButton.isEnabled = true
+                            self!.enterDataButton.isEnabled = true
+                        }
+                    }
+                )
+            }
+        )
+    }
+    
+    fileprivate func fadeIn(view: UIView) {
+        view.isHidden = false
+        view.isUserInteractionEnabled = true
+        
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.3,
+            delay: 0.0,
+            options: [.curveLinear],
+            animations: {view.layer.opacity = 1.0},
+            completion: nil
+        )
+    }
+    
+    fileprivate func fadeOut(view: UIView) {
+        let duration = 0.3
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: duration,
+            delay: 0.0,
+            options: [.curveLinear],
+            animations: {view.layer.opacity = 0.0},
+            completion: {(position) in
+                switch position {
+                case .end:
+                    Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
+                        view.isHidden = true; view.isUserInteractionEnabled = false
+                    }
+                default: fatalError("...")
+                }
+        }
+        )
+    }
+    
+    fileprivate func transitionText(inLabel label: UILabel, toText text: String) {
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.15,
+            delay: 0.0,
+            options: [.curveLinear],
+            animations: {label.layer.opacity = 0.0},
+            completion: { (position) in
+                label.text = text
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.15,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {label.layer.opacity = 1.0},
+                    completion: nil
+                )
+        }
+        )
+    }
+    
+    //
+    // MARK: Cloud helpers
     
     fileprivate func fetchLocalImages() {
         
-        localImageInfo = localPersistentStore.objects(EventImageInfo.self)
+        let filterPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [true])
+        localImageInfo = localPersistentStore.objects(EventImageInfo.self).filter(filterPredicate)
         
-        var imagesToReturn = [EventImage]()
+        var imagesToReturn = [AppEventImage]()
         
         for imageInfo in localImageInfo {
             if !cachedImages.contains(where: {$0.title == imageInfo.title}) {
-                if let newEventImage = EventImage(fromEventImageInfo: imageInfo) {
+                if let newEventImage = AppEventImage(fromEventImageInfo: imageInfo) {
                     imagesToReturn.append(newEventImage)
-                    if newEventImage.title == defaultImageTitle {selectedImage = newEventImage}
                 }
                 else {
                     // TODO: - Error handling
@@ -790,7 +1582,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         cachedImages.append(contentsOf: imagesToReturn)
     }
     
-    fileprivate func fetchProductIDs(_ previousNetworkFetchAtempts: Int = 0) {
+    fileprivate func fetchProductIDs(_ previousNetworkFetchAtempts: Int = 0, fetchFailHandler completion: @escaping (_ error: NSError) -> Void) {
         
         // Get productIdentifiers from cloud
         let getAllPredicate = NSPredicate(value: true)
@@ -813,11 +1605,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
                     // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
                     case 1, 4, 4097:
-                        if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchProductIDs(previousNetworkFetchAtempts + 1); return}
-                        else {return}
-                    case 3:
-                        // TODO: Need to tell user to check network connection on select image view controller.
-                        return
+                        if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchProductIDs(previousNetworkFetchAtempts + 1, fetchFailHandler: completion); return}
+                        else {completion(nsError); return}
+                    case 3: completion(nsError); return
                     default: return
                     }
                 }
@@ -850,19 +1640,17 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         productRequest!.start()
     }
     
-    fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: EventImage?, _ error: CloudErrors?) -> Void) {
+    fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: CloudErrors?) -> Void) {
         
         guard !ids.isEmpty else {completion(nil, .noRecords); return}
-        
-        cloudThumbnailsFetched = false
         
         let fetchOperation = CKFetchRecordsOperation(recordIDs: ids)
         
         var desiredKeys = [
-            EventImage.CloudKitKeys.EventImageKeys.title,
-            EventImage.CloudKitKeys.EventImageKeys.fileRootName,
-            EventImage.CloudKitKeys.EventImageKeys.category,
-            EventImage.CloudKitKeys.EventImageKeys.locationForCellView
+            AppEventImage.CloudKitKeys.EventImageKeys.title,
+            AppEventImage.CloudKitKeys.EventImageKeys.fileRootName,
+            AppEventImage.CloudKitKeys.EventImageKeys.category,
+            AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView
             ]
         for imageType in imageTypes {
             desiredKeys.append(contentsOf: [imageType.recordKey, imageType.extensionRecordKey])
@@ -874,10 +1662,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 if records.isEmpty {completion(nil, .noRecords)}
                 for record in records {
                     let recordID = record.key
-                    let title = record.value[EventImage.CloudKitKeys.EventImageKeys.title] as! String
-                    let fileRootName = record.value[EventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
-                    let category = record.value[EventImage.CloudKitKeys.EventImageKeys.category] as! String
-                    let locationForCellView = record.value[EventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
+                    let title = record.value[AppEventImage.CloudKitKeys.EventImageKeys.title] as! String
+                    let fileRootName = record.value[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
+                    let category = record.value[AppEventImage.CloudKitKeys.EventImageKeys.category] as! String
+                    let locationForCellView = record.value[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
                     
                     var images = [CountdownImage]()
                     var cloudError: CloudErrors?
@@ -887,34 +1675,49 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         
                         do {
                             let imageData = try Data(contentsOf: imageAsset.fileURL)
-                            if let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData) {
-                                images.append(newImage)
-                            }
+                            let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                            images.append(newImage)
                         }
                         catch {cloudError = .imageCreationFailure; break}
                     }
                     
-                    if let newEventImage = EventImage(title: title, fileRootName: fileRootName, category: category, isAppImage: true, locationForCellView: locationForCellView, recordName: recordID.recordName, images: images), cloudError == nil {
+                    if let newEventImage = AppEventImage(category: category, title: title, locationForCellView: CGFloat(locationForCellView / 100), recordName: recordID.recordName, images: images), cloudError == nil {
                         completion(newEventImage, nil)
                     }
                     else {completion(nil, cloudError)}
                 }
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    weakSelf?.cloudThumbnailsFetched = true
-                }
             }
             else {completion(nil, .noRecords)}
+            
         }
         publicCloudDatabase.add(fetchOperation)
     }
     
-    fileprivate func thumbnailLoadComplete(_ image: EventImage?, _ error: CloudErrors?) {
+    fileprivate func networkErrorHandler(_ error: NSError) {
+        switch error.code {
+            // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+            // Error code 3: Network Unavailable.
+            // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+            // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
+        case 1, 4, 4097: DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .failed(nil)}
+        case 3:
+            DispatchQueue.main.async { [weak self] in
+                self?.currentNetworkState = .failed("Network unavailable, tap to retry.")
+            }
+        default: DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .failed(nil)}
+        }
+    }
+    
+    fileprivate func thumbnailLoadComplete(_ image: AppEventImage?, _ error: CloudErrors?) {
         if image != nil && error == nil {
-            DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.cachedImages.append(image!)}
+            DispatchQueue.main.async { [weak weakSelf = self] in
+                weakSelf?.currentNetworkState = .complete
+                weakSelf?.cachedImages.append(image!)
+            }
         }
         else {
             if error == .noRecords {
-                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.cloudThumbnailsFetched = true}
+                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.currentNetworkState = .complete}
             }
             else {
                 // TODO: - Error handling
@@ -923,6 +1726,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
+    //
+    // MARK: Utility helpers
+    
     fileprivate func setDefaultTime() -> Date {
         let localTimeIntervalAdjustment = TimeZone.current.secondsFromGMT()
         var timeIntervalToReturn = 43200 - Double(localTimeIntervalAdjustment)
@@ -930,22 +1736,60 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         return Date(timeIntervalSinceReferenceDate: timeIntervalToReturn)
     }
     
-    fileprivate func combineDateAndTime() -> Date {
-        let selectedTime = timeHolder!.timeIntervalSinceReferenceDate
-        let days = (selectedTime/86400.0).rounded(.down)
-        let timeIntervalFromMidnight = selectedTime - (days * 86400.0)
-        
-        var selectedDate = calendarDayHolder!.timeIntervalSinceReferenceDate
-        let days2 = (selectedDate/86400.0).rounded(.down)
-        let timeIntervalFromMidnight2 = selectedDate - (days2 * 86400.0)
-        selectedDate -= timeIntervalFromMidnight2
-        
-        return Date(timeIntervalSinceReferenceDate: timeIntervalFromMidnight + selectedDate)
+    fileprivate func createEventImageInfo() -> EventImageInfo {
+        if !selectedImage!.imagesAreSavedToDisk {
+            let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
+            if results.contains(false) {
+                // TODO: Error Handling
+                fatalError("Images were unable to be saved to the disk!")
+            }
+            return EventImageInfo(fromEventImage: selectedImage!)
+        }
+        else {
+            if let i = localImageInfo.index(where: {$0.title == selectedImage!.title}) {
+                return localImageInfo[i]
+            }
+            else {
+                let localUserImagesPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [false])
+                let localUserImageInfos = localPersistentStore.objects(EventImageInfo.self).filter(localUserImagesPredicate)
+                let i = localUserImageInfos.index(where: {$0.title == selectedImage!.title})!
+                return localUserImageInfos[i]
+            }
+        }
     }
     
-    fileprivate func deconstructDateAndTime() {
-        guard eventDate != nil else {return}
-        calendarDayHolder = eventDate!.date
-        if !eventDate!.dateOnly {timeHolder = eventDate!.date}
+    fileprivate func createNewObject(overwrite: Bool) {
+        var image: EventImageInfo?
+        if selectedImage != nil {image = createEventImageInfo()}
+        let newEvent = SpecialEvent(
+            category: eventCategory ?? "Uncatagorized",
+            title: eventTitle!,
+            tagline: eventTagline,
+            date: eventDate!,
+            abridgedDisplayMode: abridgedDisplayMode,
+            useMask: useMask,
+            image: image
+        )
+        try! localPersistentStore.write {localPersistentStore.add(newEvent, update: overwrite)}
     }
+    
+    fileprivate func checkFinishButtonEnable() {
+        if eventCategory != nil && eventTitle != nil && eventDate != nil {
+            enableButton(finishButton)
+            finishProgressImageView?.tintColor = UIColor.green
+        }
+        else {
+            disableButton(finishButton)
+            finishProgressImageView?.tintColor = inactiveColor
+        }
+    }
+    
+    fileprivate func enableButton(_ button: UIButton) {
+        button.isEnabled = true; button.layer.opacity = 1.0
+    }
+    
+    fileprivate func disableButton(_ button: UIButton) {
+        button.isEnabled = false; button.layer.opacity = 0.5
+    }
+
 }

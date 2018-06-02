@@ -11,10 +11,11 @@ import CoreGraphics
 
 class GradientMaskView: UIView {
 
-    var percentMaskCoverage: CGFloat = 1.0
+    var percentMaskCoverage: CGFloat = 1.0 {didSet {setNeedsDisplay()}}
     fileprivate let sizeOfGradientArea: CGFloat = 0.15
     
     override func draw(_ rect: CGRect) {
+        guard percentMaskCoverage > 0.0 else {return}
         let ctx = UIGraphicsGetCurrentContext()!
         
         let colorSpace = CGColorSpaceCreateDeviceRGB()

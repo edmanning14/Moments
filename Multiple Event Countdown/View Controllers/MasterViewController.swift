@@ -16,11 +16,8 @@ class MasterViewController: UITableViewController {
     // MARK: - Properties
     //
     
-    // Typealiases
-    typealias ActiveCategory = String
-    
     //
-    // Types
+    // MARK: Types
     enum EventSortMethods {
         case chronologicalNewestFirst, chronologicalOldestFirst
         
@@ -34,32 +31,56 @@ class MasterViewController: UITableViewController {
         }
     }
     
-    // Data Model
+    //
+    // MARK: Data Model
     var specialEvents: Results<SpecialEvent>!
     var activeCategories = [String]()
+    var indexPathMap = [IndexPath]()
     var allCategories = [String]()
     var eventSortMethod = EventSortMethods.chronologicalNewestFirst
     var lastIndexPath = IndexPath(row: 0, section: 0)
 
-    // Persistence
+    //
+    // MARK: Persistence
     var localPersistentStore: Realm!
-    var localPersistentStoreNotificationsToken: NotificationToken!
+    var localPersistentStoreNotificationToken: NotificationToken!
     let userDefaultsContainer = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")
     
-    //References and Outlets
+    //
+    // MARK: References and Outlets
     var detailViewController: DetailViewController? = nil
     
     //
-    // Constants
+    // MARK: Constants
     fileprivate struct SegueIdentifiers {
         static let showDetail = "ShowDetail"
         static let addNewEventSegue = "Add New Event Segue"
     }
     
-    // Flags
-    var isUserChange = false
+    //
+    // MARK: - Design
     
-    // Timers
+    // MARK: Colors
+    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
+    let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
+    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
+    let secondaryTextLightColor = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
+    
+    // MARK: Fonts
+    let headingsFontName = "Comfortaa-Light"
+    let contentSecondaryFontName = "Raleway-Regular"
+    
+    // MARK: Layout
+    fileprivate let cellSpacing: CGFloat = 10.0
+    
+    //
+    // MARK: Flags
+    var isUserChange = false
+    var dateDidChange = false
+    var categoryDidChange = false
+    
+    //
+    // MARK: Timers
     var eventTimer: Timer?
     
     
@@ -75,17 +96,29 @@ class MasterViewController: UITableViewController {
         let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
-        addButton.tintColor = UIColor.orange
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+        
+        let addEventImage = #imageLiteral(resourceName: "AddEventImage")
+        let addButton = UIBarButtonItem(image: addEventImage, style: .plain, target: self, action: #selector(insertNewObject(_:)))
+        addButton.tintColor = primaryTextDarkColor
         navigationItem.rightBarButtonItem = addButton
         
-        let editButton = editButtonItem
-        editButton.tintColor = UIColor.orange
+        let editButton = UIBarButtonItem(title: "EDIT", style: .plain, target: self, action: #selector(editTableView(_:)))
+        editButton.tintColor = primaryTextDarkColor
+        editButton.setTitleTextAttributes(attributes, for: .normal)
         navigationItem.leftBarButtonItem = editButton
         
-        tableView.tableFooterView = UIView() // To get rid of extra row separators
-        tableView.rowHeight = 170.0
-        tableView.sectionHeaderHeight = 45.0
+        let navItemTitleLabel = UILabel()
+        navItemTitleLabel.text = "Moments"
+        navItemTitleLabel.backgroundColor = UIColor.clear
+        navItemTitleLabel.textColor = primaryTextRegularColor
+        navItemTitleLabel.font = UIFont(name: headingsFontName, size: 20.0)
+        navigationItem.titleView = navItemTitleLabel
+        
+        tableView.sectionHeaderHeight = 50.0
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
         
         // Reference to detail view controller
         if let split = splitViewController {
@@ -103,16 +136,34 @@ class MasterViewController: UITableViewController {
         super.viewWillAppear(animated)
     }
     
+    @objc fileprivate func applicationDidBecomeActive(notification: NSNotification) {
+        if !specialEvents.isEmpty && eventTimer == nil {
+            eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
+        }
+    }
+    
+    @objc fileprivate func applicationWillResignActive(notification: NSNotification) {
+        eventTimer?.invalidate()
+        eventTimer = nil
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         eventTimer?.invalidate()
         eventTimer = nil
     }
     
-    override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
+    override func didReceiveMemoryWarning() {
+        if UIApplication.shared.applicationState == .background {
+            eventTimer?.invalidate()
+            eventTimer = nil
+        }
+        super.didReceiveMemoryWarning()
+    }
     
     deinit {
-        localPersistentStoreNotificationsToken?.invalidate()
+        localPersistentStoreNotificationToken?.invalidate()
         eventTimer?.invalidate()
+        eventTimer = nil
     }
     
     
@@ -131,13 +182,23 @@ class MasterViewController: UITableViewController {
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         case SegueIdentifiers.addNewEventSegue:
+            let cancelButton = UIBarButtonItem()
+            cancelButton.tintColor = primaryTextDarkColor
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+            cancelButton.setTitleTextAttributes(attributes, for: .normal)
+            cancelButton.title = "CANCEL"
+            
             if let cell = sender as? EventTableViewCell {
                 let ip = tableView.indexPath(for: cell)!
+                let event = items(forSection: ip.section)[ip.row]
                 let navController = segue.destination as! UINavigationController
                 let dest = navController.viewControllers[0] as! NewEventViewController
-                dest.specialEvent = items(forSection: ip.section)[ip.row]
+                dest.specialEvent = event
                 dest.editingEvent = true
             }
+            
+            navigationItem.backBarButtonItem = cancelButton
+            
         default: break
         }
     }
@@ -154,32 +215,74 @@ class MasterViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UIView()
-        headerView.backgroundColor = UIColor.black.withAlphaComponent(0.75)
+        let headerView = UITableViewHeaderFooterView()
+        let blurEffect = UIBlurEffect(style: .dark)
+        let backgroundView = UIVisualEffectView(effect: blurEffect)
+        headerView.backgroundView = backgroundView
         
         let headerLabel = UILabel(frame: CGRect(x: 5.0, y: 5.0, width: 100.0, height: 100.0))
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
         headerLabel.backgroundColor = UIColor.clear
-        headerLabel.textColor = UIColor.white
-        headerLabel.font = UIFont(name: "FiraSans-Light", size: 30.0)
+        headerLabel.textColor = secondaryTextRegularColor
+        headerLabel.font = UIFont(name: headingsFontName, size: 30.0)
         headerLabel.text = activeCategories[section]
         headerLabel.textAlignment = .left
         
-        headerView.addSubview(headerLabel)
+        headerView.contentView.addSubview(headerLabel)
         headerLabel.sizeToFit()
+        headerView.leftAnchor.constraint(equalTo: headerLabel.leftAnchor, constant: -20.0).isActive = true
+        headerView.topAnchor.constraint(equalTo: headerLabel.topAnchor, constant: 0.0).isActive = true
+        headerView.rightAnchor.constraint(equalTo: headerLabel.rightAnchor, constant: 0.0).isActive = true
+        headerView.bottomAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 0.0).isActive = true
         
         return headerView
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.row == items(forSection: indexPath.section).count - 1 {return 160}
+        return 170
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
+        cell.backgroundColor = UIColor.clear
+        cell.viewWithMargins.layer.cornerRadius = 3.0
+        cell.viewWithMargins.layer.masksToBounds = true
         cell.configuration = .tableView
+        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.black
+        cell.selectedBackgroundView = backgroundView
+        
+        let bottomAnchorConstraint = cell.constraints.first {$0.secondAnchor == cell.viewWithMargins.bottomAnchor}
+        bottomAnchorConstraint!.isActive = false
+        if indexPath.row == items(forSection: indexPath.section).count - 1 {
+            cell.bottomAnchor.constraint(equalTo: cell.viewWithMargins.bottomAnchor, constant: 0.0).isActive = true
+        }
+        else {
+            cell.bottomAnchor.constraint(equalTo: cell.viewWithMargins.bottomAnchor, constant: cellSpacing).isActive = true
+        }
+        
         cell.eventTitle = items(forSection: indexPath.section)[indexPath.row].title
         cell.eventTagline = items(forSection: indexPath.section)[indexPath.row].tagline
         cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
+        cell.abridgedDisplayMode = items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
         cell.creationDate = items(forSection: indexPath.section)[indexPath.row].creationDate
-        if items(forSection: indexPath.section)[indexPath.row].image != nil {
-            cell.eventImage = EventImage(fromEventImageInfo: items(forSection: indexPath.section)[indexPath.row].image!)
+        if let imageInfo = items(forSection: indexPath.section)[indexPath.row].image {
+            if imageInfo.isAppImage {
+                cell.useMask = items(forSection: indexPath.section)[indexPath.row].useMask
+                cell.eventImage = AppEventImage(fromEventImageInfo: imageInfo)
+            }
+            else {
+                cell.useMask = false
+                cell.eventImage = UserEventImage(fromEventImageInfo: imageInfo)
+            }
         }
+        
+        let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+        let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+        cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
+        cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
         
         if indexPath == lastIndexPath {
             if eventTimer == nil {
@@ -188,10 +291,6 @@ class MasterViewController: UITableViewController {
         }
         return cell
     }
-    
-    /*override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 170.0
-    }*/
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
@@ -203,9 +302,21 @@ class MasterViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            try! localPersistentStore.write {
-                localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
+            let categoryOfDeletedItem = items(forSection: indexPath.section)[indexPath.row].category
+            
+            localPersistentStore.beginWrite()
+            localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
+            try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
+            
+            updateActiveCategories()
+            updateIndexPathMap()
+            
+            tableView.beginUpdates()
+            if !activeCategories.contains(categoryOfDeletedItem) {
+                tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
             }
+            else {tableView.deleteRows(at: [indexPath], with: .fade)}
+            tableView.endUpdates()
         }
     }
     
@@ -237,6 +348,17 @@ class MasterViewController: UITableViewController {
         }
     }
     
+    @objc fileprivate func handleChangeDisplayModeTap(_ sender: UITapGestureRecognizer) {
+        let cell = sender.view!.superview!.superview! as! EventTableViewCell
+        let indexPath = tableView.indexPath(for: cell)!
+        cell.abridgedDisplayMode = !cell.abridgedDisplayMode
+        localPersistentStore.beginWrite()
+        items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode = !items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
+        try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
+    }
+    
+    @objc fileprivate func cancel() {self.dismiss(animated: true, completion: nil)}
+    
     // Function to check cloud for updates on startup.
     fileprivate func syncRealmWithCloud () -> Void {
         
@@ -263,23 +385,113 @@ class MasterViewController: UITableViewController {
             syncRealmWithCloud()
             
             specialEvents = localPersistentStore!.objects(SpecialEvent.self)
+            print(specialEvents.count)
             updateActiveCategories()
+            updateIndexPathMap()
             tableView.reloadData()
             
             addOrRemoveNewCellPrompt()
             
             // Setup notification token for database changes
-            localPersistentStoreNotificationsToken = specialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
+            localPersistentStoreNotificationToken = specialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
                 if !weakSelf!.isUserChange {
                     switch changes {
                     case .error(let error):
                         fatalError("Error with Realm notifications: \(error.localizedDescription)")
                     case .initial: break
-                    case .update(_, _, _, _):
+                    case .update(_, let deletions, let insertions, let modifications):
+                        
+                        let oldActiveCategories = weakSelf!.activeCategories
+                        let oldIndexPathMap = weakSelf!.indexPathMap
+                        var fullDataReload = false
+                        var insertedSections = [Int]()
+                        var sectionsToReload = [Int]()
+                        var deletedSections = [Int]()
+                        var indexPathsToDelete = [IndexPath]()
+                        var indexPathsToInsert = [IndexPath]()
+                        var indexPathsToModify = [IndexPath]()
+                        
+                        weakSelf!.updateActiveCategories()
+                        weakSelf!.updateIndexPathMap()
+                        
+                        if weakSelf!.categoryDidChange {fullDataReload = true;  weakSelf!.categoryDidChange = false}
+                        else if weakSelf!.activeCategories != oldActiveCategories {
+                            let diff = weakSelf!.activeCategories.count - oldActiveCategories.count
+                            if diff > 0 {
+                                var j = 0
+                                for i in 0..<weakSelf!.activeCategories.count {
+                                    if weakSelf!.activeCategories[i] != oldActiveCategories[j] {insertedSections.append(i)}
+                                    else {if j < oldActiveCategories.count - 1 {j += 1}}
+                                }
+                            }
+                            else if diff < 0 {
+                                var j = 0
+                                for i in 0..<oldActiveCategories.count {
+                                    if oldActiveCategories[i] != weakSelf!.activeCategories[j] {deletedSections.append(i)}
+                                    else {if j < weakSelf!.activeCategories.count - 1 {j += 1}}
+                                }
+                            }
+                            else {fullDataReload = true}
+                        }
+                        
+                        if !fullDataReload {
+                            for eventIndex in deletions {
+                                if !deletedSections.contains(oldIndexPathMap[eventIndex].section) {
+                                    indexPathsToDelete.append(oldIndexPathMap[eventIndex])
+                                }
+                            }
+                            for eventIndex in insertions {
+                                if !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                    indexPathsToInsert.append(weakSelf!.indexPathMap[eventIndex])
+                                    if weakSelf!.indexPathMap[eventIndex].row == weakSelf!.items(forSection: weakSelf!.indexPathMap[eventIndex].section).count - 1 {
+                                        indexPathsToModify.append(IndexPath(row: weakSelf!.indexPathMap[eventIndex].row - 1, section: weakSelf!.indexPathMap[eventIndex].section))
+                                    }
+                                }
+                            }
+                            for eventIndex in modifications {
+                                if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                    if weakSelf!.dateDidChange {
+                                        if !sectionsToReload.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                            sectionsToReload.append(weakSelf!.indexPathMap[eventIndex].section)
+                                        }
+                                    }
+                                    else {indexPathsToModify.append(oldIndexPathMap[eventIndex])}
+                                }
+                                else if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                    indexPathsToDelete.append(oldIndexPathMap[eventIndex])
+                                }
+                            }
+                        }
+                        
                         DispatchQueue.main.async { [weak weakSelf = self] in
                             if weakSelf != nil {
-                                weakSelf!.updateActiveCategories()
-                                weakSelf!.tableView.reloadData()
+                                
+                                if fullDataReload {weakSelf!.tableView.reloadData()}
+                                else {
+                                    weakSelf!.tableView.beginUpdates()
+                                    if !insertedSections.isEmpty {
+                                        weakSelf!.tableView.insertSections(IndexSet(insertedSections), with: .fade)
+                                    }
+                                    if !deletedSections.isEmpty {
+                                        weakSelf!.tableView.deleteSections(IndexSet(deletedSections), with: .fade)
+                                    }
+                                    if !sectionsToReload.isEmpty {
+                                        weakSelf!.tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
+                                    }
+                                    if !indexPathsToDelete.isEmpty {
+                                        weakSelf!.tableView.deleteRows(at: indexPathsToDelete, with: .fade)
+                                    }
+                                    if !indexPathsToInsert.isEmpty {
+                                        weakSelf!.tableView.insertRows(at: indexPathsToInsert, with: .fade)
+                                    }
+                                    if !indexPathsToModify.isEmpty {
+                                        weakSelf!.tableView.reloadRows(at: indexPathsToModify, with: .fade)
+                                    }
+                                    
+                                    weakSelf!.tableView.endUpdates()
+                                }
+                                weakSelf!.addOrRemoveNewCellPrompt()
+                                weakSelf!.dateDidChange = false
                             }
                         }
                     }
@@ -321,12 +533,33 @@ class MasterViewController: UITableViewController {
         }
     }
     
+    fileprivate func updateIndexPathMap() {
+        indexPathMap = Array(repeating: IndexPath(), count: specialEvents.count)
+        for section in 0..<activeCategories.count {
+            for (row, event) in items(forSection: section).enumerated() {
+                let index = specialEvents.index(of: event)!
+                indexPathMap[index] = IndexPath(row: row, section: section)
+            }
+        }
+    }
+    
     // Function to add a new event from the events page.
     @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
     
+    @objc fileprivate func editTableView(_ sender: UIBarButtonItem) {
+        if sender.title == "EDIT" {
+            tableView.setEditing(true, animated: true)
+            sender.title = "DONE"
+        }
+        else if sender.title == "DONE" {
+            tableView.setEditing(false, animated: true)
+            sender.title = "EDIT"
+        }
+    }
+    
     fileprivate func addOrRemoveNewCellPrompt() -> Void {
         // TODO: Make this a soft and comfortable glyph instead of harsh text.
-        if specialEvents.isEmpty {
+        if activeCategories.isEmpty {
             let addNewCellPrompt = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: 300.0))
             addNewCellPrompt.text = "Tap the '+' in the upper right to create a new event!"
             addNewCellPrompt.textColor = UIColor.white
@@ -346,6 +579,18 @@ class MasterViewController: UITableViewController {
         case .chronologicalOldestFirst:
             return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: false)
         }
+    }
+    
+    fileprivate func indexPaths(forEvents indicies: [Int]) -> [IndexPath] {
+        var indexPathsToReturn = [IndexPath]()
+        for index in indicies {
+            let category = specialEvents[index].category
+            let section = activeCategories.index(where: {$0 == category})!
+            let items = self.items(forSection: section)
+            let row = items.index(where: {$0.category == category})!
+            indexPathsToReturn.append(IndexPath(row: row, section: section))
+        }
+        return indexPathsToReturn
     }
 }
 

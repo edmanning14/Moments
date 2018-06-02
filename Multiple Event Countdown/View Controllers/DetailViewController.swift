@@ -9,15 +9,37 @@
 import UIKit
 
 class DetailViewController: UIViewController {
-
-    // MARK: - Outlets
+    
+    //
+    // MARK: - GUI
+    //
+    
     @IBOutlet weak var detailDescriptionLabel: UILabel!
     
     
+    //
     // MARK: - Data Model
+    //
     
     var detailItem: SpecialEvent? {didSet {configureView()}}
+    
+    
+    //
+    // MARK: - View Controller Lifecycle
+    //
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configureView()
+    }
+    
+    override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
+    
+    
+    //
+    // MARK: - View Cofiguration
+    //
+    
     func configureView() {
         if let detail = detailItem {
             if let label = detailDescriptionLabel {
@@ -25,13 +47,17 @@ class DetailViewController: UIViewController {
             }
         }
     }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        configureView()
+    
+    
+    //
+    // MARK: - Action Methods
+    //
+    
+    @objc fileprivate func handleNavButtonClick(_ sender: Any?) {
+        /*if let button = sender as? UIBarButtonItem {
+            
+        }*/
     }
-
-    override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
 
 }
 

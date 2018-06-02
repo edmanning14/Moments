@@ -48,41 +48,38 @@ class EventImageInfo: Object {
     
     // Stored Properties
     @objc dynamic var title = ""
-    @objc dynamic var fileRootName = ""
-    @objc dynamic var category = ""
-    @objc dynamic var isAppImage = true
+    @objc dynamic var category: String? = nil
+    @objc dynamic var isAppImage = false
     @objc dynamic var recordName: String? = nil
     @objc dynamic var locationForCellView = 50
-    @objc dynamic var hasMask = true
+    @objc dynamic var hasMask = false
+    let specialEvents = LinkingObjects(fromType: SpecialEvent.self, property: "image")
     
     // Initializers
-    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String) {
-        self.init()
-        self.title = aTitle
-        self.fileRootName = fileRootName
-        self.category = category
-    }
     
-    convenience init(imageTitle aTitle: String, fileRootName: String, imageCategory category: String, isAppImage: Bool, recordName: String?, locationForCellView: Int, hasMask: Bool) {
+    convenience init(locationForCellView: CGFloat, imageTitle aTitle: String, imageCategory category: String? = nil, isAppImage: Bool = false, recordName: String? = nil, hasMask: Bool = false) {
         self.init()
+        self.locationForCellView = Int(locationForCellView * 100.0)
         self.title = aTitle
-        self.fileRootName = fileRootName
+        
         self.category = category
         self.isAppImage = isAppImage
         self.recordName = recordName
-        self.locationForCellView = locationForCellView
         self.hasMask = hasMask
     }
     
-    convenience init(fromEventImage image: EventImage) {
+    convenience init(fromEventImage image: UserEventImage) {
         self.init()
-        self.title = image.title
-        self.fileRootName = image.fileRootName
-        self.category = image.category
-        self.isAppImage = image.isAppImage
-        self.recordName = image.recordName
-        self.locationForCellView = Int(image.locationForCellView * 100.0)
-        self.hasMask = {if image.maskImage != nil {return true} else {return false}}()
+        
+        title = image.title
+        if let location = image.locationForCellView {locationForCellView = Int(location * 100.0)}
+        
+        if let appImage = image as? AppEventImage {
+            category = appImage.category
+            isAppImage = true
+            if appImage.maskImage != nil {hasMask = true}
+            recordName = appImage.recordName
+        }
     }
     
     override static func primaryKey() -> String? {return "title"}
@@ -91,19 +88,23 @@ class EventImageInfo: Object {
 class SpecialEvent: Object {
     
     // Stored Properties
+    @objc dynamic var category = ""
     @objc dynamic var title = ""
     @objc dynamic var tagline: String?
     @objc dynamic var creationDate = Date()
     @objc dynamic var date: EventDate?
-    @objc dynamic var category = ""
+    @objc dynamic var abridgedDisplayMode = false
+    @objc dynamic var useMask = true
     @objc dynamic var image: EventImageInfo?
     
-    convenience init(category: String, title: String, tagline: String?, date: EventDate, image: EventImageInfo?) {
+    convenience init(category: String, title: String, tagline: String?, date: EventDate, abridgedDisplayMode: Bool, useMask: Bool, image: EventImageInfo?) {
         self.init()
         self.category = category
         self.title = title
         self.tagline = tagline
         self.date = date
+        self.abridgedDisplayMode = abridgedDisplayMode
+        self.useMask = useMask
         self.image = image
     }
     

@@ -27,10 +27,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         if eventImages.count == 0 {
             
             // Add image info for images on the disk to the persistent store
-            for imageInfo in EventImage.bundleMainImageInfo {
-                if let _ = Bundle.main.path(forResource: imageInfo.fileRootName, ofType: ".jpg") {
+            for imageInfo in AppEventImage.bundleMainImageInfo {
+                let fileRootName = imageInfo.title.convertToFileName()
+                if let _ = Bundle.main.path(forResource: fileRootName, ofType: ".jpg") {
                     if imageInfo.hasMask {
-                        if let _ = Bundle.main.path(forResource: imageInfo.fileRootName + "Mask", ofType: ".png") {
+                        if let _ = Bundle.main.path(forResource: fileRootName + "Mask", ofType: ".png") {
                             do {
                                 try! localPersistentStore.write {
                                     localPersistentStore.add(imageInfo)
@@ -39,12 +40,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                         }
                         else {
                             let imageInfoToAdd = EventImageInfo(
+                                locationForCellView: CGFloat(imageInfo.locationForCellView / 100),
                                 imageTitle: imageInfo.title,
-                                fileRootName: imageInfo.fileRootName,
                                 imageCategory: imageInfo.category,
                                 isAppImage: imageInfo.isAppImage,
                                 recordName: nil,
-                                locationForCellView: imageInfo.locationForCellView,
                                 hasMask: imageInfo.hasMask
                             )
                             do {
@@ -82,6 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                     return EventDate(date: newYearsDay, dateOnly: true)
                 }()
                 static let imageTitle = "Desert Dunes"
+                static let useMask: Bool = true
             }
             
             if let i = eventImages.index(where: {$0.title == DefaultEvent.imageTitle}) {
@@ -91,6 +92,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                     title: DefaultEvent.title,
                     tagline: DefaultEvent.tagline,
                     date: DefaultEvent.date,
+                    abridgedDisplayMode: false,
+                    useMask: DefaultEvent.useMask,
                     image: defaultImageInfo
                 )
                 try! localPersistentStore.write {localPersistentStore.add(defaultEvent)}
@@ -99,8 +102,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                 // TODO: error handling
                 fatalError("Default Image for the default event was not on the disk!")
             }
-            
-            
         }
         
         // Setup split view controller.

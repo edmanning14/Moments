@@ -15,22 +15,39 @@ class SoftBackgroundButton: UIButton {
     }
     
     fileprivate var layerInitialized = false
-    fileprivate let rectGrowthAmount: CGFloat = 20.0
+    fileprivate let rectXGrowthAmount: CGFloat = 15.0
+    fileprivate let rectYGrowthAmount: CGFloat = 10.0
 
     override var isSelected: Bool {
         didSet {
             if !layerInitialized {initializeLayer()}
-            if isSelected && !oldValue {layer.shadowOpacity = 0.25}
-            else if !isSelected && oldValue {layer.shadowOpacity = 0.0}
+            if isSelected && !oldValue {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.2,
+                    delay: 0.0,
+                    options: .curveLinear,
+                    animations: {self.layer.shadowOpacity = 0.5},
+                    completion: nil
+                )
+            }
+            else if !isSelected && oldValue {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.2,
+                    delay: 0.0,
+                    options: .curveLinear,
+                    animations: {self.layer.shadowOpacity = 0.0},
+                    completion: nil
+                )
+            }
         }
     }
     
     override func draw(_ rect: CGRect) {
         let shadowRect = CGRect(
-            x: titleLabel!.frame.origin.x - rectGrowthAmount,
-            y: titleLabel!.frame.origin.y - rectGrowthAmount,
-            width: titleLabel!.frame.size.width + (2 * rectGrowthAmount),
-            height: titleLabel!.frame.size.height + (2 * rectGrowthAmount)
+            x: titleLabel!.frame.origin.x - rectXGrowthAmount,
+            y: titleLabel!.frame.origin.y - rectYGrowthAmount,
+            width: titleLabel!.frame.size.width + (2 * rectXGrowthAmount),
+            height: titleLabel!.frame.size.height + (2 * rectYGrowthAmount)
         )
         layer.shadowPath = UIBezierPath(roundedRect: shadowRect, cornerRadius: shadowRect.size.height / 2).cgPath
     }
@@ -39,7 +56,7 @@ class SoftBackgroundButton: UIButton {
         backgroundColor = .clear
         layer.shadowColor = softEffectColor.cgColor
         layer.shadowOffset = CGSize(width: 0.0, height: 0.0)
-        layer.shadowRadius = 10.0
+        layer.shadowRadius = 15.0
         layerInitialized = true
     }
 

@@ -12,7 +12,7 @@ class CountdownMaskImageView: UIView {
 
     var image: CGImage! {didSet{setNeedsDisplay()}}
     var locationForCellView: CGFloat!
-    var percentMaskCoverage: CGFloat = 1.0
+    var percentMaskCoverage: CGFloat = 1.0 {didSet {setNeedsDisplay()}}
     fileprivate let sizeOfGradientArea: CGFloat = 0.15
     
     convenience init(frame: CGRect, image: CGImage, locationForCellView: CGFloat) {
@@ -22,6 +22,7 @@ class CountdownMaskImageView: UIView {
     }
     
     override func draw(_ rect: CGRect) {
+        guard percentMaskCoverage > 0.0 else {return}
         UIGraphicsBeginImageContext(rect.size)
         let imageCTX = UIGraphicsGetCurrentContext()!
         

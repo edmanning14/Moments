@@ -27,4 +27,13 @@ extension String {
         else if num == 1 {return self.index(before: i)}
         else {return index(_: i, insetBy: num - 1)}
     }
+    
+    func convertToFileName() -> String {
+        var stringToReturn = self
+        let illegalCharacters: [Character] = [" ", ":", "/"]
+        for char in stringToReturn {
+            if illegalCharacters.contains(char) {stringToReturn.remove(at: stringToReturn.index(of: char)!)}
+        }
+        return stringToReturn
+    }
 }

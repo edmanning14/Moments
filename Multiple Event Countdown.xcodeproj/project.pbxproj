@@ -10,8 +10,6 @@
 		64074C3F2018470600BD6C39 /* TextInputAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */; };
 		64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64074C402018473000BD6C39 /* TextInputAccessoryView.xib */; };
 		640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */; };
-		64238DAF1FFDFDEB009124BD /* NewEventInputsControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */; };
-		643C362F200DD4B400ECCA8F /* ButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643C362E200DD4B400ECCA8F /* ButtonsView.swift */; };
 		6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */; };
 		6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */; };
 		6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DE1F9CFDFE005C0F9C /* DetailViewController.swift */; };
@@ -24,6 +22,7 @@
 		644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */; };
 		644BBAB22049318400CF0C29 /* GradientMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAB12049318400CF0C29 /* GradientMaskView.swift */; };
 		644BBAB6204BC67B00CF0C29 /* CountdownMaskImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */; };
+		64520C0920C1305D00169A17 /* LoadingCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */; };
 		64537F61204663B500FDAC5A /* CountdownImageDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */; };
 		645A8A9F20294FD200E5934D /* ImageClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A8A9E20294FD200E5934D /* ImageClasses.swift */; };
 		64691C1C201EBA7300ADA4C3 /* SpecialEventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */; };
@@ -34,10 +33,13 @@
 		646C5D6B2033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D642033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg */; };
 		646C5D6E2033DDD5008B4BE1 /* DesertDunes.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D6C2033DDD4008B4BE1 /* DesertDunes.jpg */; };
 		646C5D6F2033DDD5008B4BE1 /* DesertDunesMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D6D2033DDD5008B4BE1 /* DesertDunesMask.png */; };
+		646F699720A1C6CA00E9518C /* CircularDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646F699620A1C6C900E9518C /* CircularDisplayView.swift */; };
 		64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */; };
 		6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */; };
-		6477FB122016F8C100EDFF50 /* LabelBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */; };
 		6487089D20515288007FFC1A /* SoftBackgroundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6487089C20515288007FFC1A /* SoftBackgroundButton.swift */; };
+		64A4855320AABD0400CE4418 /* Comfortaa-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855020AABD0200CE4418 /* Comfortaa-Light.ttf */; };
+		64A4855420AABD0400CE4418 /* Comfortaa-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */; };
+		64A4855520AABD0400CE4418 /* Comfortaa-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */; };
 		64B1D9942022B8930034FE21 /* Raleway-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */; };
 		64B1D9952022B8930034FE21 /* Raleway-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9832022B88E0034FE21 /* Raleway-ExtraBold.ttf */; };
 		64B1D9962022B8930034FE21 /* Raleway-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9842022B88E0034FE21 /* Raleway-Bold.ttf */; };
@@ -89,8 +91,6 @@
 		64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputAccessoryView.swift; sourceTree = "<group>"; };
 		64074C402018473000BD6C39 /* TextInputAccessoryView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextInputAccessoryView.xib; sourceTree = "<group>"; };
 		640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKAssetExtensions.swift; sourceTree = "<group>"; };
-		64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventInputsControl.swift; sourceTree = "<group>"; };
-		643C362E200DD4B400ECCA8F /* ButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ButtonsView.swift; path = "Multiple Event Countdown/New Group1/ButtonsView.swift"; sourceTree = SOURCE_ROOT; };
 		6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiple Event Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6444D8DC1F9CFDFE005C0F9C /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
@@ -105,6 +105,7 @@
 		644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownMainImageView.swift; sourceTree = "<group>"; };
 		644BBAB12049318400CF0C29 /* GradientMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientMaskView.swift; sourceTree = "<group>"; };
 		644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownMaskImageView.swift; sourceTree = "<group>"; };
+		64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingCollectionViewCell.swift; sourceTree = "<group>"; };
 		64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownImageDelegate.swift; sourceTree = "<group>"; };
 		645A8A9E20294FD200E5934D /* ImageClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClasses.swift; sourceTree = "<group>"; };
 		64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpecialEventCell.xib; sourceTree = "<group>"; };
@@ -114,10 +115,13 @@
 		646C5D642033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "DesertDunesThumbnail@3x.jpg"; sourceTree = "<group>"; };
 		646C5D6C2033DDD4008B4BE1 /* DesertDunes.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = DesertDunes.jpg; sourceTree = "<group>"; };
 		646C5D6D2033DDD5008B4BE1 /* DesertDunesMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DesertDunesMask.png; sourceTree = "<group>"; };
+		646F699620A1C6C900E9518C /* CircularDisplayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularDisplayView.swift; sourceTree = "<group>"; };
 		64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCell.swift; sourceTree = "<group>"; };
 		6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CGSizeExtensions.swift; path = Extensions/CGSizeExtensions.swift; sourceTree = SOURCE_ROOT; };
-		6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelBackgroundView.swift; sourceTree = "<group>"; };
 		6487089C20515288007FFC1A /* SoftBackgroundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftBackgroundButton.swift; sourceTree = "<group>"; };
+		64A4855020AABD0200CE4418 /* Comfortaa-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Light.ttf"; sourceTree = "<group>"; };
+		64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Regular.ttf"; sourceTree = "<group>"; };
+		64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Bold.ttf"; sourceTree = "<group>"; };
 		64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-BoldItalic.ttf"; sourceTree = "<group>"; };
 		64B1D9832022B88E0034FE21 /* Raleway-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-ExtraBold.ttf"; sourceTree = "<group>"; };
 		64B1D9842022B88E0034FE21 /* Raleway-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-Bold.ttf"; sourceTree = "<group>"; };
@@ -186,6 +190,7 @@
 		641A38201F9E1D7D00B238A0 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */,
 				64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */,
 				64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */,
 			);
@@ -305,20 +310,11 @@
 		6477FB102016F89000EDFF50 /* Custom Classes */ = {
 			isa = PBXGroup;
 			children = (
+				646F699620A1C6C900E9518C /* CircularDisplayView.swift */,
 				6487089C20515288007FFC1A /* SoftBackgroundButton.swift */,
 				64691C1D201EC2FD00ADA4C3 /* WaveEffectView.swift */,
-				6477FB132016F8CD00EDFF50 /* Pill Background Button */,
 			);
 			path = "Custom Classes";
-			sourceTree = "<group>";
-		};
-		6477FB132016F8CD00EDFF50 /* Pill Background Button */ = {
-			isa = PBXGroup;
-			children = (
-				64238DAE1FFDFDEB009124BD /* NewEventInputsControl.swift */,
-				6477FB112016F8C100EDFF50 /* LabelBackgroundView.swift */,
-			);
-			path = "Pill Background Button";
 			sourceTree = "<group>";
 		};
 		64A249441FB9863000E15B7A /* Images */ = {
@@ -346,7 +342,6 @@
 				644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */,
 				644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */,
 				644BBAB12049318400CF0C29 /* GradientMaskView.swift */,
-				643C362E200DD4B400ECCA8F /* ButtonsView.swift */,
 				64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */,
 				641A38201F9E1D7D00B238A0 /* Cells */,
 			);
@@ -357,6 +352,9 @@
 		64FE12741FBC21F70025C005 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */,
+				64A4855020AABD0200CE4418 /* Comfortaa-Light.ttf */,
+				64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */,
 				64FE127B1FBC22150025C005 /* FiraSans-Black.ttf */,
 				64FE127F1FBC22150025C005 /* FiraSans-BlackItalic.ttf */,
 				64FE127D1FBC22150025C005 /* FiraSans-Bold.ttf */,
@@ -498,6 +496,7 @@
 				64FE12931FBC22160025C005 /* FiraSans-SemiBoldItalic.ttf in Resources */,
 				64FE128C1FBC22160025C005 /* FiraSans-Light.ttf in Resources */,
 				64B1D9992022B8930034FE21 /* Raleway-ExtraLight.ttf in Resources */,
+				64A4855420AABD0400CE4418 /* Comfortaa-Regular.ttf in Resources */,
 				64FE128A1FBC22160025C005 /* FiraSans-ExtraBoldItalic.ttf in Resources */,
 				64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */,
 				64B1D99F2022B8930034FE21 /* Raleway-ThinItalic.ttf in Resources */,
@@ -509,6 +508,7 @@
 				64B1D9A42022B8930034FE21 /* Raleway-ExtraLightItalic.ttf in Resources */,
 				646C5D692033DD13008B4BE1 /* DesertDunesThumbnail@1x.jpg in Resources */,
 				64FE12911FBC22160025C005 /* FiraSans-BlackItalic.ttf in Resources */,
+				64A4855520AABD0400CE4418 /* Comfortaa-Bold.ttf in Resources */,
 				64FE128D1FBC22160025C005 /* FiraSans-Black.ttf in Resources */,
 				64FE12941FBC22160025C005 /* FiraSans-Italic.ttf in Resources */,
 				64FE12881FBC22160025C005 /* FiraSans-Regular.ttf in Resources */,
@@ -518,6 +518,7 @@
 				64FE12971FBC22160025C005 /* FiraSans-ThinItalic.ttf in Resources */,
 				64FE12901FBC22160025C005 /* FiraSans-ExtraBold.ttf in Resources */,
 				64B1D99C2022B8930034FE21 /* Raleway-Regular.ttf in Resources */,
+				64A4855320AABD0400CE4418 /* Comfortaa-Light.ttf in Resources */,
 				64B1D9A32022B8930034FE21 /* Raleway-BlackItalic.ttf in Resources */,
 				64B1D99B2022B8930034FE21 /* Raleway-Medium.ttf in Resources */,
 				646C5D672033DD13008B4BE1 /* DesertDunesThumbnail@2x.jpg in Resources */,
@@ -601,13 +602,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6477FB122016F8C100EDFF50 /* LabelBackgroundView.swift in Sources */,
 				64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */,
 				640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */,
 				64B1D9AB2022D1C50034FE21 /* SelectImageViewController.swift in Sources */,
 				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
-				643C362F200DD4B400ECCA8F /* ButtonsView.swift in Sources */,
-				64238DAF1FFDFDEB009124BD /* NewEventInputsControl.swift in Sources */,
+				646F699720A1C6CA00E9518C /* CircularDisplayView.swift in Sources */,
 				64074C3F2018470600BD6C39 /* TextInputAccessoryView.swift in Sources */,
 				6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */,
 				64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */,
@@ -615,6 +614,7 @@
 				64691C1E201EC2FD00ADA4C3 /* WaveEffectView.swift in Sources */,
 				64B1D9AD2022E3160034FE21 /* SelectImageCollectionViewCell.swift in Sources */,
 				6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */,
+				64520C0920C1305D00169A17 /* LoadingCollectionViewCell.swift in Sources */,
 				64537F61204663B500FDAC5A /* CountdownImageDelegate.swift in Sources */,
 				644BBAAE2047C0AF00CF0C29 /* ImagePreviewViewController.swift in Sources */,
 				644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */,

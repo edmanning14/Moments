@@ -10,15 +10,44 @@ import UIKit
 import CoreGraphics
 
 class WaveEffectView: UIView, CAAnimationDelegate {
+    
+    /*var isSelected = false {
+        didSet {
+            let changeColorAnim = CABasicAnimation(keyPath: "backgroundColor")
+            changeColorAnim.duration = 0.2
+            changeColorAnim.isRemovedOnCompletion = false
+            
+            if isSelected && oldValue != isSelected {
+                changeColorAnim.fromValue = UIColor.darkGray.cgColor
+                changeColorAnim.toValue = UIColor.lightGray.cgColor
+                
+                layer.add(changeColorAnim, forKey: "backgroundColor")
+                layer.backgroundColor = UIColor.lightGray.cgColor
+            }
+            else if !isSelected && oldValue != isSelected {
+                changeColorAnim.fromValue = UIColor.lightGray.cgColor
+                changeColorAnim.toValue = UIColor.darkGray.cgColor
+                
+                layer.add(changeColorAnim, forKey: "backgroundColor")
+                layer.backgroundColor = UIColor.darkGray.cgColor
+            }
+        }
+    }*/
 
     fileprivate let gradientLayer = CAGradientLayer()
     fileprivate var colorSets = [[CGColor]]()
     fileprivate var currentColorSet = 0
+    fileprivate var completionBlock: () -> Void = {}
     
     required init?(coder aDecoder: NSCoder) {super.init(coder: aDecoder); initSteps()}
     override init(frame: CGRect) {super.init(frame: frame); initSteps()}
     
     fileprivate func initSteps() {
+        
+        backgroundColor = UIColor.clear
+        layer.backgroundColor = UIColor.darkGray.cgColor
+        layer.opacity = 0.5
+        
         let colorSet1 = [UIColor.darkGray.cgColor, UIColor.darkGray.cgColor]
         let colorSet2 = [UIColor.lightGray.cgColor, UIColor.darkGray.cgColor]
         let colorSet3 = [UIColor.darkGray.cgColor, UIColor.lightGray.cgColor]
@@ -27,28 +56,62 @@ class WaveEffectView: UIView, CAAnimationDelegate {
         gradientLayer.colors = colorSet1
         gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1.0, y: 0.5)
-        self.layer.addSublayer(gradientLayer)
     }
     
     override func draw(_ rect: CGRect) {gradientLayer.frame = rect}
     
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         if flag {
-            if currentColorSet != 0 {animate()}
+            let basicAnim = anim as! CABasicAnimation
+            if basicAnim.keyPath == "opacity" && basicAnim.fromValue as! Double == 0.5 {animateGradient()}
+            else if basicAnim.keyPath == "colors" {
+                if currentColorSet != 0 {animateGradient()}
+                else {
+                    gradientLayer.removeFromSuperlayer()
+                    animateFadeOut()
+                }
+            }
+            else if basicAnim.keyPath == "opacity" && basicAnim.fromValue as! Double == 1.0 {completionBlock()}
         }
     }
     
-    func animate() {
-        let animation = CABasicAnimation(keyPath: "colors")
-        animation.delegate = self
-        animation.duration = 0.3
-        animation.fillMode = kCAFillModeForwards
-        animation.isRemovedOnCompletion = false
+    func animate(completionBlock: @escaping () -> Void) {
+        self.completionBlock = completionBlock
+        let fadeInAnim = CABasicAnimation(keyPath: "opacity")
+        fadeInAnim.fromValue = 0.5
+        fadeInAnim.toValue = 1.0
+        fadeInAnim.duration = 0.05
+        fadeInAnim.isRemovedOnCompletion = false
+        fadeInAnim.delegate = self
         
-        animation.fromValue = colorSets[currentColorSet]
+        layer.add(fadeInAnim, forKey: "opacity")
+        layer.opacity = 1.0
+    }
+    
+    fileprivate func animateGradient() {
+        if currentColorSet == 0 {self.layer.addSublayer(gradientLayer)}
+        let gradientAnim = CABasicAnimation(keyPath: "colors")
+        gradientAnim.delegate = self
+        gradientAnim.duration = 0.1
+        gradientAnim.fillMode = kCAFillModeForwards
+        gradientAnim.isRemovedOnCompletion = false
+        
+        gradientAnim.fromValue = colorSets[currentColorSet]
         if currentColorSet < (colorSets.count - 1) {currentColorSet += 1} else {currentColorSet = 0}
-        animation.toValue = colorSets[currentColorSet]
+        gradientAnim.toValue = colorSets[currentColorSet]
         
-        gradientLayer.add(animation, forKey: "colorChange")
+        gradientLayer.add(gradientAnim, forKey: "colorChange")
+    }
+    
+    fileprivate func animateFadeOut() {
+        let fadeOutAnim = CABasicAnimation(keyPath: "opacity")
+        fadeOutAnim.fromValue = 1.0
+        fadeOutAnim.toValue = 0.5
+        fadeOutAnim.duration = 0.1
+        fadeOutAnim.isRemovedOnCompletion = false
+        fadeOutAnim.delegate = self
+        
+        layer.add(fadeOutAnim, forKey: "opacity")
+        layer.opacity = 0.5
     }
 }

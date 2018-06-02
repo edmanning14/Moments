@@ -12,58 +12,101 @@ import CoreGraphics
 class CountdownMainImageView: UIView {
 
     var image: CGImage! {didSet{setNeedsDisplay()}}
-    var locationForCellView: CGFloat!
+    var imageFrame: CGRect?
+    var isAppImage: Bool!
+    var locationForCellView: CGFloat?
     enum DisplayModes {case cell, detail}
-    var displayMode = DisplayModes.cell
+    var displayMode = DisplayModes.detail
     
-    convenience init(frame: CGRect, image: CGImage, locationForCellView: CGFloat, displayMode: DisplayModes) {
+    convenience init?(frame: CGRect, image: CGImage, isAppImage: Bool, locationForCellView: CGFloat?, displayMode: DisplayModes = .detail) {
+        if displayMode == .cell && locationForCellView == nil {return nil}
         self.init(frame: frame)
         self.image = image
+        self.isAppImage = isAppImage
         self.locationForCellView = locationForCellView
         self.displayMode = displayMode
     }
     
     override func draw(_ rect: CGRect) {
+        if displayMode == .cell && locationForCellView == nil {return}
+        
         let ctx = UIGraphicsGetCurrentContext()!
         let contextAR = rect.width / rect.height
         
-        ctx.translateBy(x: rect.width, y: 0.0)
-        ctx.scaleBy(x: -1.0, y: 1.0)
-        ctx.translateBy(x: rect.width, y: 0.0)
-        ctx.rotate(by: CGFloat.pi / 2)
+        if isAppImage { // Origin: ULO, positive x down, positive y right
+            ctx.translateBy(x: rect.width, y: 0.0)
+            ctx.scaleBy(x: -1.0, y: 1.0)
+            ctx.translateBy(x: rect.width, y: 0.0)
+            ctx.rotate(by: CGFloat.pi / 2)
+        }
+        else { // Origin: LLO, positive x right, positive y up
+            ctx.translateBy(x: 0.0, y: rect.height)
+            ctx.scaleBy(x: 1.0, y: -1.0)
+        }
         
-        // Origin: ULO, positive x down, positive y right
         
-        let imageHeight = image.width
-        let imageWidth = image.height
         
         switch displayMode {
         case .cell:
-            let croppingRectWidth = Int(CGFloat(imageHeight) / contextAR)
-            let croppingRectSize = CGSize(width: croppingRectWidth, height: imageHeight)
-            
-            let croppingRectX = (CGFloat(imageWidth) * locationForCellView) - (croppingRectSize.width / 2)
-            let croppingRectOrigin = CGPoint(x: croppingRectX, y: 0.0)
-            
-            let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)
-            let croppedImage = image.cropping(to: croppingRect)!
-            
-            ctx.draw(croppedImage, in: CGRect(x: 0.0, y: 0.0, width: rect.height, height: rect.width))
+            if isAppImage {
+                let imageHeight = image.width
+                let imageWidth = image.height
+                
+                let croppingRectWidth = Int(CGFloat(imageHeight) / contextAR)
+                let croppingRectSize = CGSize(width: croppingRectWidth, height: imageHeight)
+                
+                let croppingRectX = (CGFloat(imageWidth) * locationForCellView!) - (croppingRectSize.width / 2)
+                let croppingRectOrigin = CGPoint(x: croppingRectX, y: 0.0)
+                
+                let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)
+                let croppedImage = image.cropping(to: croppingRect)!
+                ctx.draw(croppedImage, in: CGRect(x: 0.0, y: 0.0, width: rect.height, height: rect.width))
+            }
+            else {
+                let imageHeight = image.height
+                let imageWidth = image.width
+                
+                let croppingRectHeight = Int(CGFloat(imageWidth) / contextAR)
+                let croppingRectSize = CGSize(width: imageWidth, height: croppingRectHeight)
+                
+                //let croppingRectY: CGFloat = 0.0
+                var croppingRectY = (CGFloat(imageHeight) * locationForCellView!) - (croppingRectSize.height / 2)
+                if croppingRectY < 0.0 {croppingRectY = 0.0}
+                else if croppingRectY + CGFloat(croppingRectHeight) > CGFloat(imageHeight) {croppingRectY = CGFloat(imageHeight)}
+                let croppingRectOrigin = CGPoint(x: 0.0, y: croppingRectY)
+                
+                let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)
+                let croppedImage = image.cropping(to: croppingRect)!
+                ctx.draw(croppedImage, in: rect)
+            }
         case .detail:
             let imageAR = CGFloat(image.width) / CGFloat(image.height)
             
             var drawToRectOrigin = CGPoint.zero
             var drawToRectSize = CGSize(width: rect.width, height: rect.height)
-            if contextAR >= imageAR { // rect height set
-                drawToRectSize.width = rect.height * imageAR
-                drawToRectOrigin.y = (rect.width / 2) - (drawToRectSize.width / 2)
+            if isAppImage {
+                if contextAR >= imageAR { // rect height set
+                    drawToRectSize.width = rect.height * imageAR
+                    drawToRectOrigin.y = (rect.width / 2) - (drawToRectSize.width / 2)
+                }
+                else { // rect width set
+                    drawToRectSize.height = rect.width / imageAR
+                    drawToRectOrigin.x =  (rect.height / 2) - (drawToRectSize.height / 2)
+                }
             }
-            else { // rect width set
-                drawToRectSize.height = rect.width / imageAR
-                drawToRectOrigin.x =  (rect.height / 2) - (drawToRectSize.height / 2)
+            else {
+                if contextAR >= imageAR { // rect width set
+                    drawToRectSize.width = drawToRectSize.height * imageAR
+                    drawToRectOrigin.x = (rect.width / 2) - (drawToRectSize.width / 2)
+                }
+                else { // rect height set
+                    drawToRectSize.height = drawToRectSize.width / imageAR
+                    drawToRectOrigin.y =  (rect.height / 2) - (drawToRectSize.height / 2)
+                }
             }
             
             let drawToRect = CGRect(origin: drawToRectOrigin, size: drawToRectSize)
+            imageFrame = drawToRect
             ctx.draw(image, in: drawToRect)
         }
     }

@@ -2,20 +2,25 @@
   "images" : [
     {
       "idiom" : "universal",
+      "filename" : "calendar.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
+      "filename" : "calendar-4x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "calendar-1559935_1280.png",
+      "filename" : "calendar-6x-1.png",
       "scale" : "3x"
     }
   ],
   "info" : {
     "version" : 1,
     "author" : "xcode"
+  },
+  "properties" : {
+    "template-rendering-intent" : "template"
   }
 }
