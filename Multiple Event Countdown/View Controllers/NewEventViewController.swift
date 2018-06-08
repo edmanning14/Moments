@@ -28,8 +28,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     var eventCategory: String? {
         didSet {
-            if editingEvent {
-                let master = navigationController!.navigationController!.viewControllers[0] as! MasterViewController
+            if editingEvent && isUserChange {
+                let master = navigationController!.viewControllers[0] as! MasterViewController
                 master.categoryDidChange = true
             }
             if eventCategory != nil && eventCategory != "" {
@@ -49,6 +49,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
             
             checkFinishButtonEnable()
+            isUserChange = false
         }
     }
     
@@ -82,15 +83,18 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     viewTransition(from: waveView, to: specialEventView!.taglineLabel)
                 }*/
             }
-            else {taglineProgressImageView?.tintColor = inactiveColor}
+            else {
+                taglineProgressImageView?.tintColor = inactiveColor
+                if editingEvent {specialEventView?.eventTagline = ""}
+            }
         }
     }
     
     var eventDate: EventDate? {
         didSet {
             specialEventView?.eventDate = eventDate
-            if editingEvent {
-                let master = navigationController!.navigationController!.viewControllers[0] as! MasterViewController
+            if editingEvent && isUserChange {
+                let master = navigationController!.viewControllers[0] as! MasterViewController
                 master.dateDidChange = true
             }
             if eventDate != nil {
@@ -118,6 +122,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 eventTimer = nil
             }
             checkFinishButtonEnable()
+            isUserChange = false
         }
     }
     
@@ -140,6 +145,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     if appImage.maskImage!.cgImage != nil {enableButton(useMaskButton)}
                 }
                 else {imageTitleLabel.text = "Your moment!"}
+                
+                if !isUserChange {currentInputViewState = .none}
             }
             else {
                 if imagePlaceholderView == nil {
@@ -158,20 +165,19 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 imageTitleLabel.textColor = inactiveColor
                 imageProgressImageView?.tintColor = optionalTaskIncompleteColor
                 disableButton(editImageButton)
-                disableButton(useImageButton)
+                if previousSelectedImage == nil {disableButton(useImageButton)}
                 disableButton(useMaskButton)
             }
             isUserChange = false
             checkFinishButtonEnable()
         }
     }
+    fileprivate var previousSelectedImage: UserEventImage?
     
     var useMask = true {didSet {specialEventView!.useMask = useMask}}
     
     var cachedImages = [AppEventImage]() {
-        didSet {
-            selectImageController?.catalogImages = cachedImages
-        }
+        didSet {selectImageController?.catalogImages.addImages(cachedImages)}
     }
     
     fileprivate let defaultImageTitle = "Desert Dunes"
@@ -267,6 +273,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     //
     // MARK: UI Elements
+    fileprivate var doneButton: UIBarButtonItem!
     
     @IBOutlet weak var specialEventViewContainer: UIView!
     fileprivate var specialEventView: EventTableViewCell?
@@ -521,19 +528,32 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
         }
         
-        let navItemTitleLabel = UILabel()
+        doneButton = UIBarButtonItem()
+        doneButton.target = self
+        doneButton.action = #selector(finish(_:))
+        doneButton.tintColor = primaryTextDarkColor
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
+        doneButton.setTitleTextAttributes(attributes, for: .normal)
+        doneButton.setTitleTextAttributes(attributes, for: .disabled)
+        
+        navigationItem.rightBarButtonItem = doneButton
+        if let image = selectedImage {if image.locationForCellView == nil {doneButton.isEnabled = false}}
+        else {doneButton.isEnabled = false}
+        
         if editingEvent {
-            navItemTitleLabel.text = "Edit Event"
+            navigationItem.title = "Edit Event"
             finishButton.setTitle("CONFIRM CHANGES", for: .normal)
+            doneButton.title = "CONFIRM"
         }
         else {
-            navItemTitleLabel.text = "New Event"
+            navigationItem.title = "New Event"
             finishButton.setTitle("CREATE EVENT", for: .normal)
+            doneButton.title = "CREATE"
         }
-        navItemTitleLabel.backgroundColor = UIColor.clear
-        navItemTitleLabel.textColor = primaryTextRegularColor
-        navItemTitleLabel.font = UIFont(name: headingsFontName, size: 20.0)
-        navigationItem.titleView = navItemTitleLabel
+        
+        let screenHeight = UIScreen.main.bounds.size.height
+        let screenWidth = UIScreen.main.bounds.size.width
+        if screenHeight >= 667.0 && screenWidth >= 375.0 {navigationItem.largeTitleDisplayMode = .always}
         
         labelTransition.duration = 0.3
         labelTransition.type = kCATransitionFade
@@ -609,11 +629,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
             let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
             imagePlaceholderView = UIImageView(image: templateImage)
-            imagePlaceholderView!.tintColor = UIColor.lightText
+            imagePlaceholderView!.tintColor = UIColor.darkGray
+            imagePlaceholderView!.layer.opacity = 0.5
             imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
             specialEventView!.addSubview(imagePlaceholderView!)
-            specialEventView!.centerXAnchor.constraint(equalTo: imagePlaceholderView!.centerXAnchor).isActive = true
-            specialEventView!.centerYAnchor.constraint(equalTo: imagePlaceholderView!.centerYAnchor).isActive = true
+            specialEventView!.centerXAnchor.constraint(equalTo: imagePlaceholderView!.centerXAnchor, constant: -(1/3) * (specialEventViewContainer.bounds.width / 2)).isActive = true
+            specialEventView!.centerYAnchor.constraint(equalTo: imagePlaceholderView!.centerYAnchor, constant: (1/3) * (specialEventViewContainer.bounds.height / 2)).isActive = true
         }
         
         fetchProductIDs(fetchFailHandler: networkErrorHandler)
@@ -747,6 +768,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // Picker View
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        isUserChange = true
         eventCategory = selectableCategories[row]
     }
     
@@ -846,10 +868,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: From storyboard actions
     @IBAction func unwindToViewController(segue: UIStoryboardSegue) {
-        if let sender = segue.source as? ImagePreviewViewController {
-            selectedImage = sender.selectedImage
-            currentInputViewState = .none
-        }
+        if let sender = segue.source as? ImagePreviewViewController {selectedImage = sender.selectedImage}
     }
     
     
@@ -877,20 +896,18 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         if let ident = segue.identifier {
             let cancelButton = UIBarButtonItem()
             cancelButton.tintColor = primaryTextDarkColor
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
             cancelButton.setTitleTextAttributes(attributes, for: .normal)
             cancelButton.title = "CANCEL"
             navigationItem.backBarButtonItem = cancelButton
             switch ident {
             case "EditImageSegue":
-                let navController = segue.destination as! UINavigationController
-                let destination = navController.viewControllers[0] as! ImagePreviewViewController
+                let destination = segue.destination as! ImagePreviewViewController
                 destination.selectedImage = selectedImage
             case "Choose Image":
-                let navController = segue.destination as! UINavigationController
-                let destination = navController.viewControllers[0] as! SelectImageViewController
+                let destination = segue.destination as! SelectImageViewController
                 destination.selectedImage = selectedImage
-                destination.catalogImages = cachedImages
+                destination.catalogImages.addImages(cachedImages)
                 destination.networkState = currentNetworkState
                 selectImageController = destination
             default:
@@ -984,7 +1001,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
         }
         
-        navigationController!.navigationController!.popViewController(animated: true)
+        navigationController!.popViewController(animated: true)
     }
     
     @objc fileprivate func handleInputToolbarButtonTap(_ sender: UIButton) {
@@ -1265,11 +1282,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     @objc fileprivate func handleImageOptionsButtonsTap(_ sender: UIButton) {
         switch sender.titleLabel!.text! {
-        case "EDIT IMAGE":
+        case "PREVIEW/EDIT IMAGES":
             performSegue(withIdentifier: "EditImageSegue", sender: self)
-        case "CLEAR IMAGE":
+        case "TOGGLE IMAGE":
             isUserChange = true
-            selectedImage = nil
+            if let image = selectedImage {previousSelectedImage = image; selectedImage = nil}
+            else {selectedImage = previousSelectedImage}
         case "TOGGLE MASK": useMask = !useMask
         default:
             // TODO: Error Handling, should never happen.
@@ -1640,6 +1658,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         productRequest!.start()
     }
     
+    func reFetchCloudImages() {fetchProductIDs(fetchFailHandler: networkErrorHandler)}
+    
     fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: CloudErrors?) -> Void) {
         
         guard !ids.isEmpty else {completion(nil, .noRecords); return}
@@ -1681,7 +1701,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         catch {cloudError = .imageCreationFailure; break}
                     }
                     
-                    if let newEventImage = AppEventImage(category: category, title: title, locationForCellView: CGFloat(locationForCellView / 100), recordName: recordID.recordName, images: images), cloudError == nil {
+                    if let newEventImage = AppEventImage(category: category, title: title, locationForCellView: CGFloat(locationForCellView) / 100.0, recordName: recordID.recordName, images: images), cloudError == nil {
                         completion(newEventImage, nil)
                     }
                     else {completion(nil, cloudError)}
@@ -1711,8 +1731,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate func thumbnailLoadComplete(_ image: AppEventImage?, _ error: CloudErrors?) {
         if image != nil && error == nil {
             DispatchQueue.main.async { [weak weakSelf = self] in
-                weakSelf?.currentNetworkState = .complete
                 weakSelf?.cachedImages.append(image!)
+                weakSelf?.currentNetworkState = .complete
             }
         }
         else {
@@ -1776,10 +1796,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate func checkFinishButtonEnable() {
         if eventCategory != nil && eventTitle != nil && eventDate != nil {
             enableButton(finishButton)
+            doneButton.isEnabled = true
             finishProgressImageView?.tintColor = UIColor.green
         }
         else {
             disableButton(finishButton)
+            doneButton.isEnabled = false
             finishProgressImageView?.tintColor = inactiveColor
         }
     }

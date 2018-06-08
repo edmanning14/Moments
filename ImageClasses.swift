@@ -363,9 +363,7 @@ internal class UserEventImage {
         if needToFetch.isEmpty {return}
         
         let imageName = photoAsset!.localIdentifier
-        print(imageName)
         let fileRootName = imageName.convertToFileName()
-        print(fileRootName)
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
         options.isNetworkAccessAllowed = true

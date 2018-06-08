@@ -123,42 +123,44 @@ class EventTableViewCell: UITableViewCell {
     
     var eventImage: UserEventImage? {
         didSet {
-            if eventImage == nil {
+            if let _eventImage = eventImage, let mainCGImage = _eventImage.mainImage?.cgImage {
+                
+                let isAppImage: Bool = {
+                    if let _ = _eventImage as? AppEventImage {return true}
+                    else {return false}
+                }()
+                
+                if let _mainImageView = mainImageView {
+                    _mainImageView.image = mainCGImage
+                    _mainImageView.locationForCellView = _eventImage.locationForCellView
+                }
+                else {
+                    switch configuration {
+                    case .imagePreviewControllerCell, .newEventsController, .tableView:
+                        mainImageView = CountdownMainImageView(frame: self.bounds, image: mainCGImage, isAppImage: isAppImage, locationForCellView: _eventImage.locationForCellView!, displayMode: .cell)
+                    case .imagePreviewControllerDetail, .detailView:
+                        mainImageView = CountdownMainImageView(frame: self.bounds, image: mainCGImage, isAppImage: isAppImage, locationForCellView: nil)
+                    }
+                }
+                
+                if !viewWithMargins.subviews.contains(mainImageView!) {
+                    mainImageView!.translatesAutoresizingMaskIntoConstraints = false
+                    viewWithMargins.insertSubview(mainImageView!, at: 0)
+                    viewWithMargins.topAnchor.constraint(equalTo: mainImageView!.topAnchor).isActive = true
+                    viewWithMargins.rightAnchor.constraint(equalTo: mainImageView!.rightAnchor).isActive = true
+                    viewWithMargins.bottomAnchor.constraint(equalTo: mainImageView!.bottomAnchor).isActive = true
+                    viewWithMargins.leftAnchor.constraint(equalTo: mainImageView!.leftAnchor).isActive = true
+                }
+                
+                if isAppImage, useMask {addGradientView(); addMaskImageView()}
+                else {maskImageView?.removeFromSuperview(); gradientView?.removeFromSuperview()}
+                
+            }
+            else {
                 backgroundColor = UIColor.black
                 maskImageView?.removeFromSuperview()
                 gradientView?.removeFromSuperview()
                 mainImageView?.removeFromSuperview()
-            }
-            else {
-                if eventImage?.mainImage?.cgImage != nil {
-                    if mainImageView == nil {
-                        let isAppImage: Bool = {
-                            if let _ = eventImage as? AppEventImage {return true}
-                            else {return false}
-                        }()
-                        switch configuration {
-                        case .imagePreviewControllerCell, .newEventsController, .tableView:
-                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, isAppImage: isAppImage, locationForCellView: eventImage!.locationForCellView!, displayMode: .cell)
-                        case .imagePreviewControllerDetail, .detailView:
-                            mainImageView = CountdownMainImageView(frame: self.bounds, image: eventImage!.mainImage!.cgImage!, isAppImage: isAppImage, locationForCellView: nil)
-                        }
-                    }
-                    else {
-                        mainImageView!.image = eventImage!.mainImage!.cgImage!
-                        mainImageView!.locationForCellView = eventImage!.locationForCellView
-                    }
-                    if !viewWithMargins.subviews.contains(mainImageView!) {
-                        mainImageView!.translatesAutoresizingMaskIntoConstraints = false
-                        viewWithMargins.insertSubview(mainImageView!, at: 0)
-                        viewWithMargins.topAnchor.constraint(equalTo: mainImageView!.topAnchor).isActive = true
-                        viewWithMargins.rightAnchor.constraint(equalTo: mainImageView!.rightAnchor).isActive = true
-                        viewWithMargins.bottomAnchor.constraint(equalTo: mainImageView!.bottomAnchor).isActive = true
-                        viewWithMargins.leftAnchor.constraint(equalTo: mainImageView!.leftAnchor).isActive = true
-                    }
-                    
-                    if let _ = eventImage as? AppEventImage, useMask {addGradientView(); addMaskImageView()}
-                    else {maskImageView?.removeFromSuperview(); gradientView?.removeFromSuperview()}
-                }
             }
         }
     }
@@ -264,6 +266,7 @@ class EventTableViewCell: UITableViewCell {
         }
     }
     fileprivate var shadowsInitialized = false
+    fileprivate var initialized = false
     
     //
     // MARK: UI Elements
@@ -323,6 +326,13 @@ class EventTableViewCell: UITableViewCell {
         case .imagePreviewControllerDetail, .imagePreviewControllerCell: break
         default: if !shadowsInitialized {initializeShadows()}
         }
+    }
+    
+    override func prepareForReuse() {
+        eventImage = nil
+        maskImageView = nil
+        gradientView = nil
+        mainImageView = nil
     }
     
     
@@ -688,6 +698,20 @@ class EventTableViewCell: UITableViewCell {
     
     //
     // MARK: Init helpers
+    
+    func configure() {
+        if !initialized {
+            self.backgroundColor = UIColor.clear
+            viewWithMargins.layer.cornerRadius = 3.0
+            viewWithMargins.layer.masksToBounds = true
+            
+            let backgroundView = UIView()
+            backgroundView.backgroundColor = UIColor.black
+            self.selectedBackgroundView = backgroundView
+            
+            initialized = true
+        }
+    }
     
     fileprivate func configureView() {
         switch configuration {

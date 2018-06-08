@@ -12,6 +12,7 @@ import CoreGraphics
 class CountdownMainImageView: UIView {
 
     var image: CGImage! {didSet{setNeedsDisplay()}}
+    fileprivate var imageCGLayer: CGLayer?
     var imageFrame: CGRect?
     var isAppImage: Bool!
     var locationForCellView: CGFloat?
@@ -25,10 +26,18 @@ class CountdownMainImageView: UIView {
         self.isAppImage = isAppImage
         self.locationForCellView = locationForCellView
         self.displayMode = displayMode
+        
     }
     
     override func draw(_ rect: CGRect) {
         if displayMode == .cell && locationForCellView == nil {return}
+        
+        if let cgLayer = imageCGLayer {
+            
+        }
+        else {
+            
+        }
         
         let ctx = UIGraphicsGetCurrentContext()!
         let contextAR = rect.width / rect.height
@@ -43,8 +52,6 @@ class CountdownMainImageView: UIView {
             ctx.translateBy(x: 0.0, y: rect.height)
             ctx.scaleBy(x: 1.0, y: -1.0)
         }
-        
-        
         
         switch displayMode {
         case .cell:
@@ -106,7 +113,10 @@ class CountdownMainImageView: UIView {
             }
             
             let drawToRect = CGRect(origin: drawToRectOrigin, size: drawToRectSize)
-            imageFrame = drawToRect
+            if isAppImage {
+                imageFrame = CGRect(x: drawToRect.origin.y, y: drawToRect.origin.x, width: drawToRect.height, height: drawToRect.width)
+            }
+            else {imageFrame = drawToRect}
             ctx.draw(image, in: drawToRect)
         }
     }

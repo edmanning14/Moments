@@ -13,10 +13,10 @@ import StoreKit
 import RealmSwift
 import Photos
 
-class SelectImageViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITabBarDelegate, CountdownImageDelegate {
+class SelectImageViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITabBarDelegate, CountdownImageDelegate, ManagedCatalogImagesDelegate, UIPopoverPresentationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
     
     //
-    // \
+    // MARK: Parameters
     //
     
     //
@@ -27,75 +27,144 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             if isViewLoaded {
                 if selectedImage != nil {
                     if let appImage = selectedImage as? AppEventImage {
-                        if !catalogImages.contains(where: {$0.title == appImage.title}) {
-                            catalogImages.append(appImage)
+                        catalogImages.addImage(appImage)
+                        selectedUserPhotoIndexPath = catalogImages.indexPathFor(appImage)
+                    }
+                    doneButton.isEnabled = true
+                    if selectedImage!.locationForCellView == nil {
+                        if doneButton.title != "CREATE IMAGE" {
+                            navigationItem.setRightBarButton(nil, animated: true)
+                            doneButton.title = "CREATE IMAGE"
+                            navigationItem.setRightBarButton(doneButton, animated: true)
                         }
-                        selectedImageIndexPath = IndexPath(row: catalogImages.count - 1, section: 0)
+                    }
+                    else {
+                        if doneButton.title != "USE IMAGE" {
+                            navigationItem.setRightBarButton(nil, animated: true)
+                            doneButton.title = "USE IMAGE"
+                            navigationItem.setRightBarButton(doneButton, animated: true)
+                        }
                     }
                 }
-                else {selectedImageIndexPath = nil}
+                else {
+                    selectedCatalogImageIndexPath = nil
+                    selectedUserPhotoIndexPath = nil
+                    doneButton.isEnabled = false
+                    doneButton.title = "SELECT IMAGE"
+                }
             }
         }
     }
     
-    var catalogImages = [AppEventImage]() {
-        willSet {
-            for image in newValue {
-                guard image.thumbnail?.uiImage != nil else {
-                    fatalError("An image in catalogImages did not contain a thumbnail!")
+    class ManagedCatalogImages: Collection {
+        var startIndex = 0
+        var endIndex: Int {return orderedCategories.count}
+        
+        private var orderedCategories = [String]()
+        private var orderedImages = [[AppEventImage]]()
+        
+        var delegate: ManagedCatalogImagesDelegate?
+        var count: Int {return orderedImages.count}
+        var isEmpty: Bool {return count == 0}
+        
+        subscript(section: Int) -> [AppEventImage] {get {return orderedImages[section]}}
+        
+        fileprivate func add(_ image: AppEventImage) -> Bool {
+            guard image.thumbnail?.uiImage != nil else {
+                fatalError("An image in catalogImages did not contain a thumbnail!")
+            }
+            
+            if contains(image) {return false}
+            
+            let category = image.category
+            if !orderedCategories.contains(category) {
+                orderedCategories.append(category)
+                orderedImages.append([image])
+            }
+            else {
+                let i = orderedCategories.index(of: category)!
+                orderedImages[i].append(image)
+            }
+            return true
+        }
+        
+        func index(after i: Int) -> Int {return i + 1}
+        
+        func addImage(_ image: AppEventImage) {if add(image) {delegate?.dataUpdated()}}
+        
+        func addImages(_ images: [AppEventImage]) {
+            var success = [Bool]()
+            for image in images {success.append(add(image))}
+            if success.contains(true) {delegate?.dataUpdated()}
+        }
+        
+        func titleForSection(_ section: Int) -> String {return orderedCategories[section]}
+        
+        func contains(_ image: AppEventImage) -> Bool {
+            if let section = orderedCategories.index(of: image.category) {
+                if orderedImages[section].contains(where: {$0.title == image.title}) {return true}
+            }
+            return false
+        }
+        
+        func indexPathFor(_ appImage: AppEventImage) -> IndexPath? {
+            for (section, images) in orderedImages.enumerated() {
+                if let row = images.index(where: {$0.title == appImage.title}) {
+                    return IndexPath(row: row, section: section)
                 }
             }
-        }
-        didSet {
-            if isViewLoaded {
-                catalogImagesCollectionView.reloadData()
-                catalogImagesCollectionView.selectItem(at: selectedImageIndexPath, animated: false, scrollPosition: .top)
-            }
+            return nil
         }
     }
+    
+    var catalogImages = ManagedCatalogImages()
     
     //
     // Private data model
     
-    fileprivate var selectedImageIndexPath: IndexPath?
+    fileprivate var selectedCatalogImageIndexPath: IndexPath?
+    fileprivate var selectedUserPhotoIndexPath: IndexPath?
     fileprivate let userPhotosCellSpacing: CGFloat = 1.0
     fileprivate let numberOfUserPhotoCellsPerColumn: CGFloat = 4.0
     fileprivate var userPhotoCellSize = CGSize()
     fileprivate var productIDs = Set<Product>()
     
     fileprivate var loadedUserMoments: PHFetchResult<PHAssetCollection>?
+    fileprivate var loadedUserAlbums: PHFetchResult<PHAssetCollection>?
     
-    fileprivate var userPhotoAssets = [PHFetchResult<PHAsset>]() {
-        didSet {
-            //let dimension = userPhotosCollectionView.bounds.width / numberOfUserPhotoCellsPerColumn
-            let dimension = (userPhotosCollectionView.bounds.width - ((numberOfUserPhotoCellsPerColumn - 1) * userPhotosCellSpacing)) / numberOfUserPhotoCellsPerColumn
-            userPhotoCellSize = CGSize(width: dimension, height: dimension)
-            userPhotosCollectionView.reloadData()
-        }
+    fileprivate var momentsPhotoAssets = [PHFetchResult<PHAsset>]() {
+        didSet {userPhotosCollectionView.reloadData()}
+    }
+    
+    fileprivate var albumsPhotoAssets = [PHFetchResult<PHAsset>]() {
+        didSet {userPhotosCollectionView.reloadData()}
     }
     
     fileprivate var userPhotosImageManager: PHCachingImageManager?
     
     //
-    // Types
+    // MARK: Types
     
     fileprivate class CollectionViewBackground: UIView {
         
         struct Messages {
             static let selectSource = "Select an image source below to view Images!"
-            static let noImages = "Nothing to see here..."
+            static let noImages = "Couldn't find any images!"
             static let loading = "Fetching Images"
             static let loadImagesError = "Sorry! There was an error loading the images. Please try again later."
             static let restrictedAccess = "Need a message here..." // TODO: Add a message here.
             static let deniedAccess = "Your moments are inaccessable! If you would like to allow access, please navigate to Settings -> Photos to allow access."
         }
         
-        var message = Messages.noImages {didSet{messageLabel.text = message}}
+        var message = Messages.loading {didSet{messageLabel.text = message}}
         
         private let messageLabel = UILabel()
-        private var didSetConstraints = false
+        private var initialized = false
         
         private let contentSecondaryFontName = "Raleway-Regular"
+        private let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
+        
+        override class var requiresConstraintBasedLayout: Bool {return true}
         
         required init?(coder aDecoder: NSCoder) {
             super.init(coder: aDecoder)
@@ -107,32 +176,35 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             commonInit()
         }
         
-        func commonInit() {
-            
+        private func commonInit() {
             self.translatesAutoresizingMaskIntoConstraints = false
             messageLabel.translatesAutoresizingMaskIntoConstraints = false
             
-            messageLabel.font = UIFont(name: contentSecondaryFontName, size: 14.0)
+            messageLabel.font = UIFont(name: contentSecondaryFontName, size: 16.0)
             messageLabel.textAlignment = .center
             messageLabel.numberOfLines = 0
             messageLabel.lineBreakMode = .byWordWrapping
-            
-            addSubview(messageLabel)
-            centerYAnchor.constraint(equalTo: messageLabel.centerYAnchor).isActive = true
-            leftAnchor.constraint(equalTo: messageLabel.leftAnchor, constant: 8.0).isActive = true
-            rightAnchor.constraint(equalTo: messageLabel.rightAnchor, constant: 8.0).isActive = true
+            messageLabel.textColor = primaryTextRegularColor
             
             self.setNeedsLayout()
         }
         
         override func layoutSubviews() {
-            if !didSetConstraints {
-                messageLabel.centerYAnchor.constraint(equalTo: superview!.centerYAnchor).isActive = true
-                messageLabel.leftAnchor.constraint(equalTo: superview!.layoutMarginsGuide.leftAnchor).isActive = true
-                messageLabel.rightAnchor.constraint(equalTo: superview!.layoutMarginsGuide.rightAnchor).isActive = true
+            super.layoutSubviews()
+            if !initialized {
+                addSubview(messageLabel)
                 messageLabel.text = message
-                didSetConstraints = true
+                initialized = true
             }
+            
+            let margin: CGFloat = 8.0
+            
+            messageLabel.sizeToFit()
+            
+            messageLabel.center = CGPoint(x: self.bounds.width / 2, y: self.bounds.height / 2)
+            let origin = CGPoint(x: margin, y: messageLabel.frame.origin.y)
+            let size = CGSize(width: self.bounds.width - (2 * margin), height: messageLabel.frame.height)
+            messageLabel.frame = CGRect(origin: origin, size: size)
         }
     }
     
@@ -152,61 +224,132 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         case imageCreationFailure, assetCreationFailure, noRecords
     }
     
-    fileprivate enum TabBarSelections: Int {case catalog = 0, personalPhotos, none}
-    
-    //
-    // States
-    
-    fileprivate var tabBarSelectionTitle: String? {
-        didSet {
-            switch tabBarSelectionTitle {
-            case TabBarTitles.catalog?: tabBarSelection = .catalog
-            case TabBarTitles.personalPhotos?: tabBarSelection = .personalPhotos
-            case nil: tabBarSelection = .none
-            default: fatalError("Unexpected State: Recieved an unrecognized TabBar Title")
-            }
-        }
-    }
-    fileprivate var tabBarSelection = TabBarSelections.none {
-        didSet {
-            switch tabBarSelection {
-            case .catalog:
-                catalogImagesCollectionView.isHidden = false; catalogImagesCollectionView.isUserInteractionEnabled = true
-                userPhotosCollectionView.isHidden = true; userPhotosCollectionView.isUserInteractionEnabled = false
-            case .personalPhotos:
-                catalogImagesCollectionView.isHidden = true; catalogImagesCollectionView.isUserInteractionEnabled = false
-                userPhotosCollectionView.isHidden = false; userPhotosCollectionView.isUserInteractionEnabled = true
-            case .none:
-                catalogImagesCollectionView.isHidden = true; catalogImagesCollectionView.isUserInteractionEnabled = false
-                userPhotosCollectionView.isHidden = true; userPhotosCollectionView.isUserInteractionEnabled = false
-            }
-        }
-    }
+    fileprivate enum TabBarSelections: Int {case catalog = 0, userPhotos, none}
+    fileprivate enum UserPhotosDataStates {case moments, albums}
     
     //
     // MARK: States
+    
+    fileprivate var tabBarSelectionTitle: String? {
+        didSet {
+            if tabBarSelectionTitle != oldValue {
+                switch tabBarSelectionTitle {
+                case TabBarTitles.catalog:
+                    tabBarSelection = .catalog
+                case TabBarTitles.userMoments, TabBarTitles.userAlbums:
+                    tabBarSelection = .userPhotos
+                    userPhotosTabBarItem.title = tabBarSelectionTitle
+                    if tabBarSelectionTitle == TabBarTitles.userMoments {
+                        userPhotosDataState = .moments
+                        userPhotosTabBarItem.selectedImage = #imageLiteral(resourceName: "UserMomentsButtonImage")
+                        userPhotosTabBarItem.image = #imageLiteral(resourceName: "UserMomentsButtonImage")
+                    }
+                    else {
+                        userPhotosDataState = .albums
+                        userPhotosTabBarItem.selectedImage = #imageLiteral(resourceName: "UserAlbumsButtonImage")
+                        userPhotosTabBarItem.image = #imageLiteral(resourceName: "UserAlbumsButtonImage")
+                    }
+                case nil:
+                    tabBarSelection = .none
+                default: fatalError("Unexpected State: Recieved an unrecognized TabBar Title")
+                }
+                
+                let transition = CATransition()
+                transition.duration = 0.2
+                transition.type = kCATransitionFade
+                navigationController?.navigationBar.layer.add(transition, forKey: "fadeText")
+                navigationItem.title = tabBarSelectionTitle ?? "Select A Moment"
+            }
+        }
+    }
+    
+    /*fileprivate func transitionTitles() {
+        let transition = CATransition()
+        transition.duration = 0.2
+        transition.type = kCATransitionFade
+        navigationController?.navigationBar.layer.add(transition, forKey: "fadeText")
+        
+        switch tabBarSelection {
+        case .catalog: navigationItem.title = TabBarTitles.catalog
+        case .personalPhotos:
+            switch userPhotosDataState {
+            case .moments:
+                navigationItem.title = TabBarTitles.userMoments
+                userPhotosTabBarItem.title = TabBarTitles.userMoments
+                userPhotosTabBarItem.selectedImage = #imageLiteral(resourceName: "UserMomentsButtonImage")
+                userPhotosTabBarItem.image = #imageLiteral(resourceName: "UserMomentsButtonImage")
+            case .albums:
+                navigationItem.title = TabBarTitles.userAlbums
+                userPhotosTabBarItem.title = TabBarTitles.userAlbums
+                userPhotosTabBarItem.selectedImage = #imageLiteral(resourceName: "UserAlbumsButtonImage")
+                userPhotosTabBarItem.image = #imageLiteral(resourceName: "UserAlbumsButtonImage")
+            }
+        case .none: navigationItem.title = "Select A Moment"
+        }
+    }*/
+    
+    fileprivate var tabBarSelection = TabBarSelections.none {
+        didSet {
+            if tabBarSelection != oldValue {
+                let transition = CATransition()
+                transition.duration = 0.2
+                transition.type = kCATransitionFade
+                catalogImagesCollectionView.layer.add(transition, forKey: "transition")
+                userPhotosCollectionView.layer.add(transition, forKey: "transition")
+                switch tabBarSelection {
+                case .catalog:
+                    catalogImagesCollectionView.isHidden = false; catalogImagesCollectionView.isUserInteractionEnabled = true
+                    userPhotosCollectionView.isHidden = true; userPhotosCollectionView.isUserInteractionEnabled = false
+                case .userPhotos:
+                    catalogImagesCollectionView.isHidden = true; catalogImagesCollectionView.isUserInteractionEnabled = false
+                    userPhotosCollectionView.isHidden = false; userPhotosCollectionView.isUserInteractionEnabled = true
+                case .none:
+                    catalogImagesCollectionView.isHidden = true; catalogImagesCollectionView.isUserInteractionEnabled = false
+                    userPhotosCollectionView.isHidden = true; userPhotosCollectionView.isUserInteractionEnabled = false
+                }
+            }
+        }
+    }
+    
+    fileprivate var userPhotosDataState = UserPhotosDataStates.moments {
+        didSet {
+            if userPhotosDataState != oldValue {
+                let transition = CATransition()
+                transition.duration = 0.1
+                transition.type = kCATransitionFade
+                
+                userPhotosCollectionView.layer.add(transition, forKey: "transition")
+                userPhotosCollectionView.layer.opacity = 0.0
+                userPhotosCollectionView.reloadData()
+                userPhotosCollectionView.layer.add(transition, forKey: "transition")
+                userPhotosCollectionView.layer.opacity = 1.0
+            }
+        }
+    }
     
     var networkState = NewEventViewController.NetworkStates.loading {
         didSet {
             if isViewLoaded {
                 if networkState == .complete {
                     catalogImagesCollectionView.reloadData()
-                    catalogImagesCollectionView.selectItem(at: selectedImageIndexPath, animated: false, scrollPosition: .top)
+                    catalogImagesCollectionView.selectItem(at: selectedCatalogImageIndexPath, animated: true, scrollPosition: .top)
                     return
                 }
-                let ip = IndexPath(row: catalogImages.count, section: 0)
-                if let cell = catalogImagesCollectionView.cellForItem(at: ip) as? LoadingCollectionViewCell {
-                    switch networkState {
-                    case .failed(let message):
-                        cell.networkActivityIndicator.stopAnimating()
-                        cell.networkActivityIndicator.isHidden = true
-                        cell.textLabel.isHidden = false
-                        cell.textLabel.text = message ?? defaultNetworkErrorMessage
-                    case .loading:
-                        cell.networkActivityIndicator.startAnimating()
-                        cell.networkActivityIndicator.isHidden = false
-                        cell.textLabel.isHidden = true
-                    case .complete: fatalError("This should have never happened...")
+                for (section, images) in catalogImages.enumerated() {
+                    let ip = IndexPath(row: images.count - 1, section: section)
+                    if let cell = catalogImagesCollectionView.cellForItem(at: ip) as? LoadingCollectionViewCell {
+                        switch networkState {
+                        case .failed(let message):
+                            cell.networkActivityIndicator.stopAnimating()
+                            cell.networkActivityIndicator.isHidden = true
+                            cell.textLabel.isHidden = false
+                            cell.textLabel.text = message ?? defaultNetworkErrorMessage
+                        case .loading:
+                            cell.networkActivityIndicator.startAnimating()
+                            cell.networkActivityIndicator.isHidden = false
+                            cell.textLabel.isHidden = true
+                        case .complete: fatalError("This should have never happened...")
+                        }
                     }
                 }
             }
@@ -216,7 +359,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     //
     // MARK: Flags
     fileprivate var needToDismissSelf = false
-    fileprivate var userPhotoFetchComplete = false
+    fileprivate var momentsAssetFetchComplete = false
+    fileprivate var albumsAssetFetchComplete = false
     
     //
     // MARK: Constants
@@ -248,11 +392,12 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     fileprivate struct TabBarTitles {
         static let catalog = "Catalog"
-        static let personalPhotos = "Personal Photos"
+        static let userMoments = "Your Moments"
+        static let userAlbums = "Your Albums"
     }
     
     fileprivate let marginForCellImage: CGFloat = 10.0
-    fileprivate let collectionViewMargin: CGFloat = 20.0
+    fileprivate let collectionViewMargin: CGFloat = 15.0
     fileprivate let cellGlyphHeight: CGFloat = 20.0
     fileprivate let cellImageToGlyphSpacing: CGFloat = 10.0
     fileprivate let catalogPhotosCellSpacing: CGFloat = 10.0
@@ -260,10 +405,35 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     //
     // MARK: UIElements
     
-    var navItemTitleLabel: UILabel!
-    var cancelButton: UIBarButtonItem!
-    var doneButton: UIBarButtonItem!
-    fileprivate var collectionViewBackgroundView: CollectionViewBackground?
+    fileprivate var doneButton: UIBarButtonItem!
+    fileprivate var filterButton: UIBarButtonItem!
+    fileprivate var catalogCollectionViewBackgroundView: CollectionViewBackground?
+    fileprivate var userPhotosCollectionViewBackgroundView: CollectionViewBackground?
+    
+    fileprivate class CatalogCollectionViewSectionHeader: UICollectionReusableView {
+        let titleLabel = UILabel()
+        
+        fileprivate let headingsFontName = "Comfortaa-Regular"
+        fileprivate let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
+        
+        fileprivate func commonInit() {
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            titleLabel.backgroundColor = UIColor.clear
+            titleLabel.textColor = secondaryTextRegularColor
+            titleLabel.font = UIFont(name: headingsFontName, size: 30.0)
+            titleLabel.textAlignment = .left
+            
+            self.addSubview(titleLabel)
+            self.leftAnchor.constraint(equalTo: titleLabel.leftAnchor, constant: -20.0).isActive = true
+            self.rightAnchor.constraint(equalTo: titleLabel.rightAnchor, constant: 8.0).isActive = true
+            self.topAnchor.constraint(equalTo: titleLabel.topAnchor, constant: -8.0).isActive = true
+            self.bottomAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8.0).isActive = true
+            //self.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor).isActive = true
+        }
+        
+        override init(frame: CGRect) {super.init(frame: frame); commonInit()}
+        required init?(coder aDecoder: NSCoder) {super.init(coder: aDecoder); commonInit()}
+    }
     
     fileprivate class UserPhotosCollectionViewSectionHeader: UICollectionReusableView {
         let titleLabel = UILabel()
@@ -271,15 +441,18 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         
         fileprivate let headingsFontName = "Comfortaa-Regular"
         fileprivate let contentSecondaryFontName = "Raleway-Regular"
+        fileprivate let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
         
         fileprivate func commonInit() {
             titleLabel.translatesAutoresizingMaskIntoConstraints = false
             titleLabel.font = UIFont(name: headingsFontName, size: 18.0)
+            titleLabel.textColor = secondaryTextRegularColor
             
             subTitleLabel.translatesAutoresizingMaskIntoConstraints = false
             subTitleLabel.font = UIFont(name: contentSecondaryFontName, size: 14.0)
             subTitleLabel.numberOfLines = 0
             subTitleLabel.lineBreakMode = .byWordWrapping
+            subTitleLabel.textColor = secondaryTextRegularColor
             
             let containerView = UIView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -302,15 +475,25 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         required init?(coder aDecoder: NSCoder) {super.init(coder: aDecoder); commonInit()}
     }
    
+    @IBOutlet weak var loadingStackView: UIStackView!
+    @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var catalogImagesCollectionView: UICollectionView!
     @IBOutlet weak var userPhotosCollectionView: UICollectionView!
     @IBOutlet weak var imagesTabBar: UITabBar!
+    @IBOutlet weak var catalogTabBarItem: UITabBarItem!
+    @IBOutlet weak var userPhotosTabBarItem: UITabBarItem!
+    
     
     //
     // MARK: Design
+    //
+    //
     // MARK: Colors
     let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
     let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
+    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
+    let backgroundHighlightsRegularColor = UIColor(red: 66/255, green: 23/255, blue: 66/255, alpha: 1.0)
+    let unselectedButtonColor = UIColor.lightGray
     
     // MARK: Fonts
     let headingsFontName = "Comfortaa-Light"
@@ -334,37 +517,32 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         userPhotosCollectionView.delegate = self
         userPhotosCollectionView.dataSource = self
         imagesTabBar.delegate = self
+        catalogImages.delegate = self
         
-        navigationController?.navigationBar.largeTitleTextAttributes = [
-            .font: UIFont(name: headingsFontName, size: 30.0) as Any,
-            .foregroundColor: primaryTextRegularColor
-        ]
-        
-        let doneButton = UIBarButtonItem()
+        doneButton = UIBarButtonItem()
         doneButton.target = self
         doneButton.action = #selector(handleNavButtonClick(_:))
         doneButton.tintColor = primaryTextDarkColor
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
+        doneButton.setTitleTextAttributes(attributes, for: .disabled)
         doneButton.title = "USE IMAGE"
-        navigationItem.rightBarButtonItem = doneButton
         if let image = selectedImage {if image.locationForCellView == nil {doneButton.isEnabled = false}}
         else {doneButton.isEnabled = false}
         
-        /*cancelButton = UIBarButtonItem()
-        cancelButton.target = self
-        cancelButton.action = #selector(handleNavButtonClick(_:))
-        cancelButton.tintColor = primaryTextDarkColor
-        cancelButton.setTitleTextAttributes(attributes, for: .normal)
-        cancelButton.title = "CANCEL"
-        navigationItem.leftBarButtonItem = cancelButton*/
+        navigationItem.rightBarButtonItem = doneButton
         
         dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .none
         
         userPhotosCollectionView.register(UserPhotosCollectionViewSectionHeader.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "userPhotosHeader")
+        userPhotosCollectionView.register(CatalogCollectionViewSectionHeader.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "catalogPhotosHeader")
+        catalogImagesCollectionView.register(CatalogCollectionViewSectionHeader.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "catalogPhotosHeader")
         
         fetchUserPhotos()
+        
+        imagesTabBar.unselectedItemTintColor = unselectedButtonColor
+        imagesTabBar.tintColor = secondaryTextRegularColor
         
         if let tabBarItems = imagesTabBar.items {
             if let i = tabBarItems.index(where: {$0.title! == TabBarTitles.catalog}) {
@@ -373,16 +551,11 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             }
         }
         
-        if selectedImage != nil {
-            if let image = selectedImage as? AppEventImage {
-                let i = catalogImages.index(where: {$0.title == image.title})!
-                selectedImageIndexPath = IndexPath(row: i, section: 0)
-                catalogImagesCollectionView.selectItem(at: selectedImageIndexPath, animated: true, scrollPosition: .top)
-            }
+        if selectedImage != nil, let appImage = selectedImage as? AppEventImage {
+            selectedCatalogImageIndexPath = catalogImages.indexPathFor(appImage)
+            catalogImagesCollectionView.selectItem(at: selectedCatalogImageIndexPath, animated: true, scrollPosition: .top)
         }
     }
-    
-    override func viewWillAppear(_ animated: Bool) {UIApplication.shared.statusBarStyle = .default}
     
     /*override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -390,8 +563,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             imagesCollectionView.selectItem(at: selectedImageIndexPath, animated: true, scrollPosition: .top)
         }
     }*/
-    
-    override func viewWillDisappear(_ animated: Bool) {UIApplication.shared.statusBarStyle = .lightContent}
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
     
@@ -404,16 +575,21 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         if let ident = segue.identifier {
             switch ident {
             case SegueIdentifiers.imagePreview:
-                let navController = segue.destination as! UINavigationController
-                let destination = navController.viewControllers[0] as! ImagePreviewViewController
+                
+                let destination = segue.destination as! ImagePreviewViewController
                 destination.selectedImage = selectedImage
+                destination.selectImageViewController = self
                 
                 let cancelButton = UIBarButtonItem()
                 cancelButton.tintColor = primaryTextDarkColor
-                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
                 cancelButton.setTitleTextAttributes(attributes, for: .normal)
                 cancelButton.title = "IMAGES"
-                navController.navigationItem.backBarButtonItem = cancelButton
+                navigationItem.backBarButtonItem = cancelButton
+                
+                if let button = sender as? UIBarButtonItem, button == doneButton, button.title == "CREATE IMAGE" {
+                    destination.createImage = true
+                }
                 
             default: break
             }
@@ -429,97 +605,185 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     // UICollectionViewDataSource
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
+        
         if collectionView == catalogImagesCollectionView {
             if catalogImages.isEmpty && networkState != .complete {
-                if collectionViewBackgroundView == nil {initializeCollectionViewBackground()}
-                collectionViewBackgroundView!.message = CollectionViewBackground.Messages.loading
-                collectionView.backgroundView = collectionViewBackgroundView
-                collectionView.backgroundView!.setNeedsLayout()
-                return 0
-            }
-            else if catalogImages.isEmpty && networkState == .complete {
-                if collectionViewBackgroundView == nil {initializeCollectionViewBackground()}
-                collectionViewBackgroundView!.message = CollectionViewBackground.Messages.loadImagesError
-                collectionView.backgroundView = collectionViewBackgroundView
-                collectionView.backgroundView!.setNeedsLayout()
-                return 0
-            }
-            else {
-                collectionView.backgroundView = nil
-                return 1
-            }
-        }
-        else {
-            if userPhotoAssets.isEmpty && !userPhotoFetchComplete {
-                if collectionViewBackgroundView == nil {initializeCollectionViewBackground()}
-                collectionViewBackgroundView!.message = CollectionViewBackground.Messages.loading
-                collectionView.backgroundView = collectionViewBackgroundView
-                collectionView.backgroundView!.setNeedsLayout()
-                return 0
-            }
-            else if userPhotoAssets.isEmpty && userPhotoFetchComplete {
-                if collectionViewBackgroundView == nil {initializeCollectionViewBackground()}
-                collectionViewBackgroundView!.message = CollectionViewBackground.Messages.noImages
-                collectionView.backgroundView = collectionViewBackgroundView
-                collectionView.backgroundView!.setNeedsLayout()
+                if catalogCollectionViewBackgroundView == nil {
+                    catalogCollectionViewBackgroundView = CollectionViewBackground()
+                }
+                switch networkState {
+                case .complete:
+                    catalogCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.noImages
+                case .failed(let message):
+                    catalogCollectionViewBackgroundView!.message = message ?? CollectionViewBackground.Messages.loadImagesError
+                case .loading:
+                    catalogCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.loading
+                }
+                collectionView.backgroundView = catalogCollectionViewBackgroundView!
                 return 0
             }
             else {
                 collectionView.backgroundView = nil
-                return userPhotoAssets.count
+                return catalogImages.count
             }
         }
+            
+        else if collectionView == userPhotosCollectionView {
+            
+            let dimension = (userPhotosCollectionView.bounds.width - ((numberOfUserPhotoCellsPerColumn - 1) * userPhotosCellSpacing)) / numberOfUserPhotoCellsPerColumn
+            userPhotoCellSize = CGSize(width: dimension, height: dimension)
+            
+            switch userPhotosDataState {
+            case .moments:
+                if momentsPhotoAssets.isEmpty {
+                    if userPhotosCollectionViewBackgroundView == nil {
+                        userPhotosCollectionViewBackgroundView = CollectionViewBackground()
+                    }
+                    if !momentsAssetFetchComplete {
+                        userPhotosCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.loading
+                    }
+                    else {
+                        userPhotosCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.noImages
+                    }
+                    collectionView.backgroundView = userPhotosCollectionViewBackgroundView!
+                    return 0
+                }
+                else {
+                    collectionView.backgroundView = nil
+                    return momentsPhotoAssets.count
+                }
+            case .albums:
+                if albumsPhotoAssets.isEmpty {
+                    if userPhotosCollectionViewBackgroundView == nil {
+                        userPhotosCollectionViewBackgroundView = CollectionViewBackground()
+                    }
+                    if !albumsAssetFetchComplete {
+                        userPhotosCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.loading
+                    }
+                    else {
+                        userPhotosCollectionViewBackgroundView!.message = CollectionViewBackground.Messages.noImages
+                    }
+                    collectionView.backgroundView = userPhotosCollectionViewBackgroundView!
+                    return 0
+                }
+                else {
+                    collectionView.backgroundView = nil
+                    return albumsPhotoAssets.count
+                }
+            }
+            
+        }
+        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == catalogImagesCollectionView {
-            if networkState == .complete {return catalogImages.count}
-            else {return catalogImages.count + 1}
+            if networkState == .complete {return catalogImages[section].count}
+            else {return catalogImages[section].count + 1}
         }
-        else {return userPhotoAssets[section].count}
+        else if collectionView == userPhotosCollectionView {
+            switch userPhotosDataState {
+            case .moments: return momentsPhotoAssets[section].count
+            case .albums: return albumsPhotoAssets[section].count
+            }
+        }
+        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        
+        let width = collectionView.bounds.width
         if collectionView == userPhotosCollectionView {
-            let width = collectionView.bounds.width
             let height: CGFloat = 70.0
             return CGSize(width: width, height: height)
         }
-        else {return CGSize()}
+        else if collectionView == catalogImagesCollectionView {
+            let height: CGFloat = 50.0
+            return CGSize(width: width, height: height)
+        }
+        return CGSize.zero
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if collectionView == userPhotosCollectionView {
             if kind == UICollectionElementKindSectionHeader {
-                let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "userPhotosHeader", for: indexPath)
-                let userPhotosHeaderView = headerView as! UserPhotosCollectionViewSectionHeader
-                if let title = loadedUserMoments?[indexPath.section].localizedTitle {
-                    userPhotosHeaderView.titleLabel.text = title
-                }
-                if let endDate = loadedUserMoments?[indexPath.section].endDate {
-                    userPhotosHeaderView.subTitleLabel.text = dateFormatter.string(from: endDate)
-                }
-                if let locations = loadedUserMoments?[indexPath.section].localizedLocationNames {
-                    if locations.count > 0 {
-                        userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + "  \u{F1C}  " + locations[0]
-                        if locations.count == 2 {
-                            userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + " & 1 more place"
-                        }
-                        else if locations.count > 2 {
-                            userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + ", & \(locations.count - 1) more places"
+                switch userPhotosDataState {
+                case .moments:
+                    let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "userPhotosHeader", for: indexPath)
+                    let userPhotosHeaderView = headerView as! UserPhotosCollectionViewSectionHeader
+                    
+                    if let title = loadedUserMoments?[indexPath.section].localizedTitle {
+                        userPhotosHeaderView.titleLabel.text = title
+                    }
+                    if let endDate = loadedUserMoments?[indexPath.section].endDate {
+                        userPhotosHeaderView.subTitleLabel.text = dateFormatter.string(from: endDate)
+                    }
+                    if let locations = loadedUserMoments?[indexPath.section].localizedLocationNames {
+                        if locations.count > 0 {
+                            userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + "  \u{F1C}  " + locations[0]
+                            if locations.count == 2 {
+                                userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + " & 1 more place"
+                            }
+                            else if locations.count > 2 {
+                                userPhotosHeaderView.subTitleLabel.text = userPhotosHeaderView.subTitleLabel.text! + ", & \(locations.count - 1) more places"
+                            }
                         }
                     }
+                    return headerView
+                case .albums:
+                    let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "catalogPhotosHeader", for: indexPath)
+                    let userPhotosHeaderView = headerView as! CatalogCollectionViewSectionHeader
+                    
+                    if let title = loadedUserAlbums?[indexPath.section].localizedTitle {
+                        userPhotosHeaderView.titleLabel.numberOfLines = 0
+                        userPhotosHeaderView.titleLabel.adjustsFontSizeToFitWidth = true
+                        userPhotosHeaderView.titleLabel.minimumScaleFactor = 0.4
+                        userPhotosHeaderView.titleLabel.text = title
+                    }
+                    return headerView
                 }
-                
-                return headerView
+            }
+        }
+        else if collectionView == catalogImagesCollectionView {
+            if kind == UICollectionElementKindSectionHeader {
+                let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "catalogPhotosHeader", for: indexPath)
+                let catalogPhotosHeaderView = headerView as! CatalogCollectionViewSectionHeader
+                catalogPhotosHeaderView.titleLabel.text = catalogImages.titleForSection(indexPath.section)
+                return catalogPhotosHeaderView
             }
         }
         return UICollectionReusableView()
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        func configure(_ cell: UICollectionViewCell) {
+            
+            var cornerRadius: CGFloat!
+            if cell.reuseIdentifier == ReuseIdentifiers.image {
+                cornerRadius = 5.0
+                cell.layoutMargins = UIEdgeInsets(top: 12.0, left: 12.0, bottom: 12.0, right: 12.0)
+            }
+            else if cell.reuseIdentifier == ReuseIdentifiers.userPhotoCell {
+                cornerRadius = 3.0
+            }
+            
+            let cellBackgroundView = UIView()
+            let cellSelectedBackgroundView = UIView()
+            
+            cellBackgroundView.layer.backgroundColor = UIColor.black.cgColor
+            
+            cellSelectedBackgroundView.layer.backgroundColor = backgroundHighlightsRegularColor.cgColor
+            cellSelectedBackgroundView.layer.cornerRadius = cornerRadius
+            cellSelectedBackgroundView.layer.masksToBounds = true
+            cellSelectedBackgroundView.layer.isOpaque = true
+            
+            cell.backgroundView = cellBackgroundView
+            cell.selectedBackgroundView = cellSelectedBackgroundView
+        }
+        
         if collectionView == catalogImagesCollectionView {
-            if indexPath.row >= catalogImages.count {
+            if indexPath.row >= catalogImages[indexPath.section].count {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReuseIdentifiers.loading, for: indexPath) as! LoadingCollectionViewCell
                 switch networkState {
                 case .loading:
@@ -537,37 +801,57 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             }
             else {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReuseIdentifiers.image, for: indexPath) as! SelectImageCollectionViewCell
-                cell.image = catalogImages[indexPath.row].thumbnail?.uiImage
-                cell.imageTitle = catalogImages[indexPath.row].title
+                cell.image = catalogImages[indexPath.section][indexPath.row].thumbnail?.uiImage
+                cell.imageTitle = catalogImages[indexPath.section][indexPath.row].title
                 cell.imageIsAvailable = true
                 if cell.gestureRecognizers?.count == 0 || cell.gestureRecognizers == nil {
                     let cellDoubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleCellDoubleTap(_:)))
                     cellDoubleTapGestureRecognizer.numberOfTapsRequired = 2
                     cell.addGestureRecognizer(cellDoubleTapGestureRecognizer)
                 }
-                configure(cell: cell)
+                configure(cell)
                 return cell
             }
         }
-        else {
+        else if collectionView == userPhotosCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReuseIdentifiers.userPhotoCell, for: indexPath)
             let imageView = cell.contentView.subviews[0] as! UIImageView
             if cell.tag != 0 {userPhotosImageManager?.cancelImageRequest(PHImageRequestID(cell.tag))}
-        
-            let id = userPhotosImageManager?.requestImage(for: userPhotoAssets[indexPath.section][indexPath.row], targetSize: userPhotoCellSize, contentMode: .aspectFill, options: nil) { (image, _info) in
-                if let info = _info {
-                    if let error = info[PHImageErrorKey] as? NSError {
-                        // TODO: Handle errors gracefully
-                        print(error.debugDescription)
-                        fatalError()
+            
+            switch userPhotosDataState {
+            case .moments:
+                let id = userPhotosImageManager?.requestImage(for: momentsPhotoAssets[indexPath.section][indexPath.row], targetSize: userPhotoCellSize, contentMode: .aspectFill, options: nil) { (image, _info) in
+                    if let info = _info {
+                        if let error = info[PHImageErrorKey] as? NSError {
+                            // TODO: Handle errors gracefully
+                            print(error.debugDescription)
+                            fatalError()
+                        }
                     }
+                    imageView.image = image
                 }
-                imageView.image = image
-            }
-            if id != nil {cell.tag = Int(id!)}
-            else {
-                // TODO: Error handling
-                fatalError("Error requesting the image... userPhotosManager is nil maybe?")
+                if id != nil {cell.tag = Int(id!)}
+                else {
+                    // TODO: Error handling
+                    fatalError("Error requesting the image... userPhotosManager is nil maybe?")
+                }
+                
+            case .albums:
+                let id = userPhotosImageManager?.requestImage(for: albumsPhotoAssets[indexPath.section][indexPath.row], targetSize: userPhotoCellSize, contentMode: .aspectFill, options: nil) { (image, _info) in
+                    if let info = _info {
+                        if let error = info[PHImageErrorKey] as? NSError {
+                            // TODO: Handle errors gracefully
+                            print(error.debugDescription)
+                            fatalError()
+                        }
+                    }
+                    imageView.image = image
+                }
+                if id != nil {cell.tag = Int(id!)}
+                else {
+                    // TODO: Error handling
+                    fatalError("Error requesting the image... userPhotosManager is nil maybe?")
+                }
             }
             
             if cell.gestureRecognizers?.count == 0 || cell.gestureRecognizers == nil {
@@ -576,9 +860,72 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 cell.addGestureRecognizer(cellDoubleTapGestureRecognizer)
             }
             
+            configure(cell)
             return cell
         }
+        return UICollectionViewCell()
     }
+    
+    //
+    // MARK: Table view data source
+    func numberOfSections(in tableView: UITableView) -> Int {return 1} // Filter table views
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch tabBarSelectionTitle {
+        case TabBarTitles.catalog: return catalogImages.count
+        case TabBarTitles.userMoments: return loadedUserMoments?.count ?? 0
+        case TabBarTitles.userAlbums: return loadedUserAlbums?.count ?? 0
+        default: return 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "FilterEntry")
+        
+        cell.backgroundColor = UIColor.clear
+        cell.contentView.backgroundColor = UIColor.clear
+        cell.selectionStyle = .none
+        
+        cell.textLabel?.font = UIFont(name: headingsFontName, size: 12.0)
+        cell.textLabel?.textColor = secondaryTextRegularColor
+        cell.textLabel?.lineBreakMode = .byWordWrapping
+        cell.textLabel?.numberOfLines = 0
+        
+        cell.detailTextLabel?.font = UIFont(name: contentSecondaryFontName, size: 10.0)
+        cell.detailTextLabel?.textColor = secondaryTextRegularColor
+        cell.detailTextLabel?.numberOfLines = 0
+        cell.detailTextLabel?.lineBreakMode = .byWordWrapping
+        
+        switch tabBarSelectionTitle {
+        case TabBarTitles.catalog:
+            cell.textLabel?.text = catalogImages.titleForSection(indexPath.row)
+        case TabBarTitles.userMoments:
+            if let title = loadedUserMoments?[indexPath.row].localizedTitle {cell.textLabel?.text = title}
+            else {cell.textLabel?.text = "Moment"}
+            
+            if let endDate = loadedUserMoments?[indexPath.row].endDate {
+                var stringToDisplay = dateFormatter.string(from: endDate)
+                if let locations = loadedUserMoments?[indexPath.row].localizedLocationNames {
+                    if locations.count > 0 {
+                        stringToDisplay += "  \u{F1C}  \(locations[0])"
+                        if locations.count == 2 {stringToDisplay += " & 1 more place"}
+                        else if locations.count > 2 {stringToDisplay += ", & \(locations.count - 1) more places"}
+                    }
+                }
+                cell.detailTextLabel?.text = stringToDisplay
+            }
+        case TabBarTitles.userAlbums:
+            cell.textLabel?.text = loadedUserAlbums?[indexPath.row].localizedTitle
+        default: break
+        }
+       
+        return cell
+    }
+    
+    
+    //
+    // MARK: Delegate Methods
+    //
     
     //
     // UICollectionViewDelegate
@@ -586,31 +933,60 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     // Determining if the specified item should be selected
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
         if let cell = collectionView.cellForItem(at: indexPath) {
-            if cell.reuseIdentifier == ReuseIdentifiers.loading {return false}
-        }
-        
-        if let selectedCells = collectionView.indexPathsForSelectedItems {
-            for ip in selectedCells {
-                collectionView.deselectItem(at: ip, animated: true)
-                if let cell = collectionView.cellForItem(at: ip) as? SelectImageCollectionViewCell {
-                    cell.layer.shadowColor = UIColor.gray.cgColor
+            if cell.reuseIdentifier == ReuseIdentifiers.loading {
+                switch networkState {
+                case .failed(_):
+                    if let newEventViewController = navigationController?.viewControllers[1] as? NewEventViewController {
+                        newEventViewController.reFetchCloudImages()
+                    }
+                default: break
                 }
+                return false
             }
         }
+        
+        let transition = CATransition()
+        transition.duration = 0.2
+        transition.type = kCATransitionFade
+        
+        if let selectedCells = catalogImagesCollectionView.indexPathsForSelectedItems {
+            for ip in selectedCells {
+                catalogImagesCollectionView.cellForItem(at: ip)?.backgroundView?.layer.add(transition, forKey: "transition")
+                catalogImagesCollectionView.deselectItem(at: ip, animated: true)
+            }
+        }
+        if let selectedCells = userPhotosCollectionView.indexPathsForSelectedItems {
+            for ip in selectedCells {
+                userPhotosCollectionView.cellForItem(at: ip)?.backgroundView?.layer.add(transition, forKey: "transition")
+                userPhotosCollectionView.deselectItem(at: ip, animated: true)
+            }
+        }
+        
         return true
     }
     
     // Did Select Cell
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let transition = CATransition()
+        transition.duration = 0.2
+        transition.type = kCATransitionFade
+        collectionView.cellForItem(at: indexPath)!.backgroundView?.layer.add(transition, forKey: "transition")
+        
         if collectionView == catalogImagesCollectionView {
-            selectedImage = catalogImages[indexPath.row]
+            selectedImage = catalogImages[indexPath.section][indexPath.row]
+            selectedCatalogImageIndexPath = indexPath
         }
-        else {
-            let userImage = userPhotoAssets[indexPath.section][indexPath.row]
-            selectedImage = UserEventImage(fromPhotosAsset: userImage)
-        }
-        if let cell = collectionView.cellForItem(at: indexPath) {
-            cell.layer.shadowColor = UIColor.black.cgColor
+        else if collectionView == userPhotosCollectionView {
+            switch userPhotosDataState {
+            case .moments:
+                let userImage = momentsPhotoAssets[indexPath.section][indexPath.row]
+                selectedImage = UserEventImage(fromPhotosAsset: userImage)
+                selectedUserPhotoIndexPath = indexPath
+            case .albums:
+                let userImage = albumsPhotoAssets[indexPath.section][indexPath.row]
+                selectedImage = UserEventImage(fromPhotosAsset: userImage)
+                selectedUserPhotoIndexPath = indexPath
+            }
         }
     }
     
@@ -619,9 +995,9 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == catalogImagesCollectionView {
-            if indexPath.row < catalogImages.count {
-                let width = catalogImages[indexPath.row].thumbnail!.uiImage!.size.width + (2 * marginForCellImage)
-                let height = catalogImages[indexPath.row].thumbnail!.uiImage!.size.height + (2 * marginForCellImage) + cellGlyphHeight + cellImageToGlyphSpacing
+            if indexPath.row < catalogImages[indexPath.section].count {
+                let width = catalogImages[indexPath.section][indexPath.row].thumbnail!.uiImage!.size.width + (2 * marginForCellImage)
+                let height = catalogImages[indexPath.section][indexPath.row].thumbnail!.uiImage!.size.height + (2 * marginForCellImage) + cellGlyphHeight + cellImageToGlyphSpacing
                 return CGSize(width: width, height: height)
             }
             else {return CGSize(width: 100.0, height: 100.0)}
@@ -631,7 +1007,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         if collectionView == catalogImagesCollectionView {
-            return UIEdgeInsets(top: collectionViewMargin, left: collectionViewMargin, bottom: collectionViewMargin, right: collectionViewMargin)
+            return UIEdgeInsets(top: 0.0, left: collectionViewMargin, bottom: 0.0, right: collectionViewMargin)
         }
         return UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
     }
@@ -648,7 +1024,167 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     //
     // UITabBarDelegate
-    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {tabBarSelectionTitle = tabBar.selectedItem?.title}
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        if item.title == tabBarSelectionTitle {
+            
+            let optionsViewController = UIViewController()
+            optionsViewController.modalPresentationStyle = .popover
+            
+            let popController = optionsViewController.popoverPresentationController!
+            popController.backgroundColor = backgroundHighlightsRegularColor
+            popController.delegate = self
+            popController.sourceView = tabBar
+            
+            let edgeInsets: CGFloat = 12.0
+            let spacing: CGFloat = 6.0
+            
+            let containerStackView = UIStackView()
+            containerStackView.translatesAutoresizingMaskIntoConstraints = false
+            containerStackView.backgroundColor = UIColor.clear
+            containerStackView.axis = .vertical
+            containerStackView.distribution = .fillEqually
+            containerStackView.spacing = 4.0
+            
+            let filterButton = UIButton()
+            filterButton.translatesAutoresizingMaskIntoConstraints = false
+            filterButton.tag = 1
+            filterButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+            filterButton.tintColor = primaryTextDarkColor
+            filterButton.setTitle("Find", for: .normal)
+            filterButton.setTitleColor(primaryTextDarkColor, for: .normal)
+            filterButton.titleLabel?.font = UIFont(name: contentSecondaryFontName, size: 10.0)
+            filterButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
+            
+            let filterButtonImage = UIButton()
+            filterButtonImage.translatesAutoresizingMaskIntoConstraints = false
+            filterButtonImage.tag = 2
+            filterButtonImage.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+            filterButtonImage.setImage(#imageLiteral(resourceName: "FilterButtonImage"), for: .normal)
+            filterButtonImage.tintColor = primaryTextDarkColor
+            filterButtonImage.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
+            
+            let filterStackView = UIStackView()
+            filterStackView.translatesAutoresizingMaskIntoConstraints = false
+            filterStackView.axis = .vertical
+            filterStackView.alignment = .center
+            
+            filterStackView.addArrangedSubview(filterButtonImage)
+            filterStackView.addArrangedSubview(filterButton)
+            
+            containerStackView.addArrangedSubview(filterStackView)
+            
+            if tabBarSelection == .userPhotos {
+                let momentsButton = UIButton()
+                momentsButton.translatesAutoresizingMaskIntoConstraints = false
+                momentsButton.tag = 3
+                momentsButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+                if userPhotosDataState == .moments {momentsButton.setTitleColor(secondaryTextRegularColor, for: .normal)}
+                else {momentsButton.setTitleColor(unselectedButtonColor, for: .normal)}
+                momentsButton.setTitle("Moments", for: .normal)
+                momentsButton.titleLabel?.font = UIFont(name: contentSecondaryFontName, size: 10.0)
+                momentsButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
+                
+                let momentsImageButton = UIButton()
+                momentsImageButton.translatesAutoresizingMaskIntoConstraints = false
+                momentsImageButton.tag = 4
+                momentsImageButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+                momentsImageButton.setImage(#imageLiteral(resourceName: "UserMomentsButtonImage"), for: .normal)
+                if userPhotosDataState == .moments {momentsImageButton.tintColor = secondaryTextRegularColor}
+                else {momentsImageButton.tintColor = unselectedButtonColor}
+                momentsImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
+                
+                let albumsButton = UIButton()
+                albumsButton.translatesAutoresizingMaskIntoConstraints = false
+                albumsButton.tag = 5
+                albumsButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+                if userPhotosDataState == .albums {albumsButton.setTitleColor(secondaryTextRegularColor, for: .normal)}
+                else {albumsButton.setTitleColor(unselectedButtonColor, for: .normal)}
+                albumsButton.setTitle("Albums", for: .normal)
+               
+                albumsButton.titleLabel?.font = UIFont(name: contentSecondaryFontName, size: 10.0)
+                albumsButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
+                
+                let albumsButtonImage = UIButton()
+                albumsButtonImage.translatesAutoresizingMaskIntoConstraints = false
+                albumsButtonImage.tag = 6
+                albumsButtonImage.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
+                albumsButtonImage.setImage(#imageLiteral(resourceName: "UserAlbumsButtonImage"), for: .normal)
+                if userPhotosDataState == .albums {albumsButtonImage.tintColor = secondaryTextRegularColor}
+                else {albumsButtonImage.tintColor = unselectedButtonColor}
+                albumsButtonImage.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
+                
+                optionsViewController.view = {
+                    let rootView = UIView()
+                    rootView.backgroundColor = UIColor.clear
+                    rootView.translatesAutoresizingMaskIntoConstraints = false
+                    
+                    let buttonsStackView = UIStackView()
+                    buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+                    buttonsStackView.axis = UILayoutConstraintAxis.horizontal
+                    buttonsStackView.alignment = .center
+                    buttonsStackView.distribution = UIStackViewDistribution.fillEqually
+                    buttonsStackView.spacing = 4.0
+                    
+                    let momentsStackView = UIStackView()
+                    momentsStackView.translatesAutoresizingMaskIntoConstraints = false
+                    momentsStackView.axis = .vertical
+                    momentsStackView.alignment = .center
+                    
+                    momentsStackView.addArrangedSubview(momentsImageButton)
+                    momentsStackView.addArrangedSubview(momentsButton)
+                    
+                    let albumsStackView = UIStackView()
+                    albumsStackView.translatesAutoresizingMaskIntoConstraints = false
+                    albumsStackView.axis = .vertical
+                    albumsStackView.alignment = .center
+                    
+                    albumsStackView.addArrangedSubview(albumsButtonImage)
+                    albumsStackView.addArrangedSubview(albumsButton)
+                    
+                    buttonsStackView.addArrangedSubview(momentsStackView)
+                    buttonsStackView.addArrangedSubview(albumsStackView)
+                    
+                    containerStackView.addArrangedSubview(buttonsStackView)
+                    
+                    rootView.addSubview(containerStackView)
+                    
+                    rootView.topAnchor.constraint(equalTo: containerStackView.topAnchor).isActive = true
+                    rootView.leftAnchor.constraint(equalTo: containerStackView.leftAnchor).isActive = true
+                    rootView.rightAnchor.constraint(equalTo: containerStackView.rightAnchor).isActive = true
+                    rootView.bottomAnchor.constraint(equalTo: containerStackView.bottomAnchor).isActive = true
+                    
+                    return rootView
+                }()
+                
+                optionsViewController.preferredContentSize = optionsViewController.view.systemLayoutSizeFitting(UILayoutFittingCompressedSize)
+                popController.sourceRect = CGRect(x: tabBar.bounds.width / 2, y: 0.0, width: tabBar.bounds.width / 2, height: tabBar.bounds.height)
+                
+                present(optionsViewController, animated: true, completion: nil)
+            }
+            else if tabBarSelection == .catalog {
+                
+            }
+        }
+        else {tabBarSelectionTitle = item.title}
+    }
+    
+    //
+    // MARK: Table View Delegate
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch tabBarSelection {
+        case .catalog:
+            if let attributes = catalogImagesCollectionView.layoutAttributesForSupplementaryElement(ofKind: UICollectionElementKindSectionHeader, at: IndexPath(item: 0, section: indexPath.row)) {
+                dismiss(animated: true, completion: nil)
+                catalogImagesCollectionView.setContentOffset(attributes.frame.origin, animated: true)
+            }
+        case .userPhotos:
+            if let attributes = userPhotosCollectionView.layoutAttributesForSupplementaryElement(ofKind: UICollectionElementKindSectionHeader, at: IndexPath(item: 0, section: indexPath.row)) {
+                self.userPhotosCollectionView.setContentOffset(attributes.frame.origin, animated: true)
+            }
+        case .none: break
+        }
+        dismiss(animated: true, completion: nil)
+    }
     
     //
     // CountdownImageDelagate
@@ -656,15 +1192,25 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         if !success.contains(where: {$0 == false}) && needToDismissSelf {
             let appImage = selectedImage as! AppEventImage
             guard appImage.mainImage != nil && appImage.maskImage != nil else {return}
-            let splitViewController = self.presentingViewController as! UISplitViewController
-            let navController = splitViewController.viewControllers[0] as! UINavigationController
-            let navController2 = navController.viewControllers[1] as! UINavigationController
-            let newEventController = navController2.viewControllers[0] as! NewEventViewController
+            let newEventController = navigationController!.viewControllers[0] as! NewEventViewController
             newEventController.selectedImage = selectedImage
             self.dismiss(animated: true, completion: nil)
             newEventController.dismiss(animated: true, completion: nil)
             needToDismissSelf = false
         }
+    }
+    
+    //
+    // MARK: ManagedCatalogImageDelegate
+    func dataUpdated() {
+        catalogImagesCollectionView.reloadData()
+        catalogImagesCollectionView.selectItem(at: selectedCatalogImageIndexPath, animated: true, scrollPosition: .top)
+    }
+    
+    //
+    // MARK: UIPopoverPresentationControllerDelegate
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return UIModalPresentationStyle.none
     }
     
     
@@ -674,56 +1220,79 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     @objc fileprivate func handleNavButtonClick(_ sender: Any?) {
         if let button = sender as? UIBarButtonItem {
-            let splitViewController = self.presentingViewController as! UISplitViewController
-            let navController = splitViewController.viewControllers[0] as! UINavigationController
-            let navController2 = navController.viewControllers[1] as! UINavigationController
-            let newEventController = navController2.viewControllers[0] as! NewEventViewController
-            if button == cancelButton {newEventController.dismiss(animated: true, completion: nil)}
+            let newEventController = navigationController!.viewControllers[1] as! NewEventViewController
             if button == doneButton {
-                guard selectedImage != nil else {
-                    fatalError("Unexpected State: Done button was activated even though an image wasn't selected!")
-                }
-                var imagesToFetch = [CountdownImage.ImageType]()
-                if selectedImage?.mainImage?.cgImage == nil {imagesToFetch.append(.main)}
-                if let appImage = selectedImage as? AppEventImage {
-                    if appImage.maskImage?.cgImage == nil {imagesToFetch.append(.mask)}
-                }
-                if imagesToFetch.isEmpty {
-                    newEventController.selectedImage = selectedImage
-                    newEventController.dismiss(animated: true, completion: nil)
-                }
-                else {
-                    let popup = UIAlertController(title: "Fetching Image", message: "This may take a moment.", preferredStyle: .alert)
-                    let cancelAction = UIAlertAction(title: "CANCEL", style: .cancel) { (action) in
-                        if action.title == "CANCEL" {
-                            self.selectedImage?.cancelAllFetches()
-                            self.needToDismissSelf = false
+                if doneButton.title == "USE IMAGE" {
+                    guard selectedImage?.locationForCellView != nil else {
+                        fatalError("Unexpected State: Done button was activated even though the image had no locationForCell View!")
+                    }
+                    var imagesToFetch = [CountdownImage.ImageType]()
+                    if selectedImage?.mainImage?.cgImage == nil {imagesToFetch.append(.main)}
+                    if let appImage = selectedImage as? AppEventImage {
+                        if appImage.maskImage?.cgImage == nil {imagesToFetch.append(.mask)}
+                    }
+                    if imagesToFetch.isEmpty {
+                        newEventController.selectedImage = selectedImage
+                        navigationController?.popViewController(animated: true)
+                    }
+                    else {
+                        let popup = UIAlertController(title: "Fetching Image", message: "This may take a moment.", preferredStyle: .alert)
+                        let cancelAction = UIAlertAction(title: "CANCEL", style: .cancel) { (action) in
+                            if action.title == "CANCEL" {
+                                self.selectedImage?.cancelAllFetches()
+                                self.needToDismissSelf = false
+                            }
+                        }
+                        popup.addAction(cancelAction)
+                        self.present(popup, animated: true, completion: nil)
+                        selectedImage?.delegate = self
+                        needToDismissSelf = true
+                        selectedImage?.fetch(imageTypes: imagesToFetch, alertDelegate: true)
+                        
+                        Timer.scheduledTimer(withTimeInterval: 6.0, repeats: false) { [weak self] (timer) in
+                            if let _ = self {
+                                popup.message = "Still fetching, the network is a bit slow."
+                            }
                         }
                     }
-                    popup.addAction(cancelAction)
-                    self.present(popup, animated: true, completion: nil)
-                    selectedImage?.delegate = self
-                    needToDismissSelf = true
-                    selectedImage?.fetch(imageTypes: imagesToFetch, alertDelegate: true)
-                    
-                    Timer.scheduledTimer(withTimeInterval: 6.0, repeats: false) { [weak self] (timer) in
-                        if let _ = self {
-                            popup.message = "Still fetching, the network is a bit slow."
-                        }
-                    }
                 }
+                else if doneButton.title == "CREATE IMAGE" {
+                    performSegue(withIdentifier: SegueIdentifiers.imagePreview, sender: doneButton)
+                }
+                else {fatalError("Fatal Error: Unhandled done button title!")}
             }
+        }
+    }
+    
+    @objc fileprivate func handleUserPhotosOptionsButtonClick(_ sender: UIButton) {
+        
+        switch sender.tag {
+        case 1, 2: dismiss(animated: false, completion: nil); presentFilterPopover()
+        case 3, 4: dismiss(animated: true, completion: nil); tabBarSelectionTitle = TabBarTitles.userMoments
+        case 5, 6: dismiss(animated: true, completion: nil); tabBarSelectionTitle = TabBarTitles.userAlbums
+        default:
+            // TODO: Remove for production.
+            fatalError("Fatal Error: Unrecognized options button title handled.")
         }
     }
     
     @objc fileprivate func handleCellDoubleTap(_ sender: Any?) {
         if let recognizer = sender as? UITapGestureRecognizer {
             if let cell = recognizer.view as? SelectImageCollectionViewCell, let ipForCell = catalogImagesCollectionView.indexPath(for: cell) {
-                selectedImage = catalogImages[ipForCell.row]
+                selectedImage = catalogImages[ipForCell.section][ipForCell.row]
+                selectedCatalogImageIndexPath = ipForCell
             }
-            else if let cell = recognizer.view as? UICollectionViewCell, let ipForCell = catalogImagesCollectionView.indexPath(for: cell) {
-                let userImage = userPhotoAssets[ipForCell.section][ipForCell.row]
-                selectedImage = UserEventImage(fromPhotosAsset: userImage)
+            else if let cell = recognizer.view as? UICollectionViewCell, let ipForCell = userPhotosCollectionView.indexPath(for: cell) {
+                switch userPhotosDataState {
+                case .moments:
+                    let userImage = momentsPhotoAssets[ipForCell.section][ipForCell.row]
+                    selectedImage = UserEventImage(fromPhotosAsset: userImage)
+                    selectedUserPhotoIndexPath = ipForCell
+                case .albums:
+                    let userImage = albumsPhotoAssets[ipForCell.section][ipForCell.row]
+                    selectedImage = UserEventImage(fromPhotosAsset: userImage)
+                    selectedUserPhotoIndexPath = ipForCell
+                }
             }
             performSegue(withIdentifier: SegueIdentifiers.imagePreview, sender: self)
         }
@@ -737,12 +1306,15 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     //
     // MARK: init helpers
     fileprivate func fetchUserPhotos() {
-        let localPhotosFetchQueue = DispatchQueue(label: "localPhotosFetchQueue", qos: .utility, target: nil)
+        let serialPhotosFetchQueue = DispatchQueue(label: "serialPhotosFetchQueue", qos: .utility)
         userPhotosImageManager = PHCachingImageManager()
         
+        let dimension = (userPhotosCollectionView.bounds.width - ((numberOfUserPhotoCellsPerColumn - 1) * userPhotosCellSpacing)) / numberOfUserPhotoCellsPerColumn
+        userPhotoCellSize = CGSize(width: dimension, height: dimension)
+        
         func getPhotos() {
-            userPhotoFetchComplete = false
-            let localPhotosFetchWorkItem = DispatchWorkItem { [weak self] in
+            momentsAssetFetchComplete = false
+            let momentsFetchWorkItem = DispatchWorkItem { [weak self] in
                 let fetchOptions = PHFetchOptions()
                 fetchOptions.sortDescriptors = [NSSortDescriptor(key: "endDate", ascending: false)]
                 self?.loadedUserMoments = PHAssetCollection.fetchMoments(with: fetchOptions)
@@ -758,11 +1330,32 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                     self?.userPhotosImageManager?.startCachingImages(for: imagesToCache, targetSize: self!.userPhotoCellSize, contentMode: .aspectFit, options: nil)
                 }
                 DispatchQueue.main.async { [weak self] in
-                    self?.userPhotoFetchComplete = true
-                    self?.userPhotoAssets = assets
+                    self?.momentsAssetFetchComplete = true
+                    self?.momentsPhotoAssets = assets
                 }
             }
-            localPhotosFetchQueue.async(execute: localPhotosFetchWorkItem)
+            let albumsFetchWorkItem = DispatchWorkItem { [weak self] in
+                let fetchOptions = PHFetchOptions()
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key: "localizedTitle", ascending: true)]
+                self?.loadedUserAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: fetchOptions)
+                var assets = [PHFetchResult<PHAsset>]()
+                self?.loadedUserAlbums?.enumerateObjects { [weak self] (collection, _, _) in
+                    let fetchOptions = PHFetchOptions()
+                    fetchOptions.predicate = NSPredicate(format: "mediaType = %d", argumentArray: [PHAssetMediaType.image.rawValue])
+                    fetchOptions.includeAllBurstAssets = false
+                    let result = PHAsset.fetchAssets(in: collection, options: fetchOptions)
+                    assets.append(result)
+                    var imagesToCache = [PHAsset]()
+                    result.enumerateObjects { (asset, _, _) in imagesToCache.append(asset)}
+                    self?.userPhotosImageManager?.startCachingImages(for: imagesToCache, targetSize: self!.userPhotoCellSize, contentMode: .aspectFit, options: nil)
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.albumsAssetFetchComplete = true
+                    self?.albumsPhotoAssets = assets
+                }
+            }
+            serialPhotosFetchQueue.async(execute: momentsFetchWorkItem)
+            serialPhotosFetchQueue.async(execute: albumsFetchWorkItem)
         }
         
         switch PHPhotoLibrary.authorizationStatus() {
@@ -780,41 +1373,28 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         }
     }
     
-    //
-    // MARK: Utility helpers
-    fileprivate func configure(cell: SelectImageCollectionViewCell) {
-        let cellBackgroundView = UIView()
-        let cellSelectedBackgroundView = UIView()
-        let cornerRadius: CGFloat = 5.0
+    fileprivate func presentFilterPopover() {
+        let filterViewController = UITableViewController()
+        filterViewController.view.backgroundColor = UIColor.clear
+        filterViewController.tableView.backgroundColor = UIColor.clear
         
-        cellBackgroundView.layer.backgroundColor = UIColor.darkGray.cgColor
-        cellBackgroundView.layer.cornerRadius = cornerRadius
-        cellBackgroundView.layer.masksToBounds = true
-        cellBackgroundView.layer.isOpaque = true
+        filterViewController.tableView.dataSource = self
+        filterViewController.tableView.delegate = self
         
-        cellSelectedBackgroundView.layer.backgroundColor = UIColor.black.cgColor
-        cellSelectedBackgroundView.layer.cornerRadius = cornerRadius
-        cellSelectedBackgroundView.layer.masksToBounds = true
-        cellSelectedBackgroundView.layer.isOpaque = true
+        filterViewController.modalPresentationStyle = .popover
+        filterViewController.preferredContentSize = CGSize(width: 200.0, height: 250.0)
         
-        cell.backgroundView = cellBackgroundView
-        cell.selectedBackgroundView = cellSelectedBackgroundView
-        cell.layoutMargins = UIEdgeInsets(top: 12.0, left: 12.0, bottom: 12.0, right: 12.0)
-        cell.clipsToBounds = false
-        
-        cell.layer.cornerRadius = cornerRadius
-        cell.layer.masksToBounds = false
-        cell.layer.isOpaque = true
-        
-        cell.layer.shadowColor = UIColor.gray.cgColor
-        cell.layer.shadowOffset = CGSize(width: 3.0, height: 3.0)
-        cell.layer.shadowOpacity = 1.0
-        cell.layer.shadowRadius = 10.0
-        
-        cell.layer.shadowPath = UIBezierPath(roundedRect: cell.bounds, cornerRadius: cornerRadius).cgPath
-    }
-    
-    fileprivate func initializeCollectionViewBackground() {
-        collectionViewBackgroundView = CollectionViewBackground()
+        let popController = filterViewController.popoverPresentationController!
+        popController.backgroundColor = backgroundHighlightsRegularColor
+        popController.delegate = self
+        popController.sourceView = imagesTabBar
+        switch tabBarSelection {
+        case .catalog:
+            popController.sourceRect = CGRect(x: 0.0, y: 0.0, width: imagesTabBar.bounds.width / 2, height: imagesTabBar.bounds.height)
+        case .userPhotos:
+            popController.sourceRect = CGRect(x: imagesTabBar.bounds.width / 2, y: 0.0, width: imagesTabBar.bounds.width / 2, height: imagesTabBar.bounds.height)
+        case .none: break
+        }
+        self.present(filterViewController, animated: false, completion: nil)
     }
 }

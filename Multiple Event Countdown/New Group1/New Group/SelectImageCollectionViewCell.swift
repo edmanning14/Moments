@@ -15,9 +15,21 @@ class SelectImageCollectionViewCell: UICollectionViewCell {
     var imageIsAvailable = false {
         didSet {
             glyphImageView.tintColor = UIColor.lightGray
+            cellLabel.textColor = primaryTextRegularColor
+            cellLabel.font = UIFont(name: contentSecondaryFontName, size: 12.0)
             if imageIsAvailable {
                 glyphImageView.isHidden = true
-                if isSelected {labelSelected()} else {labelNotSelected()}
+                cellLabel.isHidden = false
+            }
+            else {
+                if !isSelected {
+                    glyphImageView.isHidden = false
+                    cellLabel.isHidden = true
+                }
+                else {
+                    glyphImageView.isHidden = true
+                    cellLabel.isHidden = false
+                }
             }
         }
     }
@@ -26,18 +38,18 @@ class SelectImageCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var cellLabel: UILabel!
     @IBOutlet weak var glyphImageView: UIImageView!
     
+    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
+    let contentSecondaryFontName = "Raleway-Regular"
+    
     override var isSelected: Bool {
         didSet {
-            if isSelected != oldValue {
-                if isSelected {glyphImageView.isHidden = true; cellLabel.isHidden = false; labelSelected()}
-                else {
-                    if imageIsAvailable {labelNotSelected()}
-                    else {glyphImageView.isHidden = false; cellLabel.isHidden = true}
-                }
+            if isSelected != oldValue && !imageIsAvailable {
+                if isSelected {glyphImageView.isHidden = true; cellLabel.isHidden = false}
+                else {glyphImageView.isHidden = false; cellLabel.isHidden = true}
             }
         }
     }
     
-    fileprivate func labelSelected() {cellLabel.textColor = UIColor.white}
-    fileprivate func labelNotSelected() {cellLabel.textColor = UIColor.black}
+    //fileprivate func labelSelected() {cellLabel.textColor = UIColor.white}
+    //fileprivate func labelNotSelected() {cellLabel.textColor = primaryTextRegularColor}
 }

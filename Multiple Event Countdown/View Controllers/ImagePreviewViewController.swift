@@ -10,7 +10,7 @@ import UIKit
 import CloudKit
 import Photos
 
-class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
+class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITabBarDelegate {
     
     //
     // MARK: - Paramters
@@ -20,7 +20,9 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
     // MARK: Data Model
     
     var selectedImage: UserEventImage?
-    fileprivate var cropRectStartEditOrigin: CGPoint?
+    var selectImageViewController: SelectImageViewController?
+    
+    fileprivate var cropRect: CGRect?
     fileprivate var cropRectStartPanOrigin: CGPoint?
     fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
     
@@ -40,23 +42,81 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         }
     }
     
+    enum TabBarStates {case home, original}
+    
+    struct TabBarTitles {
+        static let home = "Home"
+        static let original = "Original"
+        static let setImage = "Set Home Image"
+    }
+    
     //
     // MARK: Flags
+    
+    var createImage = false
     
     fileprivate var loadStatus: LoadStatuses = .locating {
         didSet {
             loadingStatusLabel?.text = loadStatus.message
             if loadStatus == .done && oldValue != .done {
                 if selectedImage?.locationForCellView == nil {createHomeImageButton.isHidden =  false}
-                else {previewTypeButtonsStackView.isHidden = false}
             }
             else if loadStatus != .done && oldValue == .done {
-                previewTypeButtonsStackView.isHidden = true
+                homeTabBarItem.isEnabled = false
+                originalTabBarItem.isEnabled = false
                 createHomeImageButton.isHidden = true
             }
         }
     }
+    
+    fileprivate var tabBarState: TabBarStates = .original {
+        didSet {
+            let transition = CATransition()
+            transition.type = kCATransitionFade
+            transition.duration = animationDuration
+            fullSizePreviewView.layer.add(transition, forKey: "transition")
+            
+            switch tabBarState {
+            case .home:
+                previewTypeTabBar.selectedItem = homeTabBarItem
+                homeTabBarItem.title = TabBarTitles.setImage
+                homePreviewView.frame.origin = getCropRect().origin
+                let centeredOrigin = CGPoint(x: 0.0, y: (view.bounds.height / 2) - (homePreviewView.bounds.height / 2))
+                
+                homePreviewView.isHidden = false
+                fullSizePreviewView.isHidden = true
+                
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: animationDuration,
+                    delay: animationDuration,
+                    options: .curveEaseInOut,
+                    animations: {self.homePreviewView.frame.origin = centeredOrigin},
+                    completion: nil
+                )
+            case .original:
+                previewTypeTabBar.selectedItem = originalTabBarItem
+                if selectedImage?.locationForCellView == nil {homeTabBarItem.title = TabBarTitles.setImage}
+                else {homeTabBarItem.title = TabBarTitles.home}
+                
+                if !homePreviewView.isHidden {
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: animationDuration,
+                        delay: 0.0,
+                        options: .curveEaseInOut,
+                        animations: {self.homePreviewView.frame.origin = self.getCropRect().origin},
+                        completion: { [weak self] (position) in
+                            self?.homePreviewView.isHidden = true
+                            self?.fullSizePreviewView.isHidden = false
+                        }
+                    )
+                }
+                else {fullSizePreviewView.isHidden = false}
+            }
+        }
+    }
+    
     fileprivate var hasMask: Bool?
+    fileprivate var initialLoad = true
     
     //
     // MARK: UI Content
@@ -64,9 +124,9 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
     @IBOutlet weak var loadingStackView: UIStackView!
     @IBOutlet weak var loadingStatusLabel: UILabel?
     @IBOutlet weak var editingButtonsStackView: UIStackView!
-    @IBOutlet weak var previewTypeButtonsStackView: UIStackView!
-    @IBOutlet weak var homeButton: SoftBackgroundButton!
-    @IBOutlet weak var fullSizeButton: SoftBackgroundButton!
+    @IBOutlet weak var previewTypeTabBar: UITabBar!
+    @IBOutlet weak var homeTabBarItem: UITabBarItem!
+    @IBOutlet weak var originalTabBarItem: UITabBarItem!
     @IBOutlet weak var createHomeImageButton: UIButton!
     @IBOutlet weak var cancelEditButton: UIButton!
     @IBOutlet weak var homePreviewView: UIView!
@@ -81,12 +141,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
     
     //
     // MARK: Constants
-    
-    fileprivate struct PreviewTypeButtonTitles {
-        static let homePreview = "HOME"
-        static let fullScreenPreview = "DETAIL"
-    }
-    
     fileprivate let animationDuration: TimeInterval = 0.2
     
     //
@@ -98,6 +152,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
     // MARK: Colors
     let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
     let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
+    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
     
     //
     // MARK: - View Controller Lifecycle
@@ -110,28 +165,18 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         doneButton.target = self
         doneButton.action = #selector(handleNavButtonClick(_:))
         doneButton.tintColor = primaryTextDarkColor
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
+        doneButton.setTitleTextAttributes(attributes, for: .disabled)
         doneButton.title = "USE IMAGE"
         navigationItem.rightBarButtonItem = doneButton
         if selectedImage?.locationForCellView == nil {doneButton.isEnabled = false}
         
-        let navItemTitleLabel = UILabel()
-        navItemTitleLabel.text = "Image Preview"
-        navItemTitleLabel.backgroundColor = UIColor.clear
-        navItemTitleLabel.textColor = primaryTextRegularColor
-        navItemTitleLabel.font = UIFont(name: headingsFontName, size: 20.0)
-        navigationItem.titleView = navItemTitleLabel
-        
-        homeButton.addTarget(self, action: #selector(handlePreviewTypeButtonClick(_:)), for: .touchUpInside)
-        fullSizeButton.addTarget(self, action: #selector(handlePreviewTypeButtonClick(_:)), for: .touchUpInside)
-        
-        homeButton.setTitle(PreviewTypeButtonTitles.homePreview, for: .normal)
-        homeButton.setTitle(PreviewTypeButtonTitles.homePreview, for: .selected)
-        homeButton.softEffectColor = primaryTextRegularColor
-        fullSizeButton.setTitle(PreviewTypeButtonTitles.fullScreenPreview, for: .normal)
-        fullSizeButton.setTitle(PreviewTypeButtonTitles.fullScreenPreview, for: .selected)
-        fullSizeButton.softEffectColor = primaryTextRegularColor
+        previewTypeTabBar.delegate = self
+        previewTypeTabBar.barTintColor = UIColor.clear
+        previewTypeTabBar.backgroundImage = UIImage()
+        previewTypeTabBar.unselectedItemTintColor = UIColor.lightGray
+        previewTypeTabBar.tintColor = secondaryTextRegularColor
         
         createHomeImageButton.addTarget(self, action: #selector(handleEditButtonClick(_:)), for: .touchUpInside)
         cancelEditButton.addTarget(self, action: #selector(handleEditButtonClick(_:)), for: .touchUpInside)
@@ -153,6 +198,14 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
                 
                 homePreviewCell!.viewWithMargins.layer.cornerRadius = 3.0
                 homePreviewCell!.viewWithMargins.layer.masksToBounds = true
+                
+                if let _ = selectedImage as? AppEventImage {}
+                else {
+                    let doubleTabGesture = UITapGestureRecognizer(target: self, action: #selector(handleHomePreviewDoubleTap(_:)))
+                    doubleTabGesture.numberOfTapsRequired = 2
+                    homePreviewView.isUserInteractionEnabled = true
+                    homePreviewView.addGestureRecognizer(doubleTabGesture)
+                }
             }
         }
         if let specialEventNib2 = Bundle.main.loadNibNamed("SpecialEventCell", owner: self, options: nil) {
@@ -172,8 +225,10 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         setImage()
     }
     
-    override func viewWillAppear(_ animated: Bool) {UIApplication.shared.statusBarStyle = .lightContent}
-    override func viewWillDisappear(_ animated: Bool) {UIApplication.shared.statusBarStyle = .default}
+    override func viewDidAppear(_ animated: Bool) {
+        initialLoad = false
+        if createImage {enterCropMode(animated: true)}
+    }
 
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
     
@@ -207,6 +262,17 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         else {performUserImageSetup()}
     }
     
+    //
+    // MARK: TabBar Delegate
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        if item == homeTabBarItem && tabBarState == .home {enterCropMode(animated: true)}
+        else if item == homeTabBarItem && tabBarState != .home {
+            if selectedImage?.locationForCellView != nil {tabBarState = .home}
+            else {enterCropMode(animated: true)}
+        }
+        else if item == originalTabBarItem && tabBarState != .original {tabBarState = .original}
+    }
+    
     
     //
     // MARK: - Target-Action and Objc Targeted Methods
@@ -216,36 +282,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         if let button = sender as? UIBarButtonItem {
             if button.title == "USE IMAGE" {
                 performSegue(withIdentifier: "UnwindToNewEventController", sender: self)
-            }
-        }
-    }
-    
-    @objc fileprivate func handlePreviewTypeButtonClick(_ sender: UIButton?) {
-        if let button = sender, let buttonTitle = button.titleLabel?.text {
-            let transition = CATransition()
-            transition.type = kCATransitionPush
-            transition.duration = animationDuration
-            
-            switch buttonTitle {
-            case PreviewTypeButtonTitles.homePreview:
-                transition.subtype = kCATransitionFromLeft
-                homePreviewView.layer.add(transition, forKey: "transition")
-                fullSizePreviewView.layer.add(transition, forKey: "transition")
-                homeButton.isSelected = true
-                fullSizeButton.isSelected = false
-                homePreviewView.isHidden = false
-                fullSizePreviewView.isHidden = true
-            case PreviewTypeButtonTitles.fullScreenPreview:
-                transition.subtype = kCATransitionFromRight
-                homePreviewView.layer.add(transition, forKey: "transition")
-                fullSizePreviewView.layer.add(transition, forKey: "transition")
-                fullSizeButton.isSelected = true
-                homeButton.isSelected = false
-                homePreviewView.isHidden = true
-                fullSizePreviewView.isHidden = false
-            default:
-                // TODO: Error Handling
-                fatalError("Unrecognized State: encountered an unknown button title in the ImagePreviewController!")
             }
         }
     }
@@ -280,116 +316,33 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         
         if sender.title(for: .normal) == "CANCEL" {
             removeCropRect()
-            cancelEditButton.isHidden = true
-            createHomeImageButton.isSelected = false
-            previewTypeButtonsStackView.isHidden = false
-        }
-        else {
-            if !sender.isSelected {
-                previewTypeButtonsStackView.isHidden = true
-                cancelEditButton.isHidden = false
-                if let imageFrame = fullSizePreviewCell.mainImageView?.imageFrame {
-                    
-                    func createSideBlurs() {
-                        let blurEffect = UIBlurEffect(style: .dark)
-                        sideBlurView1 = UIVisualEffectView(effect: blurEffect)
-                        sideBlurView1!.layer.opacity = 0.0
-                        sideBlurView1!.translatesAutoresizingMaskIntoConstraints = false
-                        sideBlurView2 = UIVisualEffectView(effect: blurEffect)
-                        sideBlurView2!.layer.opacity = 0.0
-                        sideBlurView2!.translatesAutoresizingMaskIntoConstraints = false
-                        
-                        fullSizePreviewView.addSubview(sideBlurView1!)
-                        fullSizePreviewView.addSubview(sideBlurView2!)
-                        
-                        let sideBlur1Width = fullSizePreviewCell.mainImageView!.imageFrame!.origin.x
-                        let sideBlur2Width = fullSizePreviewView.frame.width - (fullSizePreviewCell.mainImageView!.imageFrame!.origin.x + fullSizePreviewCell.mainImageView!.imageFrame!.width)
-                        let sideBlurHeight = fullSizePreviewView.frame.height
-                        let sideBlur2x = fullSizePreviewCell.mainImageView!.imageFrame!.origin.x + fullSizePreviewCell.mainImageView!.imageFrame!.width
-                        
-                        sideBlurView1!.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: sideBlur1Width, height: sideBlurHeight))
-                        sideBlurView2!.frame = CGRect(x: sideBlur2x, y: 0.0, width: sideBlur2Width, height: sideBlurHeight)
-                    }
-                    
-                    if fullSizePreviewView.isHidden {fullSizeButton.sendActions(for: .touchUpInside)}
-                    
-                    let blurEffect = UIBlurEffect(style: .dark)
-                    blurView1 = UIVisualEffectView(effect: blurEffect)
-                    blurView1!.layer.opacity = 0.0
-                    blurView1!.translatesAutoresizingMaskIntoConstraints = false
-                    blurView2 = UIVisualEffectView(effect: blurEffect)
-                    blurView2!.layer.opacity = 0.0
-                    blurView2!.translatesAutoresizingMaskIntoConstraints = false
-                    
-                    cropAreaView = UIView()
-                    cropAreaView!.translatesAutoresizingMaskIntoConstraints = false
-                    cropAreaView!.backgroundColor = UIColor.clear
-                    
-                    fullSizePreviewView.addSubview(blurView1!)
-                    fullSizePreviewView.addSubview(blurView2!)
-                    fullSizePreviewView.addSubview(cropAreaView!)
-                    
-                    let height: CGFloat = 160.0
-                    let width = imageFrame.width
-                    if width < fullSizePreviewView.frame.width {createSideBlurs()}
-                    if cropRectStartEditOrigin == nil {
-                        if selectedImage!.locationForCellView != nil {
-                            let y = (fullSizePreviewCell.mainImageView!.imageFrame!.origin.y + (fullSizePreviewCell.mainImageView!.imageFrame!.height * selectedImage!.locationForCellView!)) - (height / 2)
-                            cropRectStartEditOrigin = CGPoint(x: 0.0, y: y)
-                            cropAreaView!.frame = CGRect(origin: cropRectStartEditOrigin!, size: CGSize(width: width, height: height))
-                        }
-                        else {
-                            let x = imageFrame.origin.x
-                            print(fullSizePreviewView.frame)
-                            let y = (fullSizePreviewView.frame.height / 2) - (height / 2)
-                            cropAreaView!.frame = CGRect(x: x, y: y, width: width, height: height)
-                        }
-                    }
-                    else {
-                        cropAreaView!.frame = CGRect(origin: cropRectStartEditOrigin!, size: CGSize(width: width, height: height))
-                    }
-                    
-                    let blur1Height = cropAreaView!.frame.origin.y
-                    let blur1x = imageFrame.origin.x
-                    let blur1y: CGFloat = 0.0
-                    blurView1!.frame = CGRect(x: blur1x, y: blur1y, width: width, height: blur1Height)
-                    
-                    let blur2Height = fullSizePreviewView.frame.height - height - blur1Height
-                    let blur2x = imageFrame.origin.x
-                    let blur2y = blur1Height + height
-                    blurView2!.frame = CGRect(x: blur2x, y: blur2y, width: width, height: blur2Height)
-                    
-                    let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleCropRectPan(_:)))
-                    cropAreaView!.addGestureRecognizer(panGesture)
-                    
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: animationDuration, delay: 0.0, options: .curveEaseIn, animations: {
-                            self.blurView1!.layer.opacity = 1.0
-                            self.blurView2!.layer.opacity = 1.0
-                            self.sideBlurView1?.layer.opacity = 1.0
-                            self.sideBlurView2?.layer.opacity = 1.0
-                    }, completion: nil)
-                }
-                sender.isSelected = true
+            viewTransition(from: editingButtonsStackView, to: previewTypeTabBar)
+            if selectedImage?.locationForCellView != nil {
+                navigationItem.rightBarButtonItem!.isEnabled = true
+                tabBarState = .home
             }
             else {
-                let locationForCellView = ((cropAreaView!.frame.origin.y - fullSizePreviewCell.mainImageView!.imageFrame!.origin.y) + (cropAreaView!.frame.height / 2)) / fullSizePreviewCell.mainImageView!.imageFrame!.height
-                selectedImage!.locationForCellView = locationForCellView
-                cropRectStartEditOrigin = cropAreaView!.frame.origin
-                
-                removeCropRect()
-                
-                homePreviewCell.eventImage = selectedImage
-                homeButton.isEnabled = true
-                homeButton.layer.opacity = 1.0
-                homeButton.sendActions(for: .touchUpInside)
-                
-                previewTypeButtonsStackView.isHidden = false
-                cancelEditButton.isHidden = true
-                sender.isSelected = false
-                sender.setTitle("EDIT HOME IMAGE", for: .normal)
-                navigationItem.rightBarButtonItem!.isEnabled = true
+                navigationItem.rightBarButtonItem!.isEnabled = false
+                tabBarState = .original
             }
+        }
+        else if sender.title(for: .normal) == "SET" {
+            let locationForCellView = ((cropAreaView!.frame.origin.y - fullSizePreviewCell.mainImageView!.imageFrame!.origin.y) + (cropAreaView!.frame.height / 2)) / fullSizePreviewCell.mainImageView!.imageFrame!.height
+            selectedImage!.locationForCellView = locationForCellView
+            cropRect = cropAreaView!.frame
+            
+            removeCropRect()
+            
+            homePreviewCell.eventImage = selectedImage
+            selectImageViewController?.selectedImage = self.selectedImage!
+            tabBarState = .home
+            navigationItem.rightBarButtonItem!.isEnabled = true
+            
+            viewTransition(from: editingButtonsStackView, to: previewTypeTabBar)
+        }
+        else {
+            // TODO: Remove for prodcution.
+            fatalError("Fatal Error: Unrecognized editButton title.")
         }
     }
     
@@ -407,6 +360,8 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         default: break
         }
     }
+    
+    @objc fileprivate func handleHomePreviewDoubleTap(_ sender: UITapGestureRecognizer) {enterCropMode(animated: false)}
     
     
     //
@@ -434,28 +389,143 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate {
         homePreviewCell.eventImage = appImage
         fullSizePreviewCell.eventImage = appImage
         loadStatus = .done
-        homeButton.sendActions(for: .touchUpInside)
         loadingStackView.isHidden = true
-        previewTypeButtonsStackView.isHidden = false
+        homeTabBarItem.isEnabled = true
+        originalTabBarItem.isEnabled = true
+        tabBarState = .original
+        homeTabBarItem.title = TabBarTitles.home
     }
     
     fileprivate func performUserImageSetup() {
         fullSizePreviewCell.eventImage = selectedImage!
-        if selectedImage!.locationForCellView != nil {createHomeImageButton.setTitle("EDIT HOME IMAGE", for: .normal)}
         loadStatus = .done
         loadingStackView.isHidden = true
-        editingButtonsStackView.isHidden = false
-        previewTypeButtonsStackView.isHidden = false
+        originalTabBarItem.isEnabled = true
+        homeTabBarItem.isEnabled = true
         if selectedImage!.locationForCellView != nil {
             homePreviewCell.eventImage = self.selectedImage!
-            homeButton.isEnabled = true
-            homeButton.layer.opacity = 1.0
-            homeButton.sendActions(for: .touchUpInside)
+            selectImageViewController?.selectedImage = self.selectedImage!
+            homeTabBarItem.title = TabBarTitles.home
         }
-        else {
-            homeButton.isEnabled = false
-            homeButton.layer.opacity = 0.5
-            fullSizeButton.sendActions(for: .touchUpInside)
+        else {homeTabBarItem.title = TabBarTitles.setImage}
+        tabBarState = .original
+    }
+    
+    fileprivate func enterCropMode(animated: Bool) {
+        if let imageFrame = fullSizePreviewCell.mainImageView?.imageFrame {
+            
+            func createSideBlurs() {
+                let blurEffect = UIBlurEffect(style: .dark)
+                sideBlurView1 = UIVisualEffectView(effect: blurEffect)
+                sideBlurView1!.layer.opacity = 0.0
+                sideBlurView1!.translatesAutoresizingMaskIntoConstraints = false
+                sideBlurView2 = UIVisualEffectView(effect: blurEffect)
+                sideBlurView2!.layer.opacity = 0.0
+                sideBlurView2!.translatesAutoresizingMaskIntoConstraints = false
+                
+                fullSizePreviewView.addSubview(sideBlurView1!)
+                fullSizePreviewView.addSubview(sideBlurView2!)
+                
+                let sideBlur1Width = fullSizePreviewCell.mainImageView!.imageFrame!.origin.x
+                let sideBlur2Width = fullSizePreviewView.frame.width - (fullSizePreviewCell.mainImageView!.imageFrame!.origin.x + fullSizePreviewCell.mainImageView!.imageFrame!.width)
+                let sideBlurHeight = fullSizePreviewView.frame.height
+                let sideBlur2x = fullSizePreviewCell.mainImageView!.imageFrame!.origin.x + fullSizePreviewCell.mainImageView!.imageFrame!.width
+                
+                sideBlurView1!.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: sideBlur1Width, height: sideBlurHeight))
+                sideBlurView2!.frame = CGRect(x: sideBlur2x, y: 0.0, width: sideBlur2Width, height: sideBlurHeight)
+            }
+            
+            if fullSizePreviewView.isHidden {tabBarState = .original}
+            navigationItem.rightBarButtonItem!.isEnabled = false
+            
+            let blurEffect = UIBlurEffect(style: .dark)
+            blurView1 = UIVisualEffectView(effect: blurEffect)
+            blurView1!.layer.opacity = 0.0
+            blurView1!.translatesAutoresizingMaskIntoConstraints = false
+            blurView2 = UIVisualEffectView(effect: blurEffect)
+            blurView2!.layer.opacity = 0.0
+            blurView2!.translatesAutoresizingMaskIntoConstraints = false
+            
+            cropAreaView = UIView()
+            cropAreaView!.translatesAutoresizingMaskIntoConstraints = false
+            cropAreaView!.backgroundColor = UIColor.clear
+            
+            fullSizePreviewView.addSubview(blurView1!)
+            fullSizePreviewView.addSubview(blurView2!)
+            fullSizePreviewView.addSubview(cropAreaView!)
+            
+            let height: CGFloat = 160.0
+            let width = imageFrame.width
+            if width < fullSizePreviewView.frame.width {createSideBlurs()}
+            cropAreaView!.frame = getCropRect()
+            
+            let blur1Height = cropAreaView!.frame.origin.y
+            let blur1x = imageFrame.origin.x
+            let blur1y: CGFloat = 0.0
+            blurView1!.frame = CGRect(x: blur1x, y: blur1y, width: width, height: blur1Height)
+            
+            let blur2Height = fullSizePreviewView.frame.height - height - blur1Height
+            let blur2x = imageFrame.origin.x
+            let blur2y = blur1Height + height
+            blurView2!.frame = CGRect(x: blur2x, y: blur2y, width: width, height: blur2Height)
+            
+            let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleCropRectPan(_:)))
+            cropAreaView!.addGestureRecognizer(panGesture)
+            
+            if animated {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: animationDuration, delay: 0.0, options: .curveEaseIn, animations: {
+                        self.blurView1!.layer.opacity = 1.0
+                        self.blurView2!.layer.opacity = 1.0
+                        self.sideBlurView1?.layer.opacity = 1.0
+                        self.sideBlurView2?.layer.opacity = 1.0
+                }, completion: nil)
+            }
+            else {
+                self.blurView1!.layer.opacity = 1.0
+                self.blurView2!.layer.opacity = 1.0
+                self.sideBlurView1?.layer.opacity = 1.0
+                self.sideBlurView2?.layer.opacity = 1.0
+            }
+            
+            let transition = CATransition()
+            transition.type = kCATransitionFade
+            transition.duration = 0.5
+            
+            previewTypeTabBar.layer.add(transition, forKey: "transition")
+            editingButtonsStackView.layer.add(transition, forKey: "transition")
+            
+            previewTypeTabBar.isHidden = true
+            editingButtonsStackView.isHidden = false
         }
+    }
+    
+    fileprivate func getCropRect() -> CGRect {
+        let height: CGFloat = 160.0
+        if let rect = cropRect {return rect}
+        else if let imageFrame = fullSizePreviewCell.mainImageView?.imageFrame {
+            let width = imageFrame.width
+            let x = imageFrame.origin.x
+            let y: CGFloat = {
+                if selectedImage!.locationForCellView != nil {
+                     return (fullSizePreviewCell.mainImageView!.imageFrame!.origin.y + (fullSizePreviewCell.mainImageView!.imageFrame!.height * selectedImage!.locationForCellView!)) - (height / 2)
+                }
+                else {return (fullSizePreviewView.frame.height / 2) - (height / 2)}
+            }()
+            return CGRect(x: x, y: y, width: width, height: height)
+        }
+        return CGRect(x: 0.0, y: (view.bounds.height / 2) - (height / 2), width: view.bounds.width, height: height)
+    }
+    
+    fileprivate func viewTransition(from view1: UIView, to view2: UIView) {
+        let transition = CATransition()
+        transition.type = kCATransitionFade
+        transition.duration = 0.5
+        
+        view1.layer.add(transition, forKey: "transition")
+        view2.layer.add(transition, forKey: "transition")
+        
+        view1.isHidden = true
+        view2.isHidden = false
     }
 }

@@ -96,6 +96,19 @@ class MasterViewController: UITableViewController {
         let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
+        navigationController?.navigationBar.titleTextAttributes = [
+            .font: UIFont(name: headingsFontName, size: 18.0) as Any,
+            .foregroundColor: primaryTextRegularColor
+        ]
+        tableView.backgroundColor = UIColor.black
+        navigationController?.view.backgroundColor = UIColor.black
+        if #available(iOS 11, *) {
+            navigationController?.navigationBar.largeTitleTextAttributes = [
+                .font: UIFont(name: headingsFontName, size: 30.0) as Any,
+                .foregroundColor: primaryTextRegularColor
+            ]
+        }
+        
         let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
         
         let addEventImage = #imageLiteral(resourceName: "AddEventImage")
@@ -184,15 +197,14 @@ class MasterViewController: UITableViewController {
         case SegueIdentifiers.addNewEventSegue:
             let cancelButton = UIBarButtonItem()
             cancelButton.tintColor = primaryTextDarkColor
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
             cancelButton.setTitleTextAttributes(attributes, for: .normal)
             cancelButton.title = "CANCEL"
             
             if let cell = sender as? EventTableViewCell {
                 let ip = tableView.indexPath(for: cell)!
                 let event = items(forSection: ip.section)[ip.row]
-                let navController = segue.destination as! UINavigationController
-                let dest = navController.viewControllers[0] as! NewEventViewController
+                let dest = segue.destination as! NewEventViewController
                 dest.specialEvent = event
                 dest.editingEvent = true
             }
@@ -244,15 +256,10 @@ class MasterViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
-        cell.backgroundColor = UIColor.clear
-        cell.viewWithMargins.layer.cornerRadius = 3.0
-        cell.viewWithMargins.layer.masksToBounds = true
-        cell.configuration = .tableView
         
-        let backgroundView = UIView()
-        backgroundView.backgroundColor = UIColor.black
-        cell.selectedBackgroundView = backgroundView
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
+        cell.configuration = .tableView
+        cell.configure()
         
         let bottomAnchorConstraint = cell.constraints.first {$0.secondAnchor == cell.viewWithMargins.bottomAnchor}
         bottomAnchorConstraint!.isActive = false
@@ -279,16 +286,17 @@ class MasterViewController: UITableViewController {
             }
         }
         
-        let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
-        let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
-        cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
-        cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
-        
-        if indexPath == lastIndexPath {
-            if eventTimer == nil {
-                eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
-            }
+        if let gestures = cell.timerContainerView.gestureRecognizers, gestures.isEmpty || cell.timerContainerView.gestureRecognizers == nil {
+            let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+            let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+            cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
+            cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
         }
+        
+        if indexPath == lastIndexPath, eventTimer == nil {
+            eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
+        }
+        
         return cell
     }
     
@@ -385,7 +393,6 @@ class MasterViewController: UITableViewController {
             syncRealmWithCloud()
             
             specialEvents = localPersistentStore!.objects(SpecialEvent.self)
-            print(specialEvents.count)
             updateActiveCategories()
             updateIndexPathMap()
             tableView.reloadData()

@@ -10,29 +10,6 @@ import UIKit
 import CoreGraphics
 
 class WaveEffectView: UIView, CAAnimationDelegate {
-    
-    /*var isSelected = false {
-        didSet {
-            let changeColorAnim = CABasicAnimation(keyPath: "backgroundColor")
-            changeColorAnim.duration = 0.2
-            changeColorAnim.isRemovedOnCompletion = false
-            
-            if isSelected && oldValue != isSelected {
-                changeColorAnim.fromValue = UIColor.darkGray.cgColor
-                changeColorAnim.toValue = UIColor.lightGray.cgColor
-                
-                layer.add(changeColorAnim, forKey: "backgroundColor")
-                layer.backgroundColor = UIColor.lightGray.cgColor
-            }
-            else if !isSelected && oldValue != isSelected {
-                changeColorAnim.fromValue = UIColor.lightGray.cgColor
-                changeColorAnim.toValue = UIColor.darkGray.cgColor
-                
-                layer.add(changeColorAnim, forKey: "backgroundColor")
-                layer.backgroundColor = UIColor.darkGray.cgColor
-            }
-        }
-    }*/
 
     fileprivate let gradientLayer = CAGradientLayer()
     fileprivate var colorSets = [[CGColor]]()
@@ -107,7 +84,7 @@ class WaveEffectView: UIView, CAAnimationDelegate {
         let fadeOutAnim = CABasicAnimation(keyPath: "opacity")
         fadeOutAnim.fromValue = 1.0
         fadeOutAnim.toValue = 0.5
-        fadeOutAnim.duration = 0.1
+        fadeOutAnim.duration = 0.05
         fadeOutAnim.isRemovedOnCompletion = false
         fadeOutAnim.delegate = self
         

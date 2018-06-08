@@ -36,7 +36,6 @@
 		646F699720A1C6CA00E9518C /* CircularDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646F699620A1C6C900E9518C /* CircularDisplayView.swift */; };
 		64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */; };
 		6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */; };
-		6487089D20515288007FFC1A /* SoftBackgroundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6487089C20515288007FFC1A /* SoftBackgroundButton.swift */; };
 		64A4855320AABD0400CE4418 /* Comfortaa-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855020AABD0200CE4418 /* Comfortaa-Light.ttf */; };
 		64A4855420AABD0400CE4418 /* Comfortaa-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */; };
 		64A4855520AABD0400CE4418 /* Comfortaa-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */; };
@@ -66,6 +65,7 @@
 		64D5FF8F1FC6C31E0043E064 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */; };
 		64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */; };
 		64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E057292032AC6400ABCF3B /* BoolExtensions.swift */; };
+		64F7809D20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */; };
 		64FE12881FBC22160025C005 /* FiraSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64FE12761FBC22140025C005 /* FiraSans-Regular.ttf */; };
 		64FE12891FBC22160025C005 /* FiraSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64FE12771FBC22140025C005 /* FiraSans-BoldItalic.ttf */; };
 		64FE128A1FBC22160025C005 /* FiraSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64FE12781FBC22140025C005 /* FiraSans-ExtraBoldItalic.ttf */; };
@@ -118,7 +118,6 @@
 		646F699620A1C6C900E9518C /* CircularDisplayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularDisplayView.swift; sourceTree = "<group>"; };
 		64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCell.swift; sourceTree = "<group>"; };
 		6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CGSizeExtensions.swift; path = Extensions/CGSizeExtensions.swift; sourceTree = SOURCE_ROOT; };
-		6487089C20515288007FFC1A /* SoftBackgroundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftBackgroundButton.swift; sourceTree = "<group>"; };
 		64A4855020AABD0200CE4418 /* Comfortaa-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Light.ttf"; sourceTree = "<group>"; };
 		64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Regular.ttf"; sourceTree = "<group>"; };
 		64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Bold.ttf"; sourceTree = "<group>"; };
@@ -148,6 +147,7 @@
 		64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventViewController.swift; sourceTree = "<group>"; };
 		64E057292032AC6400ABCF3B /* BoolExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BoolExtensions.swift; path = Extensions/BoolExtensions.swift; sourceTree = SOURCE_ROOT; };
+		64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedCatalogImagesDelegate.swift; sourceTree = "<group>"; };
 		64FE12751FBC21FB0025C005 /* DS-DIGIB.TTF */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DS-DIGIB.TTF"; sourceTree = "<group>"; };
 		64FE12761FBC22140025C005 /* FiraSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "FiraSans-Regular.ttf"; path = "../../../../../Library/Fonts/FiraSans-Regular.ttf"; sourceTree = "<group>"; };
 		64FE12771FBC22140025C005 /* FiraSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "FiraSans-BoldItalic.ttf"; path = "../../../../../Library/Fonts/FiraSans-BoldItalic.ttf"; sourceTree = "<group>"; };
@@ -280,6 +280,7 @@
 		64537F622046643100FDAC5A /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */,
 				64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */,
 			);
 			name = Protocols;
@@ -311,7 +312,6 @@
 			isa = PBXGroup;
 			children = (
 				646F699620A1C6C900E9518C /* CircularDisplayView.swift */,
-				6487089C20515288007FFC1A /* SoftBackgroundButton.swift */,
 				64691C1D201EC2FD00ADA4C3 /* WaveEffectView.swift */,
 			);
 			path = "Custom Classes";
@@ -621,8 +621,8 @@
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
 				645A8A9F20294FD200E5934D /* ImageClasses.swift in Sources */,
 				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,
+				64F7809D20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift in Sources */,
 				6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */,
-				6487089D20515288007FFC1A /* SoftBackgroundButton.swift in Sources */,
 				644BBAB6204BC67B00CF0C29 /* CountdownMaskImageView.swift in Sources */,
 				6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */,
 			);
