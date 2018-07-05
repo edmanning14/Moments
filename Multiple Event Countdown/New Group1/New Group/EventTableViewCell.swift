@@ -18,9 +18,6 @@ class EventTableViewCell: UITableViewCell {
     
     fileprivate let computationalQueue = DispatchQueue(label: "computationalQueue", qos: DispatchQoS.userInitiated)
     
-    //
-    // MARK: Colors
-    let secondaryTextLightColor = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
     
     // Data Model
     var eventTitle: String? {
@@ -28,11 +25,11 @@ class EventTableViewCell: UITableViewCell {
             if !shadowsInitialized {initializeShadows()}
             if eventTitle != nil {
                 titleLabel.text = eventTitle
-                titleLabel.textColor = secondaryTextLightColor
+                titleLabel.textColor = Colors.cyanRegular
             }
             else {
                 titleLabel.text = "Bahamas Vacation!"
-                titleLabel.textColor = UIColor.lightText
+                titleLabel.textColor = Colors.inactiveColor
             }
         }
     }
@@ -42,13 +39,15 @@ class EventTableViewCell: UITableViewCell {
             if !shadowsInitialized {initializeShadows()}
             if eventTagline != nil {
                 taglineLabel.text = eventTagline
-                taglineLabel.textColor = secondaryTextLightColor
+                taglineLabel.textColor = Colors.cyanRegular
+                taglineLabel.isHidden = false
+                taglineLabel.isUserInteractionEnabled = true
             }
             else {
                 switch configuration {
                 case .newEventsController:
                     taglineLabel.text = "Fun in the sun"
-                    taglineLabel.textColor = UIColor.lightText
+                    taglineLabel.textColor = Colors.inactiveColor
                 case .tableView, .detailView:
                     taglineLabel.isHidden = true; taglineLabel.isUserInteractionEnabled = false
                 case .imagePreviewControllerCell, .imagePreviewControllerDetail:
@@ -62,29 +61,29 @@ class EventTableViewCell: UITableViewCell {
         didSet {
             if !shadowsInitialized {initializeShadows()}
             if eventDate != nil {
-                inLabel.textColor = secondaryTextLightColor
-                weeksLabel.textColor = secondaryTextLightColor
-                weeksColon.textColor = secondaryTextLightColor
-                daysLabel.textColor = secondaryTextLightColor
-                daysColon.textColor = secondaryTextLightColor
-                hoursLabel.textColor = secondaryTextLightColor
-                hoursColon.textColor = secondaryTextLightColor
-                minutesLabel.textColor = secondaryTextLightColor
-                minutesColon.textColor = secondaryTextLightColor
-                secondsLabel.textColor = secondaryTextLightColor
+                inLabel.textColor = Colors.cyanRegular
+                weeksLabel.textColor = Colors.cyanRegular
+                weeksColon.textColor = Colors.cyanRegular
+                daysLabel.textColor = Colors.cyanRegular
+                daysColon.textColor = Colors.cyanRegular
+                hoursLabel.textColor = Colors.cyanRegular
+                hoursColon.textColor = Colors.cyanRegular
+                minutesLabel.textColor = Colors.cyanRegular
+                minutesColon.textColor = Colors.cyanRegular
+                secondsLabel.textColor = Colors.cyanRegular
                 update()
             }
             else {
-                inLabel.textColor = UIColor.lightText
-                weeksLabel.textColor = UIColor.lightText
-                weeksColon.textColor = UIColor.lightText
-                daysLabel.textColor = UIColor.lightText
-                daysColon.textColor = UIColor.lightText
-                hoursLabel.textColor = UIColor.lightText
-                hoursColon.textColor = UIColor.lightText
-                minutesLabel.textColor = UIColor.lightText
-                minutesColon.textColor = UIColor.lightText
-                secondsLabel.textColor = UIColor.lightText
+                inLabel.textColor = Colors.inactiveColor
+                weeksLabel.textColor = Colors.inactiveColor
+                weeksColon.textColor = Colors.inactiveColor
+                daysLabel.textColor = Colors.inactiveColor
+                daysColon.textColor = Colors.inactiveColor
+                hoursLabel.textColor = Colors.inactiveColor
+                hoursColon.textColor = Colors.inactiveColor
+                minutesLabel.textColor = Colors.inactiveColor
+                minutesColon.textColor = Colors.inactiveColor
+                secondsLabel.textColor = Colors.inactiveColor
                 
                 agoLabel.isHidden = true
                 inLabel.isHidden = false
@@ -121,49 +120,45 @@ class EventTableViewCell: UITableViewCell {
     
     var creationDate: Date? {didSet {updateMask()}}
     
-    var eventImage: UserEventImage? {
+    fileprivate let defaultHomeImageSize = CGSize(width: UIScreen.main.bounds.width, height: 160.0)
+    
+    var eventImage: UserEventImage? {return _eventImage}
+    fileprivate var _eventImage: UserEventImage?
+    
+    fileprivate var mainHomeImage: UIImage? {
         didSet {
-            if let _eventImage = eventImage, let mainCGImage = _eventImage.mainImage?.cgImage {
-                
-                let isAppImage: Bool = {
-                    if let _ = _eventImage as? AppEventImage {return true}
-                    else {return false}
-                }()
-                
-                if let _mainImageView = mainImageView {
-                    _mainImageView.image = mainCGImage
-                    _mainImageView.locationForCellView = _eventImage.locationForCellView
-                }
-                else {
-                    switch configuration {
-                    case .imagePreviewControllerCell, .newEventsController, .tableView:
-                        mainImageView = CountdownMainImageView(frame: self.bounds, image: mainCGImage, isAppImage: isAppImage, locationForCellView: _eventImage.locationForCellView!, displayMode: .cell)
-                    case .imagePreviewControllerDetail, .detailView:
-                        mainImageView = CountdownMainImageView(frame: self.bounds, image: mainCGImage, isAppImage: isAppImage, locationForCellView: nil)
-                    }
-                }
-                
-                if !viewWithMargins.subviews.contains(mainImageView!) {
-                    mainImageView!.translatesAutoresizingMaskIntoConstraints = false
-                    viewWithMargins.insertSubview(mainImageView!, at: 0)
-                    viewWithMargins.topAnchor.constraint(equalTo: mainImageView!.topAnchor).isActive = true
-                    viewWithMargins.rightAnchor.constraint(equalTo: mainImageView!.rightAnchor).isActive = true
-                    viewWithMargins.bottomAnchor.constraint(equalTo: mainImageView!.bottomAnchor).isActive = true
-                    viewWithMargins.leftAnchor.constraint(equalTo: mainImageView!.leftAnchor).isActive = true
-                }
-                
-                if isAppImage, useMask {addGradientView(); addMaskImageView()}
-                else {maskImageView?.removeFromSuperview(); gradientView?.removeFromSuperview()}
-                
-            }
-            else {
-                backgroundColor = UIColor.black
-                maskImageView?.removeFromSuperview()
-                gradientView?.removeFromSuperview()
-                mainImageView?.removeFromSuperview()
+            switch configuration {
+            case .tableView, .imagePreviewControllerCell, .newEventsController:
+                mainImageView.layer.opacity = 0.0
+                mainImageView.image = mainHomeImage
+                if mainHomeImage != nil {
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.0,
+                        options: .curveLinear,
+                        animations: {self.mainImageView.layer.opacity = 1.0},
+                        completion: nil
+                    )
+                    if useMask {updateMask(); addGradientView()}}
+                else {removeGradientView()}
+            default: break
             }
         }
     }
+    
+    fileprivate var maskHomeImage: UIImage? {
+        didSet {
+            switch configuration {
+            case .tableView, .imagePreviewControllerCell, .newEventsController:
+                if useMask {addMaskImageView()}
+                else {removeMaskImageView()}
+            default: break
+            }
+        }
+    }
+    
+    var locationForCellView: CGFloat {return _locationForCellView}
+    fileprivate var _locationForCellView: CGFloat = 0.5
     
     //
     // MARK: Types
@@ -194,34 +189,29 @@ class EventTableViewCell: UITableViewCell {
     
     //
     // MARK: Mask parameters
-    var percentMaskCoverage: CGFloat = 1.0 {
+    var percentMaskCoverage: CGFloat = 1.0 - 0.025 {
         didSet {
-            if 1.0 - percentMaskCoverage < minSizeOfGradientArea {
-                percentMaskCoverage = 1.0
-                if percentMaskCoverage != oldValue {
-                    gradientView!.percentMaskCoverage = percentMaskCoverage
-                    maskImageView!.percentMaskCoverage = percentMaskCoverage
+            if 1.0 - percentMaskCoverage < minSizeOfGradientArea {percentMaskCoverage = 1.0 - minSizeOfGradientArea}
+            if let _gradientView = gradientView {
+                let percentDiff = (_gradientView.percentMaskCoverage - percentMaskCoverage) / _gradientView.percentMaskCoverage
+                if percentDiff > minMaskCoveragePercentDifferenceForUIUpdate || percentDiff < 0.0 {
+                    _gradientView.percentMaskCoverage = percentMaskCoverage
+                    maskImageView?.percentMaskCoverage = percentMaskCoverage
                 }
-                return
-            }
-            let percentDiff = (gradientView!.percentMaskCoverage - percentMaskCoverage) / gradientView!.percentMaskCoverage
-            if percentDiff > minMaskCoveragePercentDifferenceForUIUpdate || percentDiff < 0.0 {
-                gradientView!.percentMaskCoverage = percentMaskCoverage
-                maskImageView!.percentMaskCoverage = percentMaskCoverage
             }
         }
     }
     
     var useMask = false {
         didSet {
-            if useMask == true && oldValue == false && mainImageView != nil {
+            if useMask == true && oldValue == false && mainImageView.image != nil {
+                updateMask()
                 addGradientView()
                 addMaskImageView()
             }
             else if useMask == false && oldValue == true {
-                gradientView?.removeFromSuperview()
-                maskImageView?.removeFromSuperview()
-                //percentMaskCoverage = 1.0
+                removeGradientView()
+                removeMaskImageView()
             }
         }
     }
@@ -235,8 +225,8 @@ class EventTableViewCell: UITableViewCell {
         didSet {
             if isPastEvent && oldValue != isPastEvent {
                 
-                maskImageView?.removeFromSuperview()
-                gradientView?.removeFromSuperview()
+                removeGradientView()
+                removeMaskImageView()
                 
                 viewTransition(from: [inLabel], to: [agoLabel])
                 UIViewPropertyAnimator.runningPropertyAnimator(
@@ -250,8 +240,7 @@ class EventTableViewCell: UITableViewCell {
             }
                 
             else if !isPastEvent && oldValue != isPastEvent {
-                addGradientView()
-                addMaskImageView()
+                if useMask {updateMask(); addGradientView(); addMaskImageView()}
                 
                 viewTransition(from: [agoLabel], to: [inLabel])
                 UIViewPropertyAnimator.runningPropertyAnimator(
@@ -271,6 +260,7 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: UI Elements
     @IBOutlet weak var viewWithMargins: UIView!
+    @IBOutlet weak var mainImageView: UIImageView!
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var taglineLabel: UILabel!
@@ -304,15 +294,12 @@ class EventTableViewCell: UITableViewCell {
     @IBOutlet weak var abridgedWeeksTextLabel: UILabel!
     @IBOutlet weak var abridgedDaysTextLabel: UILabel!
     
-    var abridgedTimerUILabels: [UILabel]!
-    var timerUILabels: [UILabel]!
-    
     var titleWaveEffectView: WaveEffectView?
     var taglineWaveEffectView: WaveEffectView?
     var timerWaveEffectView: WaveEffectView?
     var timerLabelsWaveEffectView: WaveEffectView?
     
-    var mainImageView: CountdownMainImageView?
+    //var mainImageView: CountdownMainImageView?
     fileprivate var gradientView: GradientMaskView?
     fileprivate var maskImageView: CountdownMaskImageView?
 
@@ -329,16 +316,48 @@ class EventTableViewCell: UITableViewCell {
     }
     
     override func prepareForReuse() {
-        eventImage = nil
+        eventImage?.delegate = nil
+        clearEventImage()
         maskImageView = nil
         gradientView = nil
-        mainImageView = nil
     }
     
+    //
+    // MARK: Delegate Methods
+    //
     
     //
     // MARK: - Instance Methods
     //
+    
+    internal func setSelectedImage(image: UserEventImage, locationForCellView: CGFloat?) {
+        
+        if let location = locationForCellView {_locationForCellView = location}
+        _eventImage = image
+        
+        if let mainUIImage = image.mainImage?.uiImage {
+            mainImageView.contentMode = .scaleAspectFit
+            switch configuration {
+            case .imagePreviewControllerCell, .newEventsController, .tableView: getHomeImages(nil)
+            case .imagePreviewControllerDetail, .detailView: mainImageView.image = mainUIImage
+            }
+        }
+    }
+    
+    internal func setHomeImages(mainHomeImage: UIImage?, maskHomeImage: UIImage?) {
+        if let main = mainHomeImage {self.mainHomeImage = main}
+        if let mask = maskHomeImage {self.maskHomeImage = mask}
+    }
+    
+    internal func clearEventImage() {
+        _eventImage = nil
+        mainHomeImage = nil
+        maskHomeImage = nil
+        backgroundColor = UIColor.black
+        removeMaskImageView()
+        removeGradientView()
+        mainImageView.image = nil
+    }
     
     // Function to update the displayed event times and masks.
     internal func update() {
@@ -401,6 +420,7 @@ class EventTableViewCell: UITableViewCell {
             abridgedModeDays = abs(abridgedModeDays)
             if abridgedModeDays == 7.0 {abridgedModeDays = 0.0; abridgedModeWeeks += 1.0}
             
+            var formatDays = true
             if abridgedModeWeeks == 0.0 {
                 if !abridgedWeeksLabel.isHidden {
                     UIViewPropertyAnimator.runningPropertyAnimator(
@@ -414,13 +434,13 @@ class EventTableViewCell: UITableViewCell {
                 
                 if eventDay == dayNow + 1 {
                     if !abridgedTimerStackView.isHidden {
-                        tomorrowLabel.text = "Tomorrow!!!"
+                        tomorrowLabel.text = "Tomorrow!"
                         viewTransition(from: [abridgedTimerStackView], to: [tomorrowLabel])
                     }
-                    else if let labelText = tomorrowLabel.text, labelText != "Tomorrow!!!" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Tomorrow!!!")
+                    else if let labelText = tomorrowLabel.text, labelText != "Tomorrow!" {
+                        transitionText(inLabel: tomorrowLabel, toText: "Tomorrow!")
                     }
-                    return
+                    formatDays = false
                 }
                 
                 else if eventDay == dayNow {
@@ -431,7 +451,7 @@ class EventTableViewCell: UITableViewCell {
                     else if let labelText = tomorrowLabel.text, labelText != "Today!!!" {
                         transitionText(inLabel: tomorrowLabel, toText: "Today!!!")
                     }
-                    return
+                    formatDays = false
                 }
                 
                 else if eventDay == dayNow - 1 {
@@ -442,7 +462,7 @@ class EventTableViewCell: UITableViewCell {
                     else if let labelText = tomorrowLabel.text, labelText != "Yesterday" {
                         transitionText(inLabel: tomorrowLabel, toText: "Yesterday")
                     }
-                    return
+                    formatDays = false
                 }
             }
             else {
@@ -464,141 +484,142 @@ class EventTableViewCell: UITableViewCell {
                 }
             }
             
-            if abridgedModeDays == 0 {
-                if !abridgedDaysLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.abridgedDaysLabel.isHidden = true; self.abridgedDaysTextLabel.isHidden = true},
-                        completion: nil
-                    )
+            if formatDays {
+                if abridgedModeDays == 0 {
+                    if !abridgedDaysLabel.isHidden {
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.3,
+                            delay: 0.0,
+                            options: [.curveLinear],
+                            animations: {self.abridgedDaysLabel.isHidden = true; self.abridgedDaysTextLabel.isHidden = true},
+                            completion: nil
+                        )
+                    }
+                    if isPastEvent {abridgedWeeksTextLabel.text = abridgedWeeksTextLabel.text! + " ago"}
                 }
-                if isPastEvent {abridgedWeeksTextLabel.text = abridgedWeeksTextLabel.text! + " ago"}
+                else  {
+                    abridgedFormat(label: abridgedDaysLabel, withNumber: abridgedModeDays)
+                    if !isPastEvent {
+                        if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day"}
+                        else {abridgedDaysTextLabel.text = "Days"}
+                    }
+                    else {
+                        if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day Ago"}
+                        else {abridgedDaysTextLabel.text = "Days Ago"}
+                    }
+                    if abridgedDaysLabel.isHidden {
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.3,
+                            delay: 0.0,
+                            options: [.curveLinear],
+                            animations: {self.abridgedDaysLabel.isHidden = false; self.abridgedDaysTextLabel.isHidden = false},
+                            completion: nil
+                        )
+                    }
+                }
+                
+                if !tomorrowLabel.isHidden {viewTransition(from: [tomorrowLabel], to: [abridgedTimerStackView])}
             }
-            else  {
-                abridgedFormat(label: abridgedDaysLabel, withNumber: abridgedModeDays)
-                if !isPastEvent {
-                    if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day"}
-                    else {abridgedDaysTextLabel.text = "Days"}
-                }
-                else {
-                    if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day Ago"}
-                    else {abridgedDaysTextLabel.text = "Days Ago"}
-                }
-                if abridgedDaysLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.abridgedDaysLabel.isHidden = false; self.abridgedDaysTextLabel.isHidden = false},
-                        completion: nil
-                    )
-                }
-            }
-            
-            if !tomorrowLabel.isHidden {viewTransition(from: [tomorrowLabel], to: [abridgedTimerStackView])}
         }
-            
+        
+        if weeks == 0 {
+            if !weeksLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.weeksLabel.isHidden = true; self.weeksTextLabel.isHidden = true; self.weeksColon.isHidden = true},
+                    completion: nil
+                )
+            }
+        }
         else {
-            if weeks == 0 {
-                if !weeksLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.weeksLabel.isHidden = true; self.weeksTextLabel.isHidden = true; self.weeksColon.isHidden = true},
-                        completion: nil
-                    )
-                }
+            fullFormat(label: weeksLabel, withNumber: weeks)
+            if weeksLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.weeksLabel.isHidden = false; self.weeksTextLabel.isHidden = false; self.weeksColon.isHidden = false},
+                    completion: nil
+                )
             }
-            else {
-                if weeksLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.weeksLabel.isHidden = false; self.weeksTextLabel.isHidden = false; self.weeksColon.isHidden = false},
-                        completion: nil
-                    )
-                }
-                fullFormat(label: weeksLabel, withNumber: weeks)
-            }
-            
-            if days == 0.0 && weeks == 0.0 {
-                if !daysLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.daysLabel.isHidden = true; self.daysTextLabel.isHidden = true; self.daysColon.isHidden = true},
-                        completion: nil
-                    )
-                }
-            }
-            else {
-                if daysLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.daysLabel.isHidden = false; self.daysTextLabel.isHidden = false; self.daysColon.isHidden = false},
-                        completion: nil
-                    )
-                }
-                fullFormat(label: daysLabel, withNumber: days)
-            }
-            
-            if hours == 0.0 && days == 0.0 && weeks == 0.0 {
-                if !hoursLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.hoursLabel.isHidden = true; self.hoursTextLabel.isHidden = true; self.hoursColon.isHidden = true},
-                        completion: nil
-                    )
-                }
-            }
-            else {
-                if hoursLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.hoursLabel.isHidden = false; self.hoursTextLabel.isHidden = false; self.hoursColon.isHidden = false},
-                        completion: nil
-                    )
-                }
-                fullFormat(label: hoursLabel, withNumber: hours)
-            }
-            
-            if minutes == 0.0 && hours == 0.0 && days == 0.0 && weeks == 0.0 {
-                if !minutesLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.minutesLabel.isHidden = true; self.minutesTextLabel.isHidden = true; self.minutesColon.isHidden = true},
-                        completion: nil
-                    )
-                }
-            }
-            else {
-                if minutesLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.minutesLabel.isHidden = false; self.minutesTextLabel.isHidden = false; self.minutesColon.isHidden = false},
-                        completion: nil
-                    )
-                }
-                fullFormat(label: minutesLabel, withNumber: minutes)
-            }
-            
-            fullFormat(label: secondsLabel, withNumber: seconds)
         }
+        
+        if days == 0.0 && weeks == 0.0 {
+            if !daysLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.daysLabel.isHidden = true; self.daysTextLabel.isHidden = true; self.daysColon.isHidden = true},
+                    completion: nil
+                )
+            }
+        }
+        else {
+            fullFormat(label: daysLabel, withNumber: days)
+            if daysLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.daysLabel.isHidden = false; self.daysTextLabel.isHidden = false; self.daysColon.isHidden = false},
+                    completion: nil
+                )
+            }
+        }
+        
+        if hours == 0.0 && days == 0.0 && weeks == 0.0 {
+            if !hoursLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.hoursLabel.isHidden = true; self.hoursTextLabel.isHidden = true; self.hoursColon.isHidden = true},
+                    completion: nil
+                )
+            }
+        }
+        else {
+            fullFormat(label: hoursLabel, withNumber: hours)
+            if hoursLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.hoursLabel.isHidden = false; self.hoursTextLabel.isHidden = false; self.hoursColon.isHidden = false},
+                    completion: nil
+                )
+            }
+            
+        }
+        
+        if minutes == 0.0 && hours == 0.0 && days == 0.0 && weeks == 0.0 {
+            if !minutesLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.minutesLabel.isHidden = true; self.minutesTextLabel.isHidden = true; self.minutesColon.isHidden = true},
+                    completion: nil
+                )
+            }
+        }
+        else {
+            fullFormat(label: minutesLabel, withNumber: minutes)
+            if minutesLabel.isHidden {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {self.minutesLabel.isHidden = false; self.minutesTextLabel.isHidden = false; self.minutesColon.isHidden = false},
+                    completion: nil
+                )
+            }
+        }
+        
+        fullFormat(label: secondsLabel, withNumber: seconds)
         
         updateMask()
     }
@@ -609,38 +630,36 @@ class EventTableViewCell: UITableViewCell {
     //
     
     fileprivate func updateMask() {
-        if useMask && !isPastEvent && mainImageView != nil && creationDate != nil && eventDate != nil {
-            if (gradientView != nil && mainImageView!.subviews.contains(gradientView!)) || (maskImageView != nil && mainImageView!.subviews.contains(maskImageView!)) {
-                
-                let timerCoverage = timerContainerView.frame.width + 8.0
-                let minPercentCoverage = timerCoverage / self.bounds.width
-                var maxPercentCoverage: CGFloat {
-                    switch currentStage {
-                    case .weeks: return 1.0
-                    default: return (timerCoverage + Constants.oneLabelTraverseDistance) / self.bounds.width
-                    }
+        if useMask && !isPastEvent && creationDate != nil && eventDate != nil {
+            
+            let timerCoverage = timerContainerView.frame.width + 8.0
+            let minPercentCoverage = timerCoverage / self.bounds.width
+            var maxPercentCoverage: CGFloat {
+                switch currentStage {
+                case .weeks: return 1.0
+                default: return (timerCoverage + Constants.oneLabelTraverseDistance) / self.bounds.width
                 }
-                
-                var previousStageTimeInterval: TimeInterval {
-                    switch currentStage {
-                    case .weeks: return eventDate!.date.timeIntervalSince(creationDate!)
-                    case .days: return Stages.weeks.interval
-                    case .hours: return Stages.days.interval
-                    case .minutes: return Stages.hours.interval
-                    case .seconds: return Stages.minutes.interval
-                    }
-                }
-                
-                let timeIntervalNowToEventDate = eventDate!.date.timeIntervalSince(Date())
-                
-                let timeIntervalUntilNextStage = timeIntervalNowToEventDate - currentStage.interval
-                let timeIntervalOfCurrentStage = previousStageTimeInterval - currentStage.interval
-                let percentUntilLegComplete = CGFloat(timeIntervalUntilNextStage / timeIntervalOfCurrentStage)
-                
-                let percentRevealRange = maxPercentCoverage - minPercentCoverage
-                let percentOfLegToCover = percentRevealRange * percentUntilLegComplete
-                percentMaskCoverage = minPercentCoverage + percentOfLegToCover
             }
+            
+            var previousStageTimeInterval: TimeInterval {
+                switch currentStage {
+                case .weeks: return eventDate!.date.timeIntervalSince(creationDate!)
+                case .days: return Stages.weeks.interval
+                case .hours: return Stages.days.interval
+                case .minutes: return Stages.hours.interval
+                case .seconds: return Stages.minutes.interval
+                }
+            }
+            
+            let timeIntervalNowToEventDate = eventDate!.date.timeIntervalSince(Date())
+            
+            let timeIntervalUntilNextStage = timeIntervalNowToEventDate - currentStage.interval
+            let timeIntervalOfCurrentStage = previousStageTimeInterval - currentStage.interval
+            let percentUntilLegComplete = CGFloat(timeIntervalUntilNextStage / timeIntervalOfCurrentStage)
+            
+            let percentRevealRange = maxPercentCoverage - minPercentCoverage
+            let percentOfLegToCover = percentRevealRange * percentUntilLegComplete
+            percentMaskCoverage = minPercentCoverage + percentOfLegToCover
         }
     }
     
@@ -652,46 +671,143 @@ class EventTableViewCell: UITableViewCell {
     }
     
     fileprivate func initializeMaskImageView() {
-        let appImage = eventImage as! AppEventImage
-        maskImageView = CountdownMaskImageView(frame: self.bounds, image: appImage.maskImage!.cgImage!, locationForCellView: appImage.locationForCellView!)
-        maskImageView!.translatesAutoresizingMaskIntoConstraints = false
-        maskImageView!.backgroundColor = UIColor.clear
-        
-        maskImageView!.image = appImage.maskImage!.cgImage!
-        maskImageView!.locationForCellView = appImage.locationForCellView!
-        maskImageView!.percentMaskCoverage = percentMaskCoverage
+        if let _maskHomeImage = maskHomeImage?.cgImage {
+            maskImageView = CountdownMaskImageView(frame: self.bounds, image: _maskHomeImage)
+            maskImageView!.translatesAutoresizingMaskIntoConstraints = false
+            maskImageView!.backgroundColor = UIColor.clear
+            
+            maskImageView!.image = _maskHomeImage
+            maskImageView!.percentMaskCoverage = percentMaskCoverage
+        }
     }
     
     fileprivate func addGradientView() {
-        if useMask && mainImageView != nil && !isPastEvent {
-            if gradientView == nil {initializeGradientView()}
-            else {gradientView!.percentMaskCoverage = percentMaskCoverage}
+        if useMask && !isPastEvent {
+            if let _gradientView = gradientView {_gradientView.percentMaskCoverage = percentMaskCoverage}
+            else {initializeGradientView()}
+            
             if !mainImageView!.subviews.contains(gradientView!) {
+                gradientView!.layer.opacity = 0.0
                 mainImageView!.addSubview(gradientView!)
                 mainImageView!.topAnchor.constraint(equalTo: gradientView!.topAnchor).isActive = true
                 mainImageView!.rightAnchor.constraint(equalTo: gradientView!.rightAnchor).isActive = true
                 mainImageView!.bottomAnchor.constraint(equalTo: gradientView!.bottomAnchor).isActive = true
                 mainImageView!.leftAnchor.constraint(equalTo: gradientView!.leftAnchor).isActive = true
+                if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.0,
+                        options: .curveEaseInOut,
+                        animations: { [weak self] in self?.gradientView!.layer.opacity = 1.0},
+                        completion: nil
+                    )
+                }
+                else {gradientView!.layer.opacity = 1.0}
             }
+            if maskHomeImage != nil {addMaskImageView()}
         }
     }
     
     fileprivate func addMaskImageView() {
-        if let appImage = eventImage as? AppEventImage {
-            if appImage.maskImage?.cgImage != nil && gradientView != nil {
-                if maskImageView == nil {initializeMaskImageView()}
-                else {
-                    maskImageView!.image = appImage.maskImage!.cgImage!
-                    maskImageView!.locationForCellView = appImage.locationForCellView
-                    maskImageView!.percentMaskCoverage = percentMaskCoverage
+        if let _maskHomeImage = maskHomeImage?.cgImage, let _gradientView = gradientView {
+            if let _maskImageView = maskImageView {
+                _maskImageView.image = _maskHomeImage
+                _maskImageView.percentMaskCoverage = percentMaskCoverage
+            }
+            else {initializeMaskImageView()}
+            
+            if !_gradientView.subviews.contains(maskImageView!) {
+                maskImageView!.layer.opacity = 0.0
+                _gradientView.addSubview(maskImageView!)
+                _gradientView.topAnchor.constraint(equalTo: maskImageView!.topAnchor).isActive = true
+                _gradientView.rightAnchor.constraint(equalTo: maskImageView!.rightAnchor).isActive = true
+                _gradientView.bottomAnchor.constraint(equalTo: maskImageView!.bottomAnchor).isActive = true
+                _gradientView.leftAnchor.constraint(equalTo: maskImageView!.leftAnchor).isActive = true
+                if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.0,
+                        options: .curveEaseInOut,
+                        animations: { [weak self] in self?.maskImageView!.layer.opacity = 1.0},
+                        completion: nil
+                    )
                 }
-                if !gradientView!.subviews.contains(maskImageView!) {
-                    gradientView!.addSubview(maskImageView!)
-                    gradientView!.topAnchor.constraint(equalTo: maskImageView!.topAnchor).isActive = true
-                    gradientView!.rightAnchor.constraint(equalTo: maskImageView!.rightAnchor).isActive = true
-                    gradientView!.bottomAnchor.constraint(equalTo: maskImageView!.bottomAnchor).isActive = true
-                    gradientView!.leftAnchor.constraint(equalTo: maskImageView!.leftAnchor).isActive = true
-                }
+                else {maskImageView!.layer.opacity = 1.0}
+            }
+        }
+    }
+    
+    fileprivate func removeGradientView() {
+        if let _gradientView = gradientView {
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.2,
+                delay: 0.0,
+                options: .curveEaseInOut,
+                animations: {_gradientView.layer.opacity = 0.0},
+                completion: {(_) in _gradientView.removeFromSuperview()}
+            )
+        }
+    }
+    
+    fileprivate func removeMaskImageView() {
+        if let _maskImageView = maskImageView {
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.2,
+                delay: 0.0,
+                options: .curveEaseInOut,
+                animations: {_maskImageView.layer.opacity = 0.0},
+                completion: {(_) in _maskImageView.removeFromSuperview()}
+            )
+        }
+    }
+    
+    fileprivate func getHomeImages(_ completion: (() -> Void)?) {
+        if let _eventImage = eventImage, _eventImage.mainImage?.uiImage != nil {
+            var mainFetchComplete = false
+            var maskFetchComplete = false
+            if let appImage = _eventImage as? AppEventImage {
+                appImage.generateMainHomeImage(
+                    size: defaultHomeImageSize,
+                    locationForCellView: locationForCellView,
+                    userInitiated: true,
+                    completion: { [weak self] (image) in
+                        if image != nil {
+                            mainFetchComplete = true
+                            DispatchQueue.main.async { [weak self] in
+                                self?.mainHomeImage = image
+                                if maskFetchComplete {completion?()}
+                            }
+                        }
+                    }
+                )
+                appImage.generateMaskHomeImage(
+                    size: defaultHomeImageSize,
+                    locationForCellView: locationForCellView,
+                    userInitiated: true,
+                    completion: { [weak self] (maskHomeImage) in
+                        maskFetchComplete = true
+                        DispatchQueue.main.async { [weak self] in
+                            self?.maskHomeImage = maskHomeImage
+                            if mainFetchComplete {completion?()}
+                        }
+                    }
+                )
+            }
+            else {
+                maskFetchComplete = true
+                _eventImage.generateMainHomeImage(
+                    size: defaultHomeImageSize,
+                    locationForCellView: locationForCellView,
+                    userInitiated: true,
+                    completion: { [weak self] (image) in
+                        if image != nil {
+                            DispatchQueue.main.async { [weak self] in
+                                self?.mainHomeImage = image
+                                completion?()
+                            }
+                        }
+                    }
+                )
             }
         }
     }
@@ -725,8 +841,6 @@ class EventTableViewCell: UITableViewCell {
             timerWaveEffectView = nil
             timerLabelsWaveEffectView?.removeFromSuperview()
             timerLabelsWaveEffectView = nil
-            
-        case .detailView: fatalError("Add detail view implemetation!") // TODO: Add implementation.
             
         case .newEventsController:
             
@@ -783,7 +897,7 @@ class EventTableViewCell: UITableViewCell {
             minutesColon.textColor = UIColor.lightText
             secondsLabel.textColor = UIColor.lightText
             
-        case .imagePreviewControllerCell, .imagePreviewControllerDetail:
+        case .imagePreviewControllerCell, .imagePreviewControllerDetail, .detailView:
             titleWaveEffectView?.removeFromSuperview()
             titleWaveEffectView = nil
             taglineWaveEffectView?.removeFromSuperview()
@@ -793,10 +907,12 @@ class EventTableViewCell: UITableViewCell {
             timerLabelsWaveEffectView?.removeFromSuperview()
             timerLabelsWaveEffectView = nil
             
-            titleLabel.removeFromSuperview()
-            taglineLabel.removeFromSuperview()
-            timerContainerView.removeFromSuperview()
-            abridgedTimerContainerView.removeFromSuperview()
+            if configuration == .imagePreviewControllerCell || configuration == .imagePreviewControllerDetail {
+                titleLabel.removeFromSuperview()
+                taglineLabel.removeFromSuperview()
+                timerContainerView.removeFromSuperview()
+                abridgedTimerContainerView.removeFromSuperview()
+            }
         }
     }
     
@@ -810,13 +926,15 @@ class EventTableViewCell: UITableViewCell {
                 view.layer.shadowOpacity = 1.0
             }
         }
-        abridgedTimerUILabels = [abridgedInLabel, abridgedWeeksLabel, abridgedWeeksTextLabel, abridgedDaysLabel, abridgedDaysTextLabel, tomorrowLabel]
-        timerUILabels = [inLabel, weeksLabel, weeksColon, daysLabel, daysColon, hoursLabel, hoursColon, minutesLabel, minutesColon, secondsLabel, agoLabel]
-        let timerTextLabels = [weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
-        initializeShadows(for: [titleLabel, taglineLabel], withShadowRadius: 8.0)
-        initializeShadows(for: abridgedTimerUILabels, withShadowRadius: 8.0)
-        initializeShadows(for: timerUILabels, withShadowRadius: 8.0)
-        initializeShadows(for: timerTextLabels, withShadowRadius: 4.0)
+        var highLabels: [UILabel]
+        var mediumLabels: [UILabel]
+        var lowLabels: [UILabel]
+        highLabels = [tomorrowLabel, titleLabel]
+        mediumLabels = [taglineLabel, abridgedWeeksLabel, abridgedDaysLabel, weeksLabel, daysLabel, hoursLabel, minutesLabel, secondsLabel]
+        lowLabels = [abridgedInLabel, abridgedWeeksTextLabel, abridgedDaysTextLabel, inLabel, weeksColon, daysColon, hoursColon, minutesColon, agoLabel, weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
+        initializeShadows(for: highLabels, withShadowRadius: 3.0)
+        initializeShadows(for: mediumLabels, withShadowRadius: 2.0)
+        initializeShadows(for: lowLabels, withShadowRadius: 1.0)
         shadowsInitialized = true
     }
     

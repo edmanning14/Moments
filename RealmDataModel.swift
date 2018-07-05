@@ -51,34 +51,36 @@ class EventImageInfo: Object {
     @objc dynamic var category: String? = nil
     @objc dynamic var isAppImage = false
     @objc dynamic var recordName: String? = nil
-    @objc dynamic var locationForCellView = 50
     @objc dynamic var hasMask = false
+    let recommendedLocationForCellView = RealmOptional<Int>()
     let specialEvents = LinkingObjects(fromType: SpecialEvent.self, property: "image")
     
     // Initializers
     
-    convenience init(locationForCellView: CGFloat, imageTitle aTitle: String, imageCategory category: String? = nil, isAppImage: Bool = false, recordName: String? = nil, hasMask: Bool = false) {
+    convenience init(imageTitle aTitle: String, imageCategory category: String? = nil, isAppImage: Bool = false, recordName: String? = nil, hasMask: Bool = false, recommendedLocationForCellView: Int?) {
         self.init()
-        self.locationForCellView = Int(locationForCellView * 100.0)
         self.title = aTitle
         
         self.category = category
         self.isAppImage = isAppImage
         self.recordName = recordName
         self.hasMask = hasMask
+        self.recommendedLocationForCellView.value = recommendedLocationForCellView
     }
     
     convenience init(fromEventImage image: UserEventImage) {
         self.init()
         
         title = image.title
-        if let location = image.locationForCellView {locationForCellView = Int(location * 100.0)}
         
         if let appImage = image as? AppEventImage {
             category = appImage.category
             isAppImage = true
             if appImage.maskImage != nil {hasMask = true}
             recordName = appImage.recordName
+            if let _recommendedLocationForCellView = appImage.recommendedLocationForCellView {
+                recommendedLocationForCellView.value = Int(_recommendedLocationForCellView * 100.0)
+            }
         }
     }
     
@@ -96,14 +98,16 @@ class SpecialEvent: Object {
     @objc dynamic var abridgedDisplayMode = false
     @objc dynamic var useMask = true
     @objc dynamic var image: EventImageInfo?
+    let locationForCellView = RealmOptional<Int>()
     
-    convenience init(category: String, title: String, tagline: String?, date: EventDate, abridgedDisplayMode: Bool, useMask: Bool, image: EventImageInfo?) {
+    convenience init(category: String, title: String, tagline: String?, date: EventDate, abridgedDisplayMode: Bool, useMask: Bool, image: EventImageInfo?, locationForCellView: CGFloat?) {
         self.init()
         self.category = category
         self.title = title
         self.tagline = tagline
         self.date = date
         self.abridgedDisplayMode = abridgedDisplayMode
+        if let _locationForCellView = locationForCellView {self.locationForCellView.value = Int(_locationForCellView * 100.0)}
         self.useMask = useMask
         self.image = image
     }

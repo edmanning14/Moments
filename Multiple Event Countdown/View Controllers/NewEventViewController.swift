@@ -35,8 +35,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             if eventCategory != nil && eventCategory != "" {
                 categoryLabel.layer.add(labelTransition, forKey: nil)
                 categoryLabel.text = eventCategory
-                categoryLabel.textColor = secondaryTextRegularColor
-                categoryProgressImageView?.tintColor = taskCompleteColor
+                categoryLabel.textColor = Colors.cyanRegular
+                categoryProgressImageView?.tintColor = Colors.taskCompleteColor
                 if !categoryWaveEffectView.isHidden {
                     viewTransition(from: categoryWaveEffectView, to: categoryLabel)
                 }
@@ -44,8 +44,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             else {
                 categoryLabel.layer.add(labelTransition, forKey: nil)
                 categoryLabel.text = "Category"
-                categoryLabel.textColor = inactiveColor
-                categoryProgressImageView?.tintColor = inactiveColor
+                categoryLabel.textColor = Colors.inactiveColor
+                categoryProgressImageView?.tintColor = Colors.inactiveColor
             }
             
             checkFinishButtonEnable()
@@ -64,12 +64,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 needNewObject = true
             }
             if eventTitle != nil {
-                titleProgressImageView?.tintColor = taskCompleteColor
-                /*if let waveView = specialEventView!.titleWaveEffectView, !waveView.isHidden {
-                    viewTransition(from: waveView, to: specialEventView!.titleLabel)
-                }*/
+                titleProgressImageView?.tintColor = Colors.taskCompleteColor
             }
-            else {titleProgressImageView?.tintColor = inactiveColor}
+            else {titleProgressImageView?.tintColor = Colors.inactiveColor}
             checkFinishButtonEnable()
         }
     }
@@ -78,13 +75,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             specialEventView?.eventTagline = eventTagline
             checkFinishButtonEnable()
             if eventTagline != nil {
-                taglineProgressImageView?.tintColor = taskCompleteColor
-                /*if let waveView = specialEventView!.taglineWaveEffectView, !waveView.isHidden {
-                    viewTransition(from: waveView, to: specialEventView!.taglineLabel)
-                }*/
+                taglineProgressImageView?.tintColor = Colors.taskCompleteColor
             }
             else {
-                taglineProgressImageView?.tintColor = inactiveColor
+                taglineProgressImageView?.tintColor = Colors.inactiveColor
                 if editingEvent {specialEventView?.eventTagline = ""}
             }
         }
@@ -105,12 +99,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     eventDatePicker.datePickerMode = .date
                     eventDatePicker.date = eventDate!.date
                 }
-                dateProgressImageView?.tintColor = taskCompleteColor
-                /*if let waveView1 = specialEventView!.timerWaveEffectView, let waveView2 = specialEventView!.timerLabelsWaveEffectView, !waveView1.isHidden {
-                    specialEventView!.viewTransition(from: [waveView1, waveView2], to: specialEventView!.titleLabel)
-                }*/
+                dateProgressImageView?.tintColor = Colors.taskCompleteColor
             }
-            else {isUserChange = false; dateProgressImageView?.tintColor = optionalTaskIncompleteColor}
+            else {isUserChange = false; dateProgressImageView?.tintColor = Colors.optionalTaskIncompleteColor}
             
             if eventDate != nil && oldValue == nil {
                 eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
@@ -132,49 +123,51 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     var selectedImage: UserEventImage? {
         didSet {
-            specialEventView?.eventImage = selectedImage
-            if selectedImage != nil {
+            if let image = selectedImage {
+                specialEventView?.setSelectedImage(image: image, locationForCellView: locationForCellView)
                 imageTitleLabel.layer.add(labelTransition, forKey: nil)
-                imageTitleLabel.textColor = primaryTextRegularColor
-                imageProgressImageView?.tintColor = taskCompleteColor
+                imageTitleLabel.textColor = Colors.orangeRegular
+                imageProgressImageView?.tintColor = Colors.taskCompleteColor
                 enableButton(editImageButton)
                 enableButton(useImageButton)
+                enableButton(useMaskButton)
                 
-                if let appImage = selectedImage as? AppEventImage {
-                    imageTitleLabel.text = "\"\(appImage.title)\""
-                    if appImage.maskImage!.cgImage != nil {enableButton(useMaskButton)}
-                }
+                if let appImage = selectedImage as? AppEventImage {imageTitleLabel.text = "\"\(appImage.title)\""}
                 else {imageTitleLabel.text = "Your moment!"}
+                
+                useImageButton.tintColor = UIColor.green
+                if useMask {useMaskButton.tintColor = UIColor.green} else {useMaskButton.tintColor = Colors.inactiveColor}
                 
                 if !isUserChange {currentInputViewState = .none}
             }
             else {
-                if imagePlaceholderView == nil {
-                    specialEventView!.creationDate = creationDate
-                    let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
-                    let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
-                    imagePlaceholderView = UIImageView(image: templateImage)
-                    imagePlaceholderView!.tintColor = UIColor.lightText
-                    imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
-                    specialEventView!.addSubview(imagePlaceholderView!)
-                    specialEventView!.topAnchor.constraint(equalTo: imagePlaceholderView!.topAnchor, constant: specialEventView!.bounds.height / 3).isActive = true
-                    specialEventView!.rightAnchor.constraint(equalTo: imagePlaceholderView!.rightAnchor, constant: specialEventView!.bounds.width / 3).isActive = true
-                }
+                specialEventView?.clearEventImage()
+                //if imagePlaceholderView == nil {addPlaceholderView()}
                 imageTitleLabel.layer.add(labelTransition, forKey: nil)
                 imageTitleLabel.text = noImageSelectedTextForTitle
-                imageTitleLabel.textColor = inactiveColor
-                imageProgressImageView?.tintColor = optionalTaskIncompleteColor
+                imageTitleLabel.textColor = Colors.inactiveColor
+                imageProgressImageView?.tintColor = Colors.optionalTaskIncompleteColor
                 disableButton(editImageButton)
                 if previousSelectedImage == nil {disableButton(useImageButton)}
                 disableButton(useMaskButton)
+                useImageButton.tintColor = Colors.inactiveColor
+                useMaskButton.tintColor = Colors.inactiveColor
             }
             isUserChange = false
             checkFinishButtonEnable()
         }
     }
+    
+    var locationForCellView: CGFloat?
+    
     fileprivate var previousSelectedImage: UserEventImage?
     
-    var useMask = true {didSet {specialEventView!.useMask = useMask}}
+    var useMask = true {
+        didSet {
+            specialEventView!.useMask = useMask
+            if useMask {useMaskButton.tintColor = UIColor.green} else {useMaskButton.tintColor = Colors.inactiveColor}
+        }
+    }
     
     var cachedImages = [AppEventImage]() {
         didSet {selectImageController?.catalogImages.addImages(cachedImages)}
@@ -358,17 +351,19 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     }
                 case .image:
                     if selectedImage == nil {
+                        if imagePlaceholderView == nil {addPlaceholderView()}
                         UIViewPropertyAnimator.runningPropertyAnimator(
                             withDuration: 0.30,
                             delay: 0.0,
                             options: .curveLinear,
                             animations: { [weak self] in
-                                self?.specialEventView!.viewWithMargins.layer.backgroundColor = self?.lightBackgroundColor.cgColor
-                                self?.imagePlaceholderView!.layer.opacity = 1.0
+                                self?.specialEventView!.viewWithMargins.layer.backgroundColor = Colors.lightGrayForFills.cgColor
+                                self?.imagePlaceholderView?.layer.opacity = 0.5
                             },
                             completion: nil
                         )
                     }
+                    else {specialEventView!.viewWithMargins.layer.backgroundColor = Colors.lightGrayForFills.cgColor}
                 case .none: break
                 }
                 
@@ -413,7 +408,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     }
                     ignoreWaveView = false
                 case .image:
-                    if selectedImage != nil {oldDataValue = EventImageInfo(fromEventImage: selectedImage!)}
+                    if let image = selectedImage {
+                        if let appImage = image as? AppEventImage {oldDataValue = appImage}
+                        else {oldDataValue = image}
+                        specialEventView!.viewWithMargins.layer.backgroundColor = UIColor.black.cgColor
+                    }
                     else {
                         oldDataValue = nil
                         UIViewPropertyAnimator.runningPropertyAnimator(
@@ -422,7 +421,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                             options: .curveLinear,
                             animations: { [weak self] in
                                 self?.specialEventView!.viewWithMargins.layer.backgroundColor = UIColor.black.cgColor
-                                self?.imagePlaceholderView!.layer.opacity = 0.0
+                                self?.imagePlaceholderView?.layer.opacity = 0.0
                             },
                             completion: nil
                         )
@@ -436,23 +435,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     
     var oldDataValue: Any?
-    
-    //
-    // MARK: Design
-    
-    // MARK: Colors
-    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
-    let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
-    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
-    let secondaryTextLightColor = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
-    let lightBackgroundColor = UIColor(red: 33/255, green: 33/255, blue: 33/255, alpha: 1.0)
-    let taskCompleteColor = UIColor.green
-    let optionalTaskIncompleteColor = UIColor.darkGray
-    let inactiveColor = UIColor.lightText
-    
-    // MARK: Fonts
-    let headingsFontName = "Comfortaa-Light"
-    let contentSecondaryFontName = "Raleway-Regular"
     
     //
     // MARK: Gesture recognizer stuff
@@ -514,7 +496,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 
                 specialEventView!.viewWithMargins.layer.cornerRadius = 3.0
                 specialEventView!.viewWithMargins.layer.masksToBounds = true
-                specialEventView!.viewWithMargins.layer.backgroundColor = lightBackgroundColor.cgColor
+                specialEventView!.viewWithMargins.layer.backgroundColor = Colors.lightGrayForFills.cgColor
                 
                 let bottomAnchorConstraint = specialEventView!.constraints.first {$0.secondAnchor == specialEventView!.viewWithMargins.bottomAnchor}
                 bottomAnchorConstraint!.isActive = false
@@ -524,20 +506,23 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEventView!.eventTagline = eventTagline
                 specialEventView!.eventDate = eventDate
                 specialEventView!.useMask = useMask
-                specialEventView!.eventImage = selectedImage
+                if let image = selectedImage {
+                    specialEventView!.setSelectedImage(image: image, locationForCellView: locationForCellView)
+                }
+                else {specialEventView!.clearEventImage()}
             }
         }
         
         doneButton = UIBarButtonItem()
         doneButton.target = self
         doneButton.action = #selector(finish(_:))
-        doneButton.tintColor = primaryTextDarkColor
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
+        doneButton.tintColor = Colors.orangeDark
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
         doneButton.setTitleTextAttributes(attributes, for: .disabled)
         
         navigationItem.rightBarButtonItem = doneButton
-        if let image = selectedImage {if image.locationForCellView == nil {doneButton.isEnabled = false}}
+        if locationForCellView == nil {doneButton.isEnabled = false}
         else {doneButton.isEnabled = false}
         
         if editingEvent {
@@ -612,32 +597,39 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             eventDate = EventDate(date: specialEvent!.date!.date, dateOnly: specialEvent!.date!.dateOnly)
             creationDate = specialEvent!.creationDate
             abridgedDisplayMode = specialEvent!.abridgedDisplayMode
+            useMask = specialEvent!.useMask
+            
+            if let intLocationForCellView = specialEvent!.locationForCellView.value {
+                locationForCellView = CGFloat(intLocationForCellView) / 100.0
+            }
             
             if let imageInfo = specialEvent!.image {
-                if imageInfo.isAppImage {
-                    useMask = specialEvent!.useMask
-                    selectedImage = AppEventImage(fromEventImageInfo: imageInfo)
-                }
-                else {
-                    useMask = false
-                    selectedImage = UserEventImage(fromEventImageInfo: imageInfo)
-                }
+                if imageInfo.isAppImage {selectedImage = AppEventImage(fromEventImageInfo: imageInfo)}
+                else {selectedImage = UserEventImage(fromEventImageInfo: imageInfo)}
             }
+            
+            
+            specialEventView!.update()
         }
         else {
             specialEventView!.creationDate = creationDate
-            let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
-            let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
-            imagePlaceholderView = UIImageView(image: templateImage)
-            imagePlaceholderView!.tintColor = UIColor.darkGray
+            addPlaceholderView()
             imagePlaceholderView!.layer.opacity = 0.5
-            imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
-            specialEventView!.addSubview(imagePlaceholderView!)
-            specialEventView!.centerXAnchor.constraint(equalTo: imagePlaceholderView!.centerXAnchor, constant: -(1/3) * (specialEventViewContainer.bounds.width / 2)).isActive = true
-            specialEventView!.centerYAnchor.constraint(equalTo: imagePlaceholderView!.centerYAnchor, constant: (1/3) * (specialEventViewContainer.bounds.height / 2)).isActive = true
         }
         
         fetchProductIDs(fetchFailHandler: networkErrorHandler)
+    }
+    
+    fileprivate func addPlaceholderView() {
+        let imagePlaceholderImage = UIImage(named: "ImagePlaceholderImage")!
+        let templateImage = imagePlaceholderImage.withRenderingMode(.alwaysTemplate)
+        imagePlaceholderView = UIImageView(image: templateImage)
+        imagePlaceholderView!.tintColor = UIColor.darkGray
+        imagePlaceholderView!.layer.opacity = 0.0
+        imagePlaceholderView!.translatesAutoresizingMaskIntoConstraints = false
+        specialEventView!.addSubview(imagePlaceholderView!)
+        specialEventView!.centerXAnchor.constraint(equalTo: imagePlaceholderView!.centerXAnchor, constant: -(1/3) * (specialEventViewContainer.bounds.width / 2)).isActive = true
+        specialEventView!.centerYAnchor.constraint(equalTo: imagePlaceholderView!.centerYAnchor, constant: (1/3) * (specialEventViewContainer.bounds.height / 2)).isActive = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -868,7 +860,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: From storyboard actions
     @IBAction func unwindToViewController(segue: UIStoryboardSegue) {
-        if let sender = segue.source as? ImagePreviewViewController {selectedImage = sender.selectedImage}
+        if let sender = segue.source as? ImagePreviewViewController {
+            locationForCellView = sender.locationForCellView
+            selectedImage = sender.selectedImage
+        }
     }
     
     
@@ -885,7 +880,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
         let stringToReturn = selectableCategories[row]
-        return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor:primaryTextRegularColor])
+        return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor: Colors.orangeRegular])
     }
     
     //
@@ -895,8 +890,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let ident = segue.identifier {
             let cancelButton = UIBarButtonItem()
-            cancelButton.tintColor = primaryTextDarkColor
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
+            cancelButton.tintColor = Colors.orangeDark
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
             cancelButton.setTitleTextAttributes(attributes, for: .normal)
             cancelButton.title = "CANCEL"
             navigationItem.backBarButtonItem = cancelButton
@@ -904,9 +899,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             case "EditImageSegue":
                 let destination = segue.destination as! ImagePreviewViewController
                 destination.selectedImage = selectedImage
+                destination.locationForCellView = locationForCellView
             case "Choose Image":
                 let destination = segue.destination as! SelectImageViewController
                 destination.selectedImage = selectedImage
+                destination.locationForCellView = locationForCellView
                 destination.catalogImages.addImages(cachedImages)
                 destination.networkState = currentNetworkState
                 selectImageController = destination
@@ -969,13 +966,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 }
                 let noAction = UIAlertAction(title: "No, Thanks.", style: .default) { (action) in
                     self.dismiss(animated: true, completion: nil)
-                    let alert = UIAlertController(title: "Okay Then!", message: "Please create a different event title.", preferredStyle: .alert)
-                    let action = UIAlertAction(title: "Okay", style: .default) { (action) in
-                        self.dismiss(animated: true, completion: nil)
-                        self.currentInputViewState = .title
-                    }
-                    alert.addAction(action)
-                    self.present(alert, animated: true, completion: nil)
+                    self.currentInputViewState = .title
                 }
                 alert.addAction(yesAction)
                 alert.addAction(noAction)
@@ -990,13 +981,20 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEvent!.tagline = eventTagline
                 specialEvent!.date = eventDate!
                 specialEvent!.abridgedDisplayMode = abridgedDisplayMode
-                if selectedImage != nil && specialEvent!.image != nil {
-                    if selectedImage!.title != specialEvent!.image!.title {
-                        let image = createEventImageInfo()
+                specialEvent!.useMask = useMask
+                if let _selectedImage = selectedImage {
+                    if specialEvent?.image == nil || specialEvent!.image!.title != _selectedImage.title {
+                        let image = getEventImageInfo()
                         specialEvent!.image = image
-                        specialEvent!.useMask = useMask
                         // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
                     }
+                }
+                else {
+                    specialEvent!.image = nil
+                    // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
+                }
+                if let _locationForCellView = locationForCellView {
+                    specialEvent!.locationForCellView.value = Int(_locationForCellView * 100.0)
                 }
             }
         }
@@ -1074,11 +1072,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 }
                 else {eventDate = nil}
             case .image:
-                if let oldImageInfo = oldDataValue as? EventImageInfo, selectedImage != nil {
-                    if oldImageInfo.title != selectedImage!.title {
-                        selectedImage = AppEventImage(fromEventImageInfo: oldImageInfo)
-                    }
-                }
+                if let appImage = oldDataValue as? AppEventImage {selectedImage = appImage}
+                else if let userImage = oldDataValue as? UserEventImage {selectedImage = userImage}
                 else {selectedImage = nil}
             case .none: break
             }
@@ -1286,8 +1281,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             performSegue(withIdentifier: "EditImageSegue", sender: self)
         case "TOGGLE IMAGE":
             isUserChange = true
-            if let image = selectedImage {previousSelectedImage = image; selectedImage = nil}
-            else {selectedImage = previousSelectedImage}
+            if let image = selectedImage {previousSelectedImage = image; selectedImage = nil; sender.tintColor = Colors.inactiveColor}
+            else {selectedImage = previousSelectedImage; sender.tintColor = UIColor.green}
         case "TOGGLE MASK": useMask = !useMask
         default:
             // TODO: Error Handling, should never happen.
@@ -1311,41 +1306,41 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         categoryProgressImageView = UIImageView(image: progressImage)
         categoryProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        categoryProgressImageView!.tintColor = inactiveColor
+        categoryProgressImageView!.tintColor = Colors.inactiveColor
         optionsView.addSubview(categoryProgressImageView!)
         categoryButton.centerYAnchor.constraint(equalTo: categoryProgressImageView!.centerYAnchor).isActive = true
         categoryButton.leftAnchor.constraint(equalTo: categoryProgressImageView!.rightAnchor, constant: spacing).isActive = true
         
         titleProgressImageView = UIImageView(image: progressImage)
-        titleProgressImageView!.tintColor = inactiveColor
+        titleProgressImageView!.tintColor = Colors.inactiveColor
         titleProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
         optionsView.addSubview(titleProgressImageView!)
         titleButton.centerYAnchor.constraint(equalTo: titleProgressImageView!.centerYAnchor).isActive = true
         titleButton.leftAnchor.constraint(equalTo: titleProgressImageView!.rightAnchor, constant: spacing).isActive = true
         
         dateProgressImageView = UIImageView(image: progressImage)
-        dateProgressImageView!.tintColor = inactiveColor
+        dateProgressImageView!.tintColor = Colors.inactiveColor
         dateProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
         optionsView.addSubview(dateProgressImageView!)
         dateButton.centerYAnchor.constraint(equalTo: dateProgressImageView!.centerYAnchor).isActive = true
         dateButton.leftAnchor.constraint(equalTo: dateProgressImageView!.rightAnchor, constant: spacing).isActive = true
         
         taglineProgressImageView = UIImageView(image: progressImage)
-        taglineProgressImageView!.tintColor = optionalTaskIncompleteColor
+        taglineProgressImageView!.tintColor = Colors.optionalTaskIncompleteColor
         taglineProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
         optionsView.addSubview(taglineProgressImageView!)
         taglineButton.centerYAnchor.constraint(equalTo: taglineProgressImageView!.centerYAnchor).isActive = true
         taglineButton.leftAnchor.constraint(equalTo: taglineProgressImageView!.rightAnchor, constant: spacing).isActive = true
         
         imageProgressImageView = UIImageView(image: progressImage)
-        imageProgressImageView!.tintColor = optionalTaskIncompleteColor
+        imageProgressImageView!.tintColor = Colors.optionalTaskIncompleteColor
         imageProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
         optionsView.addSubview(imageProgressImageView!)
         imageButton.centerYAnchor.constraint(equalTo: imageProgressImageView!.centerYAnchor).isActive = true
         imageButton.leftAnchor.constraint(equalTo: imageProgressImageView!.rightAnchor, constant: spacing).isActive = true
         
         finishProgressImageView = UIImageView(image: finishButtonProgressImage)
-        finishProgressImageView!.tintColor = inactiveColor
+        finishProgressImageView!.tintColor = Colors.inactiveColor
         finishProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
         optionsView.addSubview(finishProgressImageView!)
         finishButton.centerYAnchor.constraint(equalTo: finishProgressImageView!.centerYAnchor).isActive = true
@@ -1373,7 +1368,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         eventDatePicker.backgroundColor = UIColor.clear
         eventDatePicker.isOpaque = false
-        eventDatePicker.setValue(primaryTextRegularColor, forKey: "textColor")
+        eventDatePicker.setValue(Colors.orangeRegular, forKey: "textColor")
         
         longDateFormater.dateStyle = .full
         longDateFormater.timeStyle = .short
@@ -1399,7 +1394,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     fileprivate func configureButton(_ button: UIButton) {
         button.layer.borderWidth = 1.0
-        button.layer.borderColor = primaryTextDarkColor.cgColor
+        button.layer.borderColor = Colors.orangeDark.cgColor
         button.layer.cornerRadius = 3.0
     }
     
@@ -1685,7 +1680,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     let title = record.value[AppEventImage.CloudKitKeys.EventImageKeys.title] as! String
                     let fileRootName = record.value[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
                     let category = record.value[AppEventImage.CloudKitKeys.EventImageKeys.category] as! String
-                    let locationForCellView = record.value[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
+                    let intLocationForCellView = record.value[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
+                    let locationForCellView = CGFloat(intLocationForCellView) / 100.0
                     
                     var images = [CountdownImage]()
                     var cloudError: CloudErrors?
@@ -1701,7 +1697,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         catch {cloudError = .imageCreationFailure; break}
                     }
                     
-                    if let newEventImage = AppEventImage(category: category, title: title, locationForCellView: CGFloat(locationForCellView) / 100.0, recordName: recordID.recordName, images: images), cloudError == nil {
+                    if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images), cloudError == nil {
                         completion(newEventImage, nil)
                     }
                     else {completion(nil, cloudError)}
@@ -1756,41 +1752,47 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         return Date(timeIntervalSinceReferenceDate: timeIntervalToReturn)
     }
     
-    fileprivate func createEventImageInfo() -> EventImageInfo {
+    fileprivate func getEventImageInfo() -> EventImageInfo {
         if !selectedImage!.imagesAreSavedToDisk {
             let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
             if results.contains(false) {
                 // TODO: Error Handling
                 fatalError("Images were unable to be saved to the disk!")
             }
-            return EventImageInfo(fromEventImage: selectedImage!)
+        }
+        if let appImage = selectedImage! as? AppEventImage {
+            if let i = localImageInfo.index(where: {$0.title == appImage.title}) {return localImageInfo[i]}
+            else {return EventImageInfo(fromEventImage: appImage)}
         }
         else {
-            if let i = localImageInfo.index(where: {$0.title == selectedImage!.title}) {
-                return localImageInfo[i]
-            }
-            else {
-                let localUserImagesPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [false])
-                let localUserImageInfos = localPersistentStore.objects(EventImageInfo.self).filter(localUserImagesPredicate)
-                let i = localUserImageInfos.index(where: {$0.title == selectedImage!.title})!
+            let localUserImagesPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [false])
+            let localUserImageInfos = localPersistentStore.objects(EventImageInfo.self).filter(localUserImagesPredicate)
+            if let i = localUserImageInfos.index(where: {$0.title == selectedImage!.title}) {
                 return localUserImageInfos[i]
             }
+            else {return EventImageInfo(fromEventImage: selectedImage!)}
         }
     }
     
     fileprivate func createNewObject(overwrite: Bool) {
-        var image: EventImageInfo?
-        if selectedImage != nil {image = createEventImageInfo()}
-        let newEvent = SpecialEvent(
-            category: eventCategory ?? "Uncatagorized",
-            title: eventTitle!,
-            tagline: eventTagline,
-            date: eventDate!,
-            abridgedDisplayMode: abridgedDisplayMode,
-            useMask: useMask,
-            image: image
-        )
-        try! localPersistentStore.write {localPersistentStore.add(newEvent, update: overwrite)}
+        if let _eventTitle = eventTitle, let _eventDate = eventDate {
+            let imageInfo = getEventImageInfo()
+            let newEvent = SpecialEvent(
+                category: eventCategory ?? "Uncatagorized",
+                title: _eventTitle,
+                tagline: eventTagline,
+                date: _eventDate,
+                abridgedDisplayMode: abridgedDisplayMode,
+                useMask: useMask,
+                image: imageInfo,
+                locationForCellView: locationForCellView
+            )
+            try! localPersistentStore.write {localPersistentStore.add(newEvent, update: overwrite)}
+        }
+        else {
+            // TODO: Remove for production, should never hit this if earlier guards work.
+            fatalError("Fatal Error: selectedImage or locationForCellView were nil when trying to create new event!")
+        }
     }
     
     fileprivate func checkFinishButtonEnable() {
@@ -1802,7 +1804,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         else {
             disableButton(finishButton)
             doneButton.isEnabled = false
-            finishProgressImageView?.tintColor = inactiveColor
+            finishProgressImageView?.tintColor = Colors.inactiveColor
         }
     }
     

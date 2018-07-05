@@ -53,23 +53,12 @@ class MasterViewController: UITableViewController {
     //
     // MARK: Constants
     fileprivate struct SegueIdentifiers {
-        static let showDetail = "ShowDetail"
+        static let showDetail = "showDetail"
         static let addNewEventSegue = "Add New Event Segue"
     }
     
     //
     // MARK: - Design
-    
-    // MARK: Colors
-    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
-    let primaryTextDarkColor = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
-    let secondaryTextRegularColor = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
-    let secondaryTextLightColor = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
-    
-    // MARK: Fonts
-    let headingsFontName = "Comfortaa-Light"
-    let contentSecondaryFontName = "Raleway-Regular"
-    
     // MARK: Layout
     fileprivate let cellSpacing: CGFloat = 10.0
     
@@ -97,35 +86,36 @@ class MasterViewController: UITableViewController {
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
         navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: headingsFontName, size: 18.0) as Any,
-            .foregroundColor: primaryTextRegularColor
+            .font: UIFont(name: Fonts.headingsFontName, size: 18.0) as Any,
+            .foregroundColor: Colors.orangeRegular
         ]
         tableView.backgroundColor = UIColor.black
         navigationController?.view.backgroundColor = UIColor.black
         if #available(iOS 11, *) {
             navigationController?.navigationBar.largeTitleTextAttributes = [
-                .font: UIFont(name: headingsFontName, size: 30.0) as Any,
-                .foregroundColor: primaryTextRegularColor
+                .font: UIFont(name: Fonts.headingsFontName, size: 30.0) as Any,
+                .foregroundColor: Colors.orangeRegular
             ]
         }
         
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 16.0)! as Any]
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 16.0)! as Any]
         
         let addEventImage = #imageLiteral(resourceName: "AddEventImage")
         let addButton = UIBarButtonItem(image: addEventImage, style: .plain, target: self, action: #selector(insertNewObject(_:)))
-        addButton.tintColor = primaryTextDarkColor
+        addButton.tintColor = Colors.orangeDark
         navigationItem.rightBarButtonItem = addButton
         
         let editButton = UIBarButtonItem(title: "EDIT", style: .plain, target: self, action: #selector(editTableView(_:)))
-        editButton.tintColor = primaryTextDarkColor
+        editButton.tintColor = Colors.orangeDark
         editButton.setTitleTextAttributes(attributes, for: .normal)
         navigationItem.leftBarButtonItem = editButton
         
         let navItemTitleLabel = UILabel()
         navItemTitleLabel.text = "Moments"
+        navItemTitleLabel.textAlignment = .center
         navItemTitleLabel.backgroundColor = UIColor.clear
-        navItemTitleLabel.textColor = primaryTextRegularColor
-        navItemTitleLabel.font = UIFont(name: headingsFontName, size: 20.0)
+        navItemTitleLabel.textColor = Colors.orangeRegular
+        navItemTitleLabel.font = UIFont(name: Fonts.headingsFontName, size: 20.0)
         navigationItem.titleView = navItemTitleLabel
         
         tableView.sectionHeaderHeight = 50.0
@@ -190,14 +180,19 @@ class MasterViewController: UITableViewController {
             if let indexPath = tableView.indexPathForSelectedRow {
                 let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = eventToDetail
-                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
-                controller.navigationItem.leftItemsSupplementBackButton = true
+                controller.specialEvent = eventToDetail
+                
+                let backButton = UIBarButtonItem()
+                backButton.tintColor = Colors.orangeDark
+                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+                backButton.setTitleTextAttributes(attributes, for: .normal)
+                backButton.title = "BACK"
+                navigationItem.backBarButtonItem = backButton
             }
         case SegueIdentifiers.addNewEventSegue:
             let cancelButton = UIBarButtonItem()
-            cancelButton.tintColor = primaryTextDarkColor
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: contentSecondaryFontName, size: 14.0)! as Any]
+            cancelButton.tintColor = Colors.orangeDark
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
             cancelButton.setTitleTextAttributes(attributes, for: .normal)
             cancelButton.title = "CANCEL"
             
@@ -235,8 +230,8 @@ class MasterViewController: UITableViewController {
         let headerLabel = UILabel(frame: CGRect(x: 5.0, y: 5.0, width: 100.0, height: 100.0))
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
         headerLabel.backgroundColor = UIColor.clear
-        headerLabel.textColor = secondaryTextRegularColor
-        headerLabel.font = UIFont(name: headingsFontName, size: 30.0)
+        headerLabel.textColor = Colors.cyanRegular
+        headerLabel.font = UIFont(name: Fonts.headingsFontName, size: 30.0)
         headerLabel.text = activeCategories[section]
         headerLabel.textAlignment = .left
         
@@ -275,23 +270,33 @@ class MasterViewController: UITableViewController {
         cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
         cell.abridgedDisplayMode = items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
         cell.creationDate = items(forSection: indexPath.section)[indexPath.row].creationDate
+        cell.useMask = items(forSection: indexPath.section)[indexPath.row].useMask
         if let imageInfo = items(forSection: indexPath.section)[indexPath.row].image {
+            var locationForCellView: CGFloat?
+            if let intLocationForCellView = items(forSection: indexPath.section)[indexPath.row].locationForCellView.value {
+                locationForCellView = CGFloat(intLocationForCellView) / 100.0
+            }
             if imageInfo.isAppImage {
-                cell.useMask = items(forSection: indexPath.section)[indexPath.row].useMask
-                cell.eventImage = AppEventImage(fromEventImageInfo: imageInfo)
+                if let appImage = AppEventImage(fromEventImageInfo: imageInfo) {
+                    cell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
+                }
             }
             else {
-                cell.useMask = false
-                cell.eventImage = UserEventImage(fromEventImageInfo: imageInfo)
+                if let userImage = UserEventImage(fromEventImageInfo: imageInfo) {
+                    cell.setSelectedImage(image: userImage, locationForCellView: locationForCellView)
+                }
             }
         }
         
-        if let gestures = cell.timerContainerView.gestureRecognizers, gestures.isEmpty || cell.timerContainerView.gestureRecognizers == nil {
+        func addGestures() {
             let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
             let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
             cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
             cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
         }
+        
+        if cell.timerContainerView.gestureRecognizers == nil {addGestures()}
+        else if let gestures = cell.timerContainerView.gestureRecognizers, gestures.isEmpty {addGestures()}
         
         if indexPath == lastIndexPath, eventTimer == nil {
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
@@ -334,7 +339,7 @@ class MasterViewController: UITableViewController {
             performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
         }
         else {
-            splitViewController?.showDetailViewController(detailViewController!, sender: cell)
+            performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)
         }
     }
     
@@ -579,7 +584,7 @@ class MasterViewController: UITableViewController {
         else {self.tableView.backgroundView = nil}
     }
     
-    fileprivate func items(forSection section: Int) -> Results<SpecialEvent> {
+    func items(forSection section: Int) -> Results<SpecialEvent> {
         switch eventSortMethod {
         case .chronologicalNewestFirst:
             return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: true)

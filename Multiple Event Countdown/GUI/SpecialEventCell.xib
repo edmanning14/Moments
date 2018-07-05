@@ -21,6 +21,15 @@
         <array key="FiraSans-Regular.ttf">
             <string>FiraSans-Regular</string>
         </array>
+        <array key="Raleway-Bold.ttf">
+            <string>Raleway-Bold</string>
+        </array>
+        <array key="Raleway-Medium.ttf">
+            <string>Raleway-Medium</string>
+        </array>
+        <array key="Raleway-Regular.ttf">
+            <string>Raleway-Regular</string>
+        </array>
     </customFonts>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -32,15 +41,19 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LQr-u9-ByW">
                     <rect key="frame" x="0.0" y="20" width="320" height="538"/>
                     <subviews>
+                        <imageView opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="YY7-N8-bbj">
+                            <rect key="frame" x="0.0" y="0.0" width="320" height="538"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </imageView>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bahamas Vacation!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ue3-Sf-TXv">
-                            <rect key="frame" x="8" y="8" width="171" height="24"/>
-                            <fontDescription key="fontDescription" name="FiraSans-Medium" family="Fira Sans" pointSize="20"/>
+                            <rect key="frame" x="8" y="8" width="195.5" height="26"/>
+                            <fontDescription key="fontDescription" name="Raleway-Medium" family="Raleway" pointSize="22"/>
                             <color key="textColor" red="0.65490196079999996" green="1" blue="0.92156862750000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fun in the sun" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yd2-Ze-G9g">
-                            <rect key="frame" x="8" y="36" width="115" height="22"/>
-                            <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="18"/>
+                            <rect key="frame" x="8" y="38" width="116.5" height="21.5"/>
+                            <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="18"/>
                             <color key="textColor" red="0.65490196079999996" green="1" blue="0.92156862750000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
@@ -85,9 +98,9 @@
                                         <constraint firstAttribute="height" constant="30" id="hwf-9W-IvI"/>
                                     </constraints>
                                 </stackView>
-                                <label hidden="YES" opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tomorrow!!!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ob6-14-E84">
-                                    <rect key="frame" x="79" y="8" width="93" height="22"/>
-                                    <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="18"/>
+                                <label hidden="YES" opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tomorrow!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ob6-14-E84">
+                                    <rect key="frame" x="48.5" y="1.5" width="123.5" height="28.5"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="24"/>
                                     <color key="textColor" red="0.65490196079999996" green="1" blue="0.92156862750000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
@@ -270,7 +283,11 @@
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
+                        <constraint firstItem="YY7-N8-bbj" firstAttribute="leading" secondItem="LQr-u9-ByW" secondAttribute="leading" id="47w-Fi-MQr"/>
                         <constraint firstAttribute="bottom" secondItem="ods-Qx-ZRB" secondAttribute="bottom" constant="8" id="5Gq-Vh-BKh"/>
+                        <constraint firstAttribute="trailing" secondItem="YY7-N8-bbj" secondAttribute="trailing" id="5Nh-3L-bzg"/>
+                        <constraint firstItem="YY7-N8-bbj" firstAttribute="top" secondItem="LQr-u9-ByW" secondAttribute="top" id="F1g-7H-7R1"/>
+                        <constraint firstAttribute="bottom" secondItem="YY7-N8-bbj" secondAttribute="bottom" id="GrP-oI-jB2"/>
                         <constraint firstAttribute="trailing" secondItem="Nw8-LM-txh" secondAttribute="trailing" constant="8" id="HNC-H6-O31"/>
                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ue3-Sf-TXv" secondAttribute="trailing" constant="8" id="Q2L-aJ-iNj"/>
                         <constraint firstItem="Ue3-Sf-TXv" firstAttribute="top" secondItem="LQr-u9-ByW" secondAttribute="top" constant="8" id="UuP-Ft-oze"/>
@@ -305,6 +322,7 @@
                 <outlet property="hoursLabel" destination="2lK-tP-sV5" id="X74-W8-yzm"/>
                 <outlet property="hoursTextLabel" destination="GLb-VE-l5X" id="bEq-Hr-phy"/>
                 <outlet property="inLabel" destination="Uxj-Kj-MqJ" id="x4b-9W-aVT"/>
+                <outlet property="mainImageView" destination="YY7-N8-bbj" id="aab-wY-MDp"/>
                 <outlet property="minutesColon" destination="w1t-Yx-ePF" id="pbJ-x9-yHB"/>
                 <outlet property="minutesLabel" destination="Wgi-QA-0VC" id="qDf-c6-ywp"/>
                 <outlet property="minutesTextLabel" destination="gCu-Zh-ClW" id="tw2-8F-2nO"/>

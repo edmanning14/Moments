@@ -10,19 +10,20 @@ import UIKit
 import CoreGraphics
 
 class GradientMaskView: UIView {
-
     var percentMaskCoverage: CGFloat = 1.0 {didSet {setNeedsDisplay()}}
     fileprivate let sizeOfGradientArea: CGFloat = 0.15
+    fileprivate let gradientColors: [CGFloat] = [
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    ]
     
     override func draw(_ rect: CGRect) {
-        guard percentMaskCoverage > 0.0 else {return}
-        let ctx = UIGraphicsGetCurrentContext()!
         
+        guard percentMaskCoverage > 0.0 else {return}
+        
+        let ctx = UIGraphicsGetCurrentContext()!
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let gradientColors: [CGFloat] = [
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ]
+        
         let location2: CGFloat = 1.0 - percentMaskCoverage
         var location1: CGFloat {
             let location = location2 - sizeOfGradientArea
@@ -34,5 +35,4 @@ class GradientMaskView: UIView {
         let gradient = CGGradient(colorSpace: colorSpace, colorComponents: gradientColors, locations: locations, count: locations.count)!
         ctx.drawLinearGradient(gradient, start: CGPoint(x: 0.0, y: rect.height / 2), end: CGPoint(x: rect.width, y: rect.height / 2), options: [.drawsAfterEndLocation, .drawsBeforeStartLocation])
     }
-
 }

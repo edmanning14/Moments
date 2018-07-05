@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		64004AED20D0F1F5002BF8A7 /* CellExpandSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */; };
+		64004AEF20D0F33E002BF8A7 /* UIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */; };
 		64074C3F2018470600BD6C39 /* TextInputAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */; };
 		64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64074C402018473000BD6C39 /* TextInputAccessoryView.xib */; };
 		640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */; };
@@ -88,6 +90,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellExpandSegue.swift; sourceTree = "<group>"; };
+		64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtensions.swift; sourceTree = "<group>"; };
 		64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputAccessoryView.swift; sourceTree = "<group>"; };
 		64074C402018473000BD6C39 /* TextInputAccessoryView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextInputAccessoryView.xib; sourceTree = "<group>"; };
 		640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKAssetExtensions.swift; sourceTree = "<group>"; };
@@ -311,6 +315,7 @@
 		6477FB102016F89000EDFF50 /* Custom Classes */ = {
 			isa = PBXGroup;
 			children = (
+				64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */,
 				646F699620A1C6C900E9518C /* CircularDisplayView.swift */,
 				64691C1D201EC2FD00ADA4C3 /* WaveEffectView.swift */,
 			);
@@ -328,6 +333,7 @@
 		64BFC8A820086441002DA9EF /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */,
 				640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */,
 				64E057292032AC6400ABCF3B /* BoolExtensions.swift */,
 				64BFC8A92008644D002DA9EF /* StringExtensions.swift */,
@@ -619,6 +625,8 @@
 				644BBAAE2047C0AF00CF0C29 /* ImagePreviewViewController.swift in Sources */,
 				644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */,
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
+				64004AEF20D0F33E002BF8A7 /* UIImageExtensions.swift in Sources */,
+				64004AED20D0F1F5002BF8A7 /* CellExpandSegue.swift in Sources */,
 				645A8A9F20294FD200E5934D /* ImageClasses.swift in Sources */,
 				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,
 				64F7809D20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift in Sources */,

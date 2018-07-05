@@ -134,7 +134,7 @@ internal class CountdownImage {
         case thumbnail
         case mask
         case main
-        
+
         var recordKey: String {
             switch self {
             case .thumbnail:
@@ -168,19 +168,21 @@ internal class CountdownImage {
     // Methods
     
     func saveToDisk() -> Bool {
-        
-        var data = Data()
-        if let _imageData = imageData {data = _imageData}
-        else if let image = _uiImage {
-            if let _imageData = UIImageJPEGRepresentation(image, 1.0) {data = _imageData}
+        if !isSavedToDisk {
+            var data = Data()
+            if let _imageData = imageData {data = _imageData}
+            else if let image = _uiImage {
+                if let _imageData = UIImageJPEGRepresentation(image, 1.0) {data = _imageData}
+                else {return false}
+            }
             else {return false}
+            
+            let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let saveDest = documentsURL.appendingPathComponent(fileName + fileExtension, isDirectory: false)
+            do {try data.write(to: saveDest, options: .atomic); return true}
+            catch {print(error.localizedDescription); return false}
         }
-        else {return false}
-        
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let saveDest = documentsURL.appendingPathComponent(fileName + fileExtension, isDirectory: false)
-        do {try data.write(to: saveDest, options: .atomic); return true}
-        catch {print(error.localizedDescription); return false}
+        return true
     }
     
     
@@ -199,7 +201,7 @@ internal class CountdownImage {
     
     //
     // Flags
-
+    
     
     //
     // Methods
@@ -208,12 +210,12 @@ internal class CountdownImage {
         
         if let path = filePath {
             if let image = UIImage(contentsOfFile: path) {_uiImage = image}
-            // TODO: Error Handling
+                // TODO: Error Handling
             else {fatalError("There was an error loading the image from the path provided.")}
         }
         else if let data = imageData {
             if let image = UIImage(data: data, scale: UIScreen.main.scale) {_uiImage = image}
-            // TODO: Error Handling
+                // TODO: Error Handling
             else {fatalError("There was an creating the image from the provided image data.")}
         }
     }
@@ -227,18 +229,18 @@ internal class CountdownImage {
                     if let image = CGImage(pngDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .perceptual) {
                         _cgImage = image
                     }
-                    // TODO: Error Handling
+                        // TODO: Error Handling
                     else {fatalError("There was an error creating the png image from the data provider provided.")}
                 case ".jpg":
                     if let image = CGImage(jpegDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .perceptual) {
                         _cgImage = image
                     }
-                    // TODO: Error Handling
+                        // TODO: Error Handling
                     else {fatalError("There was an error loading the jpg image from the data provider provided.")}
                 default: fatalError("Recieved an unrecognized file extension.") // TODO: Error handling
                 }
             }
-            // TODO: Error Handling
+                // TODO: Error Handling
             else {fatalError("There was an error creating the data provider from the path provided.")}
         }
         else if let data = imageData {
@@ -259,7 +261,7 @@ internal class CountdownImage {
                 default: fatalError("Recieved an unrecognized file extension.") // TODO: Error handling
                 }
             }
-            // TODO: Error Handling
+                // TODO: Error Handling
             else {fatalError("There was an creating the image from the provided image data.")}
         }
         else if let image = _uiImage {_cgImage = image.cgImage}
@@ -276,7 +278,6 @@ internal class UserEventImage {
     // Paramters
     
     let title: String
-    var locationForCellView: CGFloat?
     var photoAsset: PHAsset?
     var delegate: CountdownImageDelegate?
     
@@ -314,8 +315,6 @@ internal class UserEventImage {
         }
         
         if images.isEmpty {return nil}
-        
-        locationForCellView = CGFloat(info.locationForCellView) / 100.0
     }
     
     init(fromPhotosAsset asset: PHAsset) {
@@ -323,14 +322,13 @@ internal class UserEventImage {
         photoAsset = asset
     }
     
-    init?(title: String, images: [CountdownImage], locationForCellView: CGFloat?) {
+    init?(title: String, images: [CountdownImage]) {
         guard !images.isEmpty else {return nil}
         let _fileRootName = images[0].fileRootName
         for i in 1..<images.count {
             if images[i].fileRootName != _fileRootName {return nil}
         }
         self.title = title
-        self.locationForCellView = locationForCellView
         self.images = images
     }
     
@@ -346,58 +344,68 @@ internal class UserEventImage {
         
         return arrayToReturn
     }
-
+    
     func fetch(imageTypes: [CountdownImage.ImageType], alertDelegate: Bool) {
-        guard photoAsset != nil && imageTypes.count > 0 else {
+        
+        func fetchMainImage() {
+            let imageName = photoAsset!.localIdentifier
+            let fileRootName = imageName.convertToFileName()
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.isNetworkAccessAllowed = true
+            let id = PHImageManager.default().requestImage(for: photoAsset!, targetSize: UIScreen.main.bounds.size, contentMode: .aspectFit, options: options) { (_image, _info) in
+                if let info = _info {
+                    if let error = info[PHImageErrorKey] as? NSError {
+                        // TODO: Handle errors gracefully
+                        print(error.debugDescription)
+                        fatalError()
+                    }
+                }
+                if let image = _image {
+                    let fileExtension = ".jpg"
+                    let wrappedImage = CountdownImage(imageType: .main, fileRootName: fileRootName, fileExtension: fileExtension, image: image)
+                    DispatchQueue.main.async { [weak self] in
+                        self?.images.append(wrappedImage)
+                        for imageType in imageTypes {
+                            if let i = self?.fetching.index(where:{$0 == imageType}) {self?.fetching.remove(at: i)}
+                        }
+                        self?.imageRequests.removeAll()
+                        if alertDelegate {self?.delegate?.fetchComplete(forImageTypes: [CountdownImage.ImageType.main], success: [true])}
+                    }
+                }
+                else {
+                    // TODO: Error handling
+                    fatalError("DataUTI and/or ImageData are nil! Incorrect user image asset fetched maybe?")
+                }
+            }
+            imageRequests.append(id)
+        }
+        
+        guard photoAsset != nil && imageTypes.contains(.main) else {
             delegate?.fetchComplete(forImageTypes: imageTypes, success: Array(repeating: false, count: imageTypes.count))
             return
         }
         
-        var needToFetch = [CountdownImage.ImageType]()
-        for imageType in imageTypes {
-            if !fetching.contains(imageType) {
-                fetching.append(imageType)
-                needToFetch.append(imageType)
-            }
-        }
-        if needToFetch.isEmpty {return}
-        
-        let imageName = photoAsset!.localIdentifier
-        let fileRootName = imageName.convertToFileName()
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .highQualityFormat
-        options.isNetworkAccessAllowed = true
-        let id = PHImageManager.default().requestImage(for: photoAsset!, targetSize: UIScreen.main.bounds.size, contentMode: .aspectFit, options: options) { (_image, _info) in
-            if let info = _info {
-                if let error = info[PHImageErrorKey] as? NSError {
-                    // TODO: Handle errors gracefully
-                    print(error.debugDescription)
-                    fatalError()
-                }
-            }
-            if let image = _image {
-                let fileExtension = ".jpg"
-                let wrappedImage = CountdownImage(imageType: .main, fileRootName: fileRootName, fileExtension: fileExtension, image: image)
-                DispatchQueue.main.async { [weak self] in
-                    self?.images.append(wrappedImage)
-                    for imageType in imageTypes {
-                        if let i = self?.fetching.index(where:{$0 == imageType}) {self?.fetching.remove(at: i)}
-                    }
-                    self?.imageRequests.removeAll()
-                    if alertDelegate {self?.delegate?.fetchComplete(forImageTypes: [CountdownImage.ImageType.main], success: [true])}
-                }
-            }
-            else {
-                // TODO: Error handling
-                fatalError("DataUTI and/or ImageData are nil! Incorrect user image asset fetched maybe?")
-            }
-        }
-        imageRequests.append(id)
+        if imageTypes.contains(.main) && !fetching.contains(.main) {fetching.append(.main); fetchMainImage()}
     }
     
-    func cancelAllFetches() {
+    func generateMainHomeImage(size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
+        guard let image = mainImage?.cgImage else {completion?(nil); return}
+        
+        _generateHomeImage(
+            from: image,
+            imageType: "Main Home",
+            isUserImage: true,
+            size: size,
+            locationForCellView: locationForCellView,
+            userInitiated: userInitiated,
+            completion: { (mainHomeImage) in completion?(mainHomeImage)}
+        )
+    }
+    
+    func cancelNetworkFetches() {
         for request in imageRequests {PHImageManager.default().cancelImageRequest(request)}
-        fetching.removeAll()
+        if let i = fetching.index(of: .main) {fetching.remove(at: i)}
     }
     
     //
@@ -409,13 +417,98 @@ internal class UserEventImage {
     
     fileprivate var images = [CountdownImage]()
     fileprivate var imageRequests = [PHImageRequestID]()
+    fileprivate var serialImageCreationQueue: DispatchQueue?
     
     //
     // Flags
     
     fileprivate var fetching = [CountdownImage.ImageType]()
-
     
+    //
+    // Methods
+    
+    fileprivate func _generateHomeImage(from image: CGImage, imageType: String, isUserImage: Bool, size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
+        var qos: DispatchQoS
+        if userInitiated {qos = .userInitiated} else {qos = .utility}
+        serialImageCreationQueue = DispatchQueue(label: "serialImageCreationQueue", qos: qos)
+        
+        serialImageCreationQueue!.async {
+            UIGraphicsBeginImageContextWithOptions(size, true, 0.0)
+            let imageCTX = UIGraphicsGetCurrentContext()!
+            
+            var imageWidth: Int!
+            var imageHeight: Int!
+            if imageType == "Main Home" && isUserImage || imageType == "Mask Home" {
+                if imageType == "Main Home" && isUserImage { // ULO, Positive y up, positive x right
+                    imageWidth = image.width
+                    imageHeight = image.height
+                    imageCTX.scaleBy(x: 1.0, y: -1.0)
+                    imageCTX.translateBy(x: 0.0, y: -size.height)
+                }
+                else { // Normal coords
+                    imageWidth = image.width
+                    imageHeight = image.height
+                }
+                
+                let contextAR = size.aspectRatio
+                let croppingRectHeight = Int(CGFloat(imageWidth) / contextAR)
+                let croppingRectSize = CGSize(width: imageWidth, height: croppingRectHeight)
+                
+                let croppingRectY = (CGFloat(imageHeight) * locationForCellView) - (croppingRectSize.height / 2)
+                let croppingRectOrigin = CGPoint(x: 0.0, y: croppingRectY)
+                
+                let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)
+                guard let croppedImage = image.cropping(to: croppingRect) else {
+                    UIGraphicsEndImageContext()
+                    completion?(nil)
+                    return
+                }
+                
+                imageCTX.draw(croppedImage, in: CGRect(origin: CGPoint.zero, size: size))
+                guard let homeUIImage = UIGraphicsGetImageFromCurrentImageContext() else {
+                    UIGraphicsEndImageContext()
+                    completion?(nil)
+                    return
+                }
+                
+                UIGraphicsEndImageContext()
+                completion?(homeUIImage)
+            }
+            else { // is mainHome AppImage
+                imageWidth = image.height  // URO, Positive y down, positive x left
+                imageHeight = image.width
+                imageCTX.scaleBy(x: -1.0, y: 1.0)
+                imageCTX.translateBy(x: -size.width, y: 0.0)
+                imageCTX.rotate(by: CGFloat.pi / 2)
+                imageCTX.translateBy(x: 0.0, y: -size.width)
+                
+                let contextAR = size.aspectRatio
+                
+                let croppingRectWidth = Int(CGFloat(imageHeight) / contextAR)
+                let croppingRectSize = CGSize(width: croppingRectWidth, height: imageHeight)
+                
+                let croppingRectX = (CGFloat(imageWidth) * locationForCellView) - (croppingRectSize.width / 2)
+                let croppingRectOrigin = CGPoint(x: croppingRectX, y: 0.0)
+                
+                let croppingRect = CGRect(origin: croppingRectOrigin, size: croppingRectSize)
+                guard let croppedImage = image.cropping(to: croppingRect) else {
+                    UIGraphicsEndImageContext()
+                    completion?(nil)
+                    return
+                }
+                
+                imageCTX.draw(croppedImage, in: CGRect(origin: CGPoint.zero, size: CGSize(width: size.height, height: size.width)))
+                guard let homeUIImage = UIGraphicsGetImageFromCurrentImageContext() else {
+                    UIGraphicsEndImageContext()
+                    completion?(nil)
+                    return
+                }
+                
+                UIGraphicsEndImageContext()
+                completion?(homeUIImage)
+            }
+        }
+    }
 }
 
 internal class AppEventImage: UserEventImage {
@@ -428,6 +521,7 @@ internal class AppEventImage: UserEventImage {
     // Paramters
     
     let category: String
+    var recommendedLocationForCellView: CGFloat?
     var recordName: String?
     
     var maskImage: CountdownImage? {
@@ -437,6 +531,8 @@ internal class AppEventImage: UserEventImage {
         }
         return nil
     }
+    
+    var maskHomeImage: UIImage? {return _maskHomeImage}
     
     var thumbnail: CountdownImage? {
         if let i = images.index(where: {$0.imageType == .thumbnail}) {return images[i]}
@@ -455,6 +551,9 @@ internal class AppEventImage: UserEventImage {
         
         category = info.category!
         recordName = info.recordName
+        if let _recommendedLocationForCellView = info.recommendedLocationForCellView.value {
+            self.recommendedLocationForCellView = CGFloat(_recommendedLocationForCellView) / 100.0
+        }
         super.init(fromEventImageInfo: info)
         
         let fileRootName = info.title.convertToFileName()
@@ -468,10 +567,11 @@ internal class AppEventImage: UserEventImage {
         if images.isEmpty {return nil}
     }
     
-    init?(category: String, title: String, locationForCellView: CGFloat, recordName: String, images: [CountdownImage]) {
+    init?(category: String, title: String, recordName: String, recommendedLocationForCellView: CGFloat, images: [CountdownImage]) {
         self.category = category
         self.recordName = recordName
-        super.init(title: title, images: images, locationForCellView: locationForCellView)
+        self.recommendedLocationForCellView = recommendedLocationForCellView
+        super.init(title: title, images: images)
     }
     
     //
@@ -479,12 +579,12 @@ internal class AppEventImage: UserEventImage {
     
     static let bundleMainImageInfo = [
         EventImageInfo(
-            locationForCellView: 0.50,
             imageTitle: "Desert Dunes",
             imageCategory: "Travel",
             isAppImage: true,
             recordName: nil,
-            hasMask: true
+            hasMask: true,
+            recommendedLocationForCellView: 45
         )
     ]
     
@@ -566,10 +666,41 @@ internal class AppEventImage: UserEventImage {
         publicCloudDatabase.add(fetchOperation!)
     }
     
-    override func cancelAllFetches() {
+    override func generateMainHomeImage(size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
+        guard let image = mainImage?.cgImage else {completion?(nil); return}
+        
+        _generateHomeImage(
+            from: image,
+            imageType: "Main Home",
+            isUserImage: false,
+            size: size,
+            locationForCellView: locationForCellView,
+            userInitiated: userInitiated,
+            completion: { (mainHomeImage) in completion?(mainHomeImage)}
+        )
+    }
+    
+    func generateMaskHomeImage(size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
+        
+        guard let maskImage = maskImage?.cgImage else {completion?(nil); return}
+        
+        _generateHomeImage(
+            from: maskImage,
+            imageType: "Mask Home",
+            isUserImage: false,
+            size: size,
+            locationForCellView: locationForCellView,
+            userInitiated: userInitiated,
+            completion: { [weak self] (maskHomeImage) in
+                completion?(maskHomeImage)
+                self?._maskHomeImage = maskHomeImage
+            }
+        )
+    }
+    
+    override func cancelNetworkFetches() {
         fetchOperation?.cancel()
         fetchOperation = nil
-        fetching.removeAll()
     }
     
     
@@ -581,6 +712,7 @@ internal class AppEventImage: UserEventImage {
     // Parameters
     
     fileprivate var fetchOperation: CKFetchRecordsOperation?
+    fileprivate var _maskHomeImage: UIImage?
     
     //
     // Types

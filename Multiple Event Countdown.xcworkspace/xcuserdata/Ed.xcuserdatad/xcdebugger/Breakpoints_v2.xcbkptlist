@@ -52,13 +52,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "550125175.009236"
+            timestampString = "550557711.388083"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1661"
-            endingLineNumber = "1661"
-            landmarkName = "NewEventViewController"
-            landmarkType = "3">
+            startingLineNumber = "1656"
+            endingLineNumber = "1656"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -100,11 +100,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"
-            timestampString = "550130954.468277"
+            timestampString = "550581939.534454"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "883"
-            endingLineNumber = "883"
+            startingLineNumber = "845"
+            endingLineNumber = "845"
             landmarkName = "tableView(_:cellForRowAt:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -116,11 +116,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"
-            timestampString = "550130954.468419"
+            timestampString = "550581939.534542"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1117"
-            endingLineNumber = "1117"
+            startingLineNumber = "1082"
+            endingLineNumber = "1082"
             landmarkName = "tabBar(_:didSelect:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -148,13 +148,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550130954.468547"
+            timestampString = "550590135.83986"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "263"
-            endingLineNumber = "263"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "256"
+            endingLineNumber = "256"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -164,13 +164,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550130986.109146"
+            timestampString = "550590135.840317"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "279"
-            endingLineNumber = "279"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "268"
+            endingLineNumber = "268"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -180,13 +180,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131143.177979"
+            timestampString = "550590135.840621"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "264"
-            endingLineNumber = "264"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "257"
+            endingLineNumber = "257"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -196,13 +196,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131182.84895"
+            timestampString = "550590135.840915"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "280"
-            endingLineNumber = "280"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "269"
+            endingLineNumber = "269"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -212,13 +212,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131184.6105731"
+            timestampString = "550590135.841217"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "281"
-            endingLineNumber = "281"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "270"
+            endingLineNumber = "270"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -228,13 +228,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131185.222594"
+            timestampString = "550590135.841504"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "282"
-            endingLineNumber = "282"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "271"
+            endingLineNumber = "271"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -244,13 +244,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131186.062397"
+            timestampString = "550590135.841792"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "283"
-            endingLineNumber = "283"
-            landmarkName = "tableView(_:cellForRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "272"
+            endingLineNumber = "272"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -260,12 +260,184 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131418.165195"
+            timestampString = "550590135.84208"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "295"
-            endingLineNumber = "295"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "274"
+            endingLineNumber = "274"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/CountdownMainImageView.swift"
+            timestampString = "550293498.186329"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "16"
+            endingLineNumber = "16"
+            landmarkName = "CountdownMainImageView"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.(homeImage in _041820CCFF37A778D82CED43729D478B).getter : Swift.Optional&lt;__ObjC.CGImage&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.528849"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "16"
+                  endingLineNumber = "16"
+                  offsetFromSymbolStart = "104">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.(homeImage in _041820CCFF37A778D82CED43729D478B).setter : Swift.Optional&lt;__ObjC.CGImage&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.531738"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "16"
+                  endingLineNumber = "16"
+                  offsetFromSymbolStart = "120">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.init(frame: __C.CGRect) -&gt; Multiple_Event_Countdown.CountdownMainImageView"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.534498"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "16"
+                  endingLineNumber = "16"
+                  offsetFromSymbolStart = "172">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.init(coder: __ObjC.NSCoder) -&gt; Swift.Optional&lt;Multiple_Event_Countdown.CountdownMainImageView&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.537292"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "16"
+                  endingLineNumber = "16"
+                  offsetFromSymbolStart = "148">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/CountdownMainImageView.swift"
+            timestampString = "550293498.186408"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "17"
+            endingLineNumber = "17"
+            landmarkName = "CountdownMainImageView"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.(drawToRect in _041820CCFF37A778D82CED43729D478B).getter : Swift.Optional&lt;__C.CGRect&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.549817"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "17"
+                  endingLineNumber = "17"
+                  offsetFromSymbolStart = "128">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.(drawToRect in _041820CCFF37A778D82CED43729D478B).setter : Swift.Optional&lt;__C.CGRect&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.552626"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "17"
+                  endingLineNumber = "17"
+                  offsetFromSymbolStart = "104">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.init(frame: __C.CGRect) -&gt; Multiple_Event_Countdown.CountdownMainImageView"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.555427"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "17"
+                  endingLineNumber = "17"
+                  offsetFromSymbolStart = "292">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Multiple_Event_Countdown.CountdownMainImageView.init(coder: __ObjC.NSCoder) -&gt; Swift.Optional&lt;Multiple_Event_Countdown.CountdownMainImageView&gt;"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/Multiple%20Event%20Countdown/New%20Group1/CountdownMainImageView.swift"
+                  timestampString = "550147072.558357"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "17"
+                  endingLineNumber = "17"
+                  offsetFromSymbolStart = "272">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/CountdownMainImageView.swift"
+            timestampString = "550293498.186483"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "55"
+            endingLineNumber = "55"
+            landmarkName = "draw(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -275,13 +447,45 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131427.8706599"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842435"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "284"
-            endingLineNumber = "284"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "623"
+            endingLineNumber = "623"
+            landmarkName = "update()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
+            timestampString = "550557711.391075"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1075"
+            endingLineNumber = "1075"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageClasses.swift"
+            timestampString = "550557711.392103"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "478"
+            endingLineNumber = "478"
+            landmarkName = "_generateHomeImage(from:imageType:isUserImage:size:locationForCellView:userInitiated:completion:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -291,13 +495,61 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131431.3996561"
+            filePath = "ImageClasses.swift"
+            timestampString = "550557711.392193"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "285"
-            endingLineNumber = "285"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "442"
+            endingLineNumber = "442"
+            landmarkName = "_generateHomeImage(from:imageType:isUserImage:size:locationForCellView:userInitiated:completion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; () in Multiple_Event_Countdown.UserEventImage.(_generateHomeImage in _78E165E517BB07E369089A2A2B3496B7)(from: __ObjC.CGImage, imageType: Swift.String, isUserImage: Swift.Bool, size: __C.CGSize, locationForCellView: CoreGraphics.CGFloat, userInitiated: Swift.Bool, completion: Swift.Optional&lt;(Swift.Optional&lt;__ObjC.UIImage&gt;) -&gt; ()&gt;) -&gt; ()"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/ImageClasses.swift"
+                  timestampString = "550480023.724988"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "446"
+                  endingLineNumber = "446"
+                  offsetFromSymbolStart = "612">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; () in Multiple_Event_Countdown.UserEventImage.(_generateHomeImage in _78E165E517BB07E369089A2A2B3496B7)(from: __ObjC.CGImage, imageType: Swift.String, isUserImage: Swift.Bool, size: __C.CGSize, locationForCellView: CoreGraphics.CGFloat, userInitiated: Swift.Bool, completion: Swift.Optional&lt;(Swift.Optional&lt;__ObjC.UIImage&gt;) -&gt; ()&gt;) -&gt; ()"
+                  moduleName = "Multiple Event Countdown"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Ed/Developer/Approved%20Ideas/Multiple%20Event%20Countdown/ImageClasses.swift"
+                  timestampString = "550480023.72934"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "446"
+                  endingLineNumber = "446"
+                  offsetFromSymbolStart = "708">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
+            timestampString = "550590135.842567"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "573"
+            endingLineNumber = "573"
+            landmarkName = "performUserImageSetup()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -307,13 +559,13 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131443.805047"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842629"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "296"
-            endingLineNumber = "296"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "335"
+            endingLineNumber = "335"
+            landmarkName = "setSelectedImage(image:locationForCellView:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -323,13 +575,13 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131445.275031"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842688"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "302"
-            endingLineNumber = "302"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "348"
+            endingLineNumber = "348"
+            landmarkName = "setHomeImages(mainHomeImage:maskHomeImage:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -339,14 +591,270 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "550131448.4325531"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842746"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "303"
-            endingLineNumber = "303"
-            landmarkName = "tableView(_:cellForRowAt:)"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
+            landmarkName = "clearEventImage()"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842805"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "342"
+            endingLineNumber = "342"
+            landmarkName = "setSelectedImage(image:locationForCellView:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842862"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "341"
+            endingLineNumber = "341"
+            landmarkName = "setSelectedImage(image:locationForCellView:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.8429199"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "133"
+            endingLineNumber = "133"
+            landmarkName = "mainHomeImage"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.842978"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "25"
+            endingLineNumber = "25"
+            landmarkName = "eventTitle"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.843037"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "525"
+            endingLineNumber = "525"
+            landmarkName = "update()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/New Group1/New Group/EventTableViewCell.swift"
+            timestampString = "550590135.8430949"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "401"
+            endingLineNumber = "401"
+            landmarkName = "update()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.843158"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "38"
+            endingLineNumber = "38"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.8435071"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "40"
+            endingLineNumber = "40"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.8437901"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "48"
+            endingLineNumber = "48"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.844069"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "41"
+            endingLineNumber = "41"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.844349"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "73"
+            endingLineNumber = "73"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.844628"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "76"
+            endingLineNumber = "76"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.8449039"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.845179"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "72"
+            endingLineNumber = "72"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.845453"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "95"
+            endingLineNumber = "95"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Custom Classes/CellExpandSegue.swift"
+            timestampString = "550590135.845735"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "79"
+            endingLineNumber = "79"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

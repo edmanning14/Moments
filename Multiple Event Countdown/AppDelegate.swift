@@ -10,6 +10,29 @@ import UIKit
 import RealmSwift
 import Foundation
 
+//
+// MARK: Global Constants
+
+// MARK: Colors
+struct Colors {
+    static let orangeRegular = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
+    static let orangeDark = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
+    static let cyanRegular = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
+    //static let cyanLight = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
+    static let lightGrayForFills = UIColor(red: 33/255, green: 33/255, blue: 33/255, alpha: 1.0)
+    static let darkPurpleForFills = UIColor(red: 66/255, green: 23/255, blue: 66/255, alpha: 1.0)
+    static let taskCompleteColor = UIColor.green
+    static let optionalTaskIncompleteColor = UIColor.darkGray
+    static let inactiveColor = UIColor.lightText
+    static let unselectedButtonColor = UIColor.lightGray
+}
+
+// MARK: Fonts
+struct Fonts {
+    static let headingsFontName = "Comfortaa-Light"
+    static let contentSecondaryFontName = "Raleway-Regular"
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 
@@ -40,12 +63,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                         }
                         else {
                             let imageInfoToAdd = EventImageInfo(
-                                locationForCellView: CGFloat(imageInfo.locationForCellView / 100),
                                 imageTitle: imageInfo.title,
                                 imageCategory: imageInfo.category,
                                 isAppImage: imageInfo.isAppImage,
                                 recordName: nil,
-                                hasMask: imageInfo.hasMask
+                                hasMask: imageInfo.hasMask,
+                                recommendedLocationForCellView: imageInfo.recommendedLocationForCellView.value
                             )
                             do {
                                 try! localPersistentStore.write {
@@ -87,6 +110,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             
             if let i = eventImages.index(where: {$0.title == DefaultEvent.imageTitle}) {
                 let defaultImageInfo = eventImages[i]
+                var locationForCellView: CGFloat?
+                if let intRecommendedLocationForCellView = defaultImageInfo.recommendedLocationForCellView.value {
+                    locationForCellView = CGFloat(intRecommendedLocationForCellView) / 100.0
+                }
                 let defaultEvent = SpecialEvent(
                     category: DefaultEvent.category,
                     title: DefaultEvent.title,
@@ -94,7 +121,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                     date: DefaultEvent.date,
                     abridgedDisplayMode: false,
                     useMask: DefaultEvent.useMask,
-                    image: defaultImageInfo
+                    image: defaultImageInfo,
+                    locationForCellView: locationForCellView
                 )
                 try! localPersistentStore.write {localPersistentStore.add(defaultEvent)}
             }
@@ -142,7 +170,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController:UIViewController, onto primaryViewController:UIViewController) -> Bool {
         guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }
         guard let topAsDetailController = secondaryAsNavController.topViewController as? DetailViewController else { return false }
-        if topAsDetailController.detailItem == nil {
+        if topAsDetailController.specialEvent == nil {
             // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
             return true
         }
