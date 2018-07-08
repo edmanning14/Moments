@@ -55,6 +55,7 @@ class MasterViewController: UITableViewController {
     fileprivate struct SegueIdentifiers {
         static let showDetail = "showDetail"
         static let addNewEventSegue = "Add New Event Segue"
+        static let showSettings = "Show Settings"
     }
     
     //
@@ -86,36 +87,36 @@ class MasterViewController: UITableViewController {
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
         navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: Fonts.headingsFontName, size: 18.0) as Any,
-            .foregroundColor: Colors.orangeRegular
+            .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
+            .foregroundColor: GlobalColors.orangeRegular
         ]
         tableView.backgroundColor = UIColor.black
         navigationController?.view.backgroundColor = UIColor.black
         if #available(iOS 11, *) {
             navigationController?.navigationBar.largeTitleTextAttributes = [
-                .font: UIFont(name: Fonts.headingsFontName, size: 30.0) as Any,
-                .foregroundColor: Colors.orangeRegular
+                .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0) as Any,
+                .foregroundColor: GlobalColors.orangeRegular
             ]
         }
         
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 16.0)! as Any]
+        //let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 16.0)! as Any]
         
         let addEventImage = #imageLiteral(resourceName: "AddEventImage")
         let addButton = UIBarButtonItem(image: addEventImage, style: .plain, target: self, action: #selector(insertNewObject(_:)))
-        addButton.tintColor = Colors.orangeDark
+        addButton.tintColor = GlobalColors.orangeDark
         navigationItem.rightBarButtonItem = addButton
         
-        let editButton = UIBarButtonItem(title: "EDIT", style: .plain, target: self, action: #selector(editTableView(_:)))
-        editButton.tintColor = Colors.orangeDark
-        editButton.setTitleTextAttributes(attributes, for: .normal)
-        navigationItem.leftBarButtonItem = editButton
+        let settingsImage = #imageLiteral(resourceName: "SettingsButtonImage")
+        let settingsButton = UIBarButtonItem(image: settingsImage, style: .plain, target: self, action: #selector(handleSettingsButtonTap))
+        settingsButton.tintColor = GlobalColors.orangeDark
+        navigationItem.leftBarButtonItem = settingsButton
         
         let navItemTitleLabel = UILabel()
         navItemTitleLabel.text = "Moments"
         navItemTitleLabel.textAlignment = .center
         navItemTitleLabel.backgroundColor = UIColor.clear
-        navItemTitleLabel.textColor = Colors.orangeRegular
-        navItemTitleLabel.font = UIFont(name: Fonts.headingsFontName, size: 20.0)
+        navItemTitleLabel.textColor = GlobalColors.orangeRegular
+        navItemTitleLabel.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 20.0)
         navigationItem.titleView = navItemTitleLabel
         
         tableView.sectionHeaderHeight = 50.0
@@ -176,6 +177,7 @@ class MasterViewController: UITableViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier! {
+            
         case SegueIdentifiers.showDetail:
             if let indexPath = tableView.indexPathForSelectedRow {
                 let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
@@ -183,16 +185,17 @@ class MasterViewController: UITableViewController {
                 controller.specialEvent = eventToDetail
                 
                 let backButton = UIBarButtonItem()
-                backButton.tintColor = Colors.orangeDark
-                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+                backButton.tintColor = GlobalColors.orangeDark
+                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
                 backButton.setTitleTextAttributes(attributes, for: .normal)
                 backButton.title = "BACK"
                 navigationItem.backBarButtonItem = backButton
             }
+            
         case SegueIdentifiers.addNewEventSegue:
             let cancelButton = UIBarButtonItem()
-            cancelButton.tintColor = Colors.orangeDark
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+            cancelButton.tintColor = GlobalColors.orangeDark
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
             cancelButton.setTitleTextAttributes(attributes, for: .normal)
             cancelButton.title = "CANCEL"
             
@@ -205,6 +208,13 @@ class MasterViewController: UITableViewController {
             }
             
             navigationItem.backBarButtonItem = cancelButton
+            
+        case SegueIdentifiers.showSettings:
+            let backButton = UIBarButtonItem()
+            backButton.tintColor = GlobalColors.orangeDark
+            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
+            backButton.setTitleTextAttributes(attributes, for: .normal)
+            backButton.title = "BACK"
             
         default: break
         }
@@ -230,8 +240,8 @@ class MasterViewController: UITableViewController {
         let headerLabel = UILabel(frame: CGRect(x: 5.0, y: 5.0, width: 100.0, height: 100.0))
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
         headerLabel.backgroundColor = UIColor.clear
-        headerLabel.textColor = Colors.cyanRegular
-        headerLabel.font = UIFont(name: Fonts.headingsFontName, size: 30.0)
+        headerLabel.textColor = GlobalColors.cyanRegular
+        headerLabel.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0)
         headerLabel.text = activeCategories[section]
         headerLabel.textAlignment = .left
         
@@ -253,7 +263,7 @@ class MasterViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
-        cell.configuration = .tableView
+        cell.configuration = .cell
         cell.configure()
         
         let bottomAnchorConstraint = cell.constraints.first {$0.secondAnchor == cell.viewWithMargins.bottomAnchor}
@@ -305,42 +315,64 @@ class MasterViewController: UITableViewController {
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    override func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-    
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let categoryOfDeletedItem = items(forSection: indexPath.section)[indexPath.row].category
-            
-            localPersistentStore.beginWrite()
-            localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
-            try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
-            
-            updateActiveCategories()
-            updateIndexPathMap()
-            
-            tableView.beginUpdates()
-            if !activeCategories.contains(categoryOfDeletedItem) {
-                tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let editAction = UIContextualAction(style: .normal, title:"Edit") { [weak self] (_, _, completion) in
+            DispatchQueue.main.async {
+                if let cell = self?.tableView.cellForRow(at: indexPath) {
+                    self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
+                    completion(true)
+                }
+                else {completion(false)}
             }
-            else {tableView.deleteRows(at: [indexPath], with: .fade)}
-            tableView.endUpdates()
         }
+        
+        let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] (_, _, completion) in
+            DispatchQueue.main.async {
+                // TODO: Add share implementation.
+            }
+        }
+        
+        editAction.backgroundColor = GlobalColors.orangeDark
+        shareAction.backgroundColor = GlobalColors.shareButtonColor
+        let configuration = UISwipeActionsConfiguration(actions: [editAction, shareAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
+    }
+    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completion) in
+            DispatchQueue.main.async {
+                guard let livingSelf = self else {completion(false); return}
+                let categoryOfDeletedItem = livingSelf.items(forSection: indexPath.section)[indexPath.row].category
+                
+                livingSelf.localPersistentStore.beginWrite()
+                livingSelf.localPersistentStore.delete(livingSelf.items(forSection: indexPath.section)[indexPath.row])
+                try! livingSelf.localPersistentStore.commitWrite(withoutNotifying: [livingSelf.localPersistentStoreNotificationToken])
+                
+                livingSelf.updateActiveCategories()
+                livingSelf.updateIndexPathMap()
+                
+                tableView.beginUpdates()
+                if !livingSelf.activeCategories.contains(categoryOfDeletedItem) {
+                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                }
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                tableView.endUpdates()
+                
+                completion(true)
+            }
+        }
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)!
-        if tableView.isEditing {
-            performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
-        }
-        else {
-            performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)
-        }
+        performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)
     }
     
     
@@ -371,6 +403,40 @@ class MasterViewController: UITableViewController {
     }
     
     @objc fileprivate func cancel() {self.dismiss(animated: true, completion: nil)}
+    
+    @objc fileprivate func handleSettingsButtonTap() {
+        performSegue(withIdentifier: SegueIdentifiers.showSettings, sender: self)
+    }
+    
+    fileprivate func handleActionButtonTap(action: UIContextualAction, view: UIView, completion: (Bool) -> Void) {
+        let cell = view as! EventTableViewCell
+        let indexPath = tableView.indexPath(for: cell)!
+        switch action.title {
+        case "Edit":
+            performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
+        case "Share":
+        // TODO: Add share implementation
+            break
+        case "Delete":
+            let categoryOfDeletedItem = items(forSection: indexPath.section)[indexPath.row].category
+            
+            localPersistentStore.beginWrite()
+            localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
+            try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
+            
+            updateActiveCategories()
+            updateIndexPathMap()
+            
+            tableView.beginUpdates()
+            if !activeCategories.contains(categoryOfDeletedItem) {
+                tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+            }
+            else {tableView.deleteRows(at: [indexPath], with: .fade)}
+            tableView.endUpdates()
+        default: break
+        }
+        completion(true)
+    }
     
     // Function to check cloud for updates on startup.
     fileprivate func syncRealmWithCloud () -> Void {
@@ -558,7 +624,7 @@ class MasterViewController: UITableViewController {
     // Function to add a new event from the events page.
     @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
     
-    @objc fileprivate func editTableView(_ sender: UIBarButtonItem) {
+    /*@objc fileprivate func editTableView(_ sender: UIBarButtonItem) {
         if sender.title == "EDIT" {
             tableView.setEditing(true, animated: true)
             sender.title = "DONE"
@@ -567,7 +633,7 @@ class MasterViewController: UITableViewController {
             tableView.setEditing(false, animated: true)
             sender.title = "EDIT"
         }
-    }
+    }*/
     
     fileprivate func addOrRemoveNewCellPrompt() -> Void {
         // TODO: Make this a soft and comfortable glyph instead of harsh text.

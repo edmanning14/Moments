@@ -23,68 +23,23 @@ class EventTableViewCell: UITableViewCell {
     var eventTitle: String? {
         didSet {
             if !shadowsInitialized {initializeShadows()}
-            if eventTitle != nil {
-                titleLabel.text = eventTitle
-                titleLabel.textColor = Colors.cyanRegular
-            }
-            else {
-                titleLabel.text = "Bahamas Vacation!"
-                titleLabel.textColor = Colors.inactiveColor
-            }
+            titleLabel.text = eventTitle
         }
     }
     
     var eventTagline: String? {
         didSet{
             if !shadowsInitialized {initializeShadows()}
-            if eventTagline != nil {
-                taglineLabel.text = eventTagline
-                taglineLabel.textColor = Colors.cyanRegular
-                taglineLabel.isHidden = false
-                taglineLabel.isUserInteractionEnabled = true
-            }
-            else {
-                switch configuration {
-                case .newEventsController:
-                    taglineLabel.text = "Fun in the sun"
-                    taglineLabel.textColor = Colors.inactiveColor
-                case .tableView, .detailView:
-                    taglineLabel.isHidden = true; taglineLabel.isUserInteractionEnabled = false
-                case .imagePreviewControllerCell, .imagePreviewControllerDetail:
-                    break
-                }
-            }
+            if eventTagline != nil {taglineLabel.text = eventTagline}
+            else {taglineLabel.isHidden = true; taglineLabel.isUserInteractionEnabled = false}
         }
     }
     
     var eventDate: EventDate? {
         didSet {
             if !shadowsInitialized {initializeShadows()}
-            if eventDate != nil {
-                inLabel.textColor = Colors.cyanRegular
-                weeksLabel.textColor = Colors.cyanRegular
-                weeksColon.textColor = Colors.cyanRegular
-                daysLabel.textColor = Colors.cyanRegular
-                daysColon.textColor = Colors.cyanRegular
-                hoursLabel.textColor = Colors.cyanRegular
-                hoursColon.textColor = Colors.cyanRegular
-                minutesLabel.textColor = Colors.cyanRegular
-                minutesColon.textColor = Colors.cyanRegular
-                secondsLabel.textColor = Colors.cyanRegular
-                update()
-            }
+            if eventDate != nil {update()}
             else {
-                inLabel.textColor = Colors.inactiveColor
-                weeksLabel.textColor = Colors.inactiveColor
-                weeksColon.textColor = Colors.inactiveColor
-                daysLabel.textColor = Colors.inactiveColor
-                daysColon.textColor = Colors.inactiveColor
-                hoursLabel.textColor = Colors.inactiveColor
-                hoursColon.textColor = Colors.inactiveColor
-                minutesLabel.textColor = Colors.inactiveColor
-                minutesColon.textColor = Colors.inactiveColor
-                secondsLabel.textColor = Colors.inactiveColor
-                
                 agoLabel.isHidden = true
                 inLabel.isHidden = false
                 weeksLabel.text = "00"
@@ -128,10 +83,10 @@ class EventTableViewCell: UITableViewCell {
     fileprivate var mainHomeImage: UIImage? {
         didSet {
             switch configuration {
-            case .tableView, .imagePreviewControllerCell, .newEventsController:
-                mainImageView.layer.opacity = 0.0
-                mainImageView.image = mainHomeImage
+            case .cell:
                 if mainHomeImage != nil {
+                    mainImageView.layer.opacity = 0.0
+                    mainImageView.image = mainHomeImage
                     UIViewPropertyAnimator.runningPropertyAnimator(
                         withDuration: 0.2,
                         delay: 0.0,
@@ -141,7 +96,7 @@ class EventTableViewCell: UITableViewCell {
                     )
                     if useMask {updateMask(); addGradientView()}}
                 else {removeGradientView()}
-            default: break
+            case .detail: break
             }
         }
     }
@@ -149,10 +104,10 @@ class EventTableViewCell: UITableViewCell {
     fileprivate var maskHomeImage: UIImage? {
         didSet {
             switch configuration {
-            case .tableView, .imagePreviewControllerCell, .newEventsController:
+            case .cell:
                 if useMask {addMaskImageView()}
                 else {removeMaskImageView()}
-            default: break
+            case .detail: break
             }
         }
     }
@@ -169,8 +124,8 @@ class EventTableViewCell: UITableViewCell {
     
     //
     // MARK: States
-    enum Configurations {case tableView, detailView, newEventsController, imagePreviewControllerCell, imagePreviewControllerDetail}
-    var configuration: Configurations = .tableView {didSet {if configuration != oldValue {configureView()}}}
+    enum Configurations {case cell, detail}
+    var configuration: Configurations = .cell
     
     fileprivate enum Stages {
         case weeks, days, hours, minutes, seconds
@@ -294,12 +249,11 @@ class EventTableViewCell: UITableViewCell {
     @IBOutlet weak var abridgedWeeksTextLabel: UILabel!
     @IBOutlet weak var abridgedDaysTextLabel: UILabel!
     
-    var titleWaveEffectView: WaveEffectView?
+    /*var titleWaveEffectView: WaveEffectView?
     var taglineWaveEffectView: WaveEffectView?
     var timerWaveEffectView: WaveEffectView?
-    var timerLabelsWaveEffectView: WaveEffectView?
+    var timerLabelsWaveEffectView: WaveEffectView?*/
     
-    //var mainImageView: CountdownMainImageView?
     fileprivate var gradientView: GradientMaskView?
     fileprivate var maskImageView: CountdownMaskImageView?
 
@@ -307,13 +261,6 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: - Cell Lifecycle
     //
-    
-    override func draw(_ rect: CGRect) {
-        switch configuration {
-        case .imagePreviewControllerDetail, .imagePreviewControllerCell: break
-        default: if !shadowsInitialized {initializeShadows()}
-        }
-    }
     
     override func prepareForReuse() {
         eventImage?.delegate = nil
@@ -338,8 +285,8 @@ class EventTableViewCell: UITableViewCell {
         if let mainUIImage = image.mainImage?.uiImage {
             mainImageView.contentMode = .scaleAspectFit
             switch configuration {
-            case .imagePreviewControllerCell, .newEventsController, .tableView: getHomeImages(nil)
-            case .imagePreviewControllerDetail, .detailView: mainImageView.image = mainUIImage
+            case .cell: getHomeImages(nil)
+            case .detail: mainImageView.image = mainUIImage
             }
         }
     }
@@ -693,7 +640,7 @@ class EventTableViewCell: UITableViewCell {
                 mainImageView!.rightAnchor.constraint(equalTo: gradientView!.rightAnchor).isActive = true
                 mainImageView!.bottomAnchor.constraint(equalTo: gradientView!.bottomAnchor).isActive = true
                 mainImageView!.leftAnchor.constraint(equalTo: gradientView!.leftAnchor).isActive = true
-                if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
+                //if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
                     UIViewPropertyAnimator.runningPropertyAnimator(
                         withDuration: 0.2,
                         delay: 0.0,
@@ -701,8 +648,8 @@ class EventTableViewCell: UITableViewCell {
                         animations: { [weak self] in self?.gradientView!.layer.opacity = 1.0},
                         completion: nil
                     )
-                }
-                else {gradientView!.layer.opacity = 1.0}
+                //}
+                //else {gradientView!.layer.opacity = 1.0}
             }
             if maskHomeImage != nil {addMaskImageView()}
         }
@@ -723,7 +670,7 @@ class EventTableViewCell: UITableViewCell {
                 _gradientView.rightAnchor.constraint(equalTo: maskImageView!.rightAnchor).isActive = true
                 _gradientView.bottomAnchor.constraint(equalTo: maskImageView!.bottomAnchor).isActive = true
                 _gradientView.leftAnchor.constraint(equalTo: maskImageView!.leftAnchor).isActive = true
-                if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
+                //if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
                     UIViewPropertyAnimator.runningPropertyAnimator(
                         withDuration: 0.2,
                         delay: 0.0,
@@ -731,8 +678,8 @@ class EventTableViewCell: UITableViewCell {
                         animations: { [weak self] in self?.maskImageView!.layer.opacity = 1.0},
                         completion: nil
                     )
-                }
-                else {maskImageView!.layer.opacity = 1.0}
+                //}
+                //else {maskImageView!.layer.opacity = 1.0}
             }
         }
     }
@@ -829,27 +776,27 @@ class EventTableViewCell: UITableViewCell {
         }
     }
     
-    fileprivate func configureView() {
+    /*fileprivate func configureView() {
         switch configuration {
             
         case .tableView:
-            titleWaveEffectView?.removeFromSuperview()
+            /*titleWaveEffectView?.removeFromSuperview()
             titleWaveEffectView = nil
             taglineWaveEffectView?.removeFromSuperview()
             taglineWaveEffectView = nil
             timerWaveEffectView?.removeFromSuperview()
             timerWaveEffectView = nil
             timerLabelsWaveEffectView?.removeFromSuperview()
-            timerLabelsWaveEffectView = nil
+            timerLabelsWaveEffectView = nil*/
             
         case .newEventsController:
             
-            titleLabel.isHidden = true
-            taglineLabel.isHidden = true
+            //titleLabel.isHidden = true
+            //taglineLabel.isHidden = true
             timerContainerView.isHidden = true
             abridgedTimerContainerView.isHidden = true
             
-            titleWaveEffectView = WaveEffectView()
+            /*titleWaveEffectView = WaveEffectView()
             taglineWaveEffectView = WaveEffectView()
             timerWaveEffectView = WaveEffectView()
             timerLabelsWaveEffectView = WaveEffectView()
@@ -882,7 +829,7 @@ class EventTableViewCell: UITableViewCell {
             timerWaveEffectView!.bottomAnchor.constraint(equalTo: timerLabelsWaveEffectView!.topAnchor, constant: -6.0).isActive = true
             timerWaveEffectView!.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -8.0).isActive = true
             timerWaveEffectView!.heightAnchor.constraint(equalToConstant: timerStackView.bounds.height).isActive = true
-            timerWaveEffectView!.widthAnchor.constraint(equalToConstant: timerStackView.bounds.width).isActive = true
+            timerWaveEffectView!.widthAnchor.constraint(equalToConstant: timerStackView.bounds.width).isActive = true*/
             
             titleLabel.textColor = UIColor.lightText
             taglineLabel.textColor = UIColor.lightText
@@ -914,7 +861,7 @@ class EventTableViewCell: UITableViewCell {
                 abridgedTimerContainerView.removeFromSuperview()
             }
         }
-    }
+    }*/
     
     fileprivate func initializeShadows() {
         func initializeShadows(for views: [UIView], withShadowRadius shadowRadius: CGFloat) {

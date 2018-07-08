@@ -178,8 +178,8 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         let doneButton = UIBarButtonItem()
         doneButton.target = self
         doneButton.action = #selector(handleNavButtonClick(_:))
-        doneButton.tintColor = Colors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+        doneButton.tintColor = GlobalColors.orangeDark
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
         doneButton.setTitleTextAttributes(attributes, for: .disabled)
         doneButton.title = "USE IMAGE"
@@ -189,8 +189,8 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         previewTypeTabBar.delegate = self
         previewTypeTabBar.barTintColor = UIColor.clear
         previewTypeTabBar.backgroundImage = UIImage()
-        previewTypeTabBar.unselectedItemTintColor = Colors.unselectedButtonColor
-        previewTypeTabBar.tintColor = Colors.cyanRegular
+        previewTypeTabBar.unselectedItemTintColor = GlobalColors.unselectedButtonColor
+        previewTypeTabBar.tintColor = GlobalColors.cyanRegular
         
         createHomeImageButton.addTarget(self, action: #selector(handleEditButtonClick(_:)), for: .touchUpInside)
         cancelEditButton.addTarget(self, action: #selector(handleEditButtonClick(_:)), for: .touchUpInside)
@@ -204,7 +204,12 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                 homePreviewView.rightAnchor.constraint(equalTo: homePreviewCell!.rightAnchor).isActive = true
                 homePreviewView.bottomAnchor.constraint(equalTo: homePreviewCell!.bottomAnchor).isActive = true
                 homePreviewView.leftAnchor.constraint(equalTo: homePreviewCell!.leftAnchor).isActive = true
-                homePreviewCell!.configuration = .imagePreviewControllerCell
+                homePreviewCell!.configuration = .cell
+                
+                homePreviewCell!.titleLabel.removeFromSuperview()
+                homePreviewCell!.taglineLabel.removeFromSuperview()
+                homePreviewCell!.timerContainerView.removeFromSuperview()
+                homePreviewCell!.abridgedTimerContainerView.removeFromSuperview()
                 
                 let bottomAnchorConstraint = homePreviewCell!.constraints.first {$0.secondAnchor == homePreviewCell!.viewWithMargins.bottomAnchor}
                 bottomAnchorConstraint!.isActive = false
@@ -231,8 +236,13 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                 fullSizePreviewView.rightAnchor.constraint(equalTo: fullSizePreviewCell!.rightAnchor).isActive = true
                 fullSizePreviewView.bottomAnchor.constraint(equalTo: fullSizePreviewCell!.bottomAnchor).isActive = true
                 fullSizePreviewView.leftAnchor.constraint(equalTo: fullSizePreviewCell!.leftAnchor).isActive = true
-                fullSizePreviewCell!.configuration = .imagePreviewControllerDetail
+                fullSizePreviewCell!.configuration = .detail
                 fullSizePreviewCell!.useMask = false
+                
+                fullSizePreviewCell!.titleLabel.removeFromSuperview()
+                fullSizePreviewCell!.taglineLabel.removeFromSuperview()
+                fullSizePreviewCell!.timerContainerView.removeFromSuperview()
+                fullSizePreviewCell!.abridgedTimerContainerView.removeFromSuperview()
                 
                 let bottomAnchorConstraint = fullSizePreviewCell!.constraints.first {$0.secondAnchor == fullSizePreviewCell!.viewWithMargins.bottomAnchor}
                 bottomAnchorConstraint!.isActive = false
@@ -289,7 +299,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             optionsViewController.modalPresentationStyle = .popover
             
             let popController = optionsViewController.popoverPresentationController!
-            popController.backgroundColor = Colors.darkPurpleForFills
+            popController.backgroundColor = GlobalColors.darkPurpleForFills
             popController.delegate = self
             popController.sourceView = tabBar
             
@@ -300,9 +310,9 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             setHomeImageButton.translatesAutoresizingMaskIntoConstraints = false
             setHomeImageButton.tag = 1
             setHomeImageButton.addTarget(self, action: #selector(enterEditMode), for: .touchUpInside)
-            setHomeImageButton.setTitleColor(Colors.orangeDark, for: .normal)
+            setHomeImageButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
             setHomeImageButton.setTitle("Set Home Image", for: .normal)
-            setHomeImageButton.titleLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
+            setHomeImageButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
             setHomeImageButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
             
             let setHomeImageImageButton = UIButton()
@@ -310,16 +320,16 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             setHomeImageImageButton.tag = 2
             setHomeImageImageButton.addTarget(self, action: #selector(enterEditMode), for: .touchUpInside)
             setHomeImageImageButton.setImage(#imageLiteral(resourceName: "HomeButtonImage"), for: .normal)
-            setHomeImageImageButton.tintColor = Colors.orangeDark
+            setHomeImageImageButton.tintColor = GlobalColors.orangeDark
             setHomeImageImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
             
             let maskPreviewButton = UIButton()
             maskPreviewButton.translatesAutoresizingMaskIntoConstraints = false
             maskPreviewButton.tag = 3
             maskPreviewButton.addTarget(self, action: #selector(togglePreviewMode), for: .touchUpInside)
-            maskPreviewButton.setTitleColor(Colors.orangeDark, for: .normal)
+            maskPreviewButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
             maskPreviewButton.setTitle("Toggle Mask Preview", for: .normal)
-            maskPreviewButton.titleLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
+            maskPreviewButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
             maskPreviewButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
             
             let maskPreviewImageButton = UIButton()
@@ -327,7 +337,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             maskPreviewImageButton.tag = 4
             maskPreviewImageButton.addTarget(self, action: #selector(togglePreviewMode), for: .touchUpInside)
             maskPreviewImageButton.setImage(#imageLiteral(resourceName: "ImageButtonImage"), for: .normal)
-            maskPreviewImageButton.tintColor = Colors.orangeDark
+            maskPreviewImageButton.tintColor = GlobalColors.orangeDark
             maskPreviewImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
             
             optionsViewController.view = {

@@ -14,7 +14,7 @@ import Foundation
 // MARK: Global Constants
 
 // MARK: Colors
-struct Colors {
+struct GlobalColors {
     static let orangeRegular = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
     static let orangeDark = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
     static let cyanRegular = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
@@ -25,12 +25,14 @@ struct Colors {
     static let optionalTaskIncompleteColor = UIColor.darkGray
     static let inactiveColor = UIColor.lightText
     static let unselectedButtonColor = UIColor.lightGray
+    static let shareButtonColor = UIColor(red: 59/255, green: 89/255, blue: 152/255, alpha: 1.0) //Facebook Blue
 }
 
 // MARK: Fonts
-struct Fonts {
-    static let headingsFontName = "Comfortaa-Light"
-    static let contentSecondaryFontName = "Raleway-Regular"
+struct GlobalFontNames {
+    static let ComfortaaLight = "Comfortaa-Light" // Headings
+    static let ralewayRegular = "Raleway-Regular" // Text
+    static let ralewayMedium = "Raleway-Medium" // Cell Title
 }
 
 @UIApplicationMain

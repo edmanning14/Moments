@@ -9,8 +9,10 @@
 import UIKit
 
 class TextInputAccessoryView: UIView {
-    
     @IBOutlet weak var textInputField: UITextField!
-    @IBOutlet weak var doneButton: UIButton!
-    
+    @IBOutlet weak var previousInputButton: UIButton!
+    @IBOutlet weak var cancelInputButton: UIButton!
+    @IBOutlet weak var doneInputButton: UIButton!
+    @IBOutlet weak var nextInputButton: UIButton!
+    @IBOutlet weak var currentInputTitleLabel: UILabel!
 }

@@ -483,8 +483,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         doneButton = UIBarButtonItem()
         doneButton.target = self
         doneButton.action = #selector(handleNavButtonClick(_:))
-        doneButton.tintColor = Colors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+        doneButton.tintColor = GlobalColors.orangeDark
+        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
         doneButton.setTitleTextAttributes(attributes, for: .disabled)
         doneButton.title = "USE IMAGE"
@@ -502,8 +502,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         
         fetchUserPhotos()
         
-        imagesTabBar.unselectedItemTintColor = Colors.unselectedButtonColor
-        imagesTabBar.tintColor = Colors.cyanRegular
+        imagesTabBar.unselectedItemTintColor = GlobalColors.unselectedButtonColor
+        imagesTabBar.tintColor = GlobalColors.cyanRegular
         
         if let tabBarItems = imagesTabBar.items {
             if let i = tabBarItems.index(where: {$0.title! == TabBarTitles.catalog}) {
@@ -543,8 +543,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 destination.selectImageViewController = self
                 
                 let cancelButton = UIBarButtonItem()
-                cancelButton.tintColor = Colors.orangeDark
-                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 14.0)! as Any]
+                cancelButton.tintColor = GlobalColors.orangeDark
+                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
                 cancelButton.setTitleTextAttributes(attributes, for: .normal)
                 cancelButton.title = "IMAGES"
                 navigationItem.backBarButtonItem = cancelButton
@@ -735,7 +735,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             
             cellBackgroundView.layer.backgroundColor = UIColor.black.cgColor
             
-            cellSelectedBackgroundView.layer.backgroundColor = Colors.darkPurpleForFills.cgColor
+            cellSelectedBackgroundView.layer.backgroundColor = GlobalColors.darkPurpleForFills.cgColor
             cellSelectedBackgroundView.layer.cornerRadius = cornerRadius
             cellSelectedBackgroundView.layer.masksToBounds = true
             cellSelectedBackgroundView.layer.isOpaque = true
@@ -848,13 +848,13 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         cell.contentView.backgroundColor = UIColor.clear
         cell.selectionStyle = .none
         
-        cell.textLabel?.font = UIFont(name: Fonts.headingsFontName, size: 12.0)
-        cell.textLabel?.textColor = Colors.cyanRegular
+        cell.textLabel?.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 12.0)
+        cell.textLabel?.textColor = GlobalColors.cyanRegular
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.numberOfLines = 0
         
-        cell.detailTextLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
-        cell.detailTextLabel?.textColor = Colors.cyanRegular
+        cell.detailTextLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
+        cell.detailTextLabel?.textColor = GlobalColors.cyanRegular
         cell.detailTextLabel?.numberOfLines = 0
         cell.detailTextLabel?.lineBreakMode = .byWordWrapping
         
@@ -996,7 +996,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             optionsViewController.modalPresentationStyle = .popover
             
             let popController = optionsViewController.popoverPresentationController!
-            popController.backgroundColor = Colors.darkPurpleForFills
+            popController.backgroundColor = GlobalColors.darkPurpleForFills
             popController.delegate = self
             popController.sourceView = tabBar
             
@@ -1014,10 +1014,10 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             filterButton.translatesAutoresizingMaskIntoConstraints = false
             filterButton.tag = 1
             filterButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
-            filterButton.tintColor = Colors.orangeDark
+            filterButton.tintColor = GlobalColors.orangeDark
             filterButton.setTitle("Find", for: .normal)
-            filterButton.setTitleColor(Colors.orangeDark, for: .normal)
-            filterButton.titleLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
+            filterButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
+            filterButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
             filterButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
             
             let filterButtonImage = UIButton()
@@ -1025,7 +1025,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             filterButtonImage.tag = 2
             filterButtonImage.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
             filterButtonImage.setImage(#imageLiteral(resourceName: "FilterButtonImage"), for: .normal)
-            filterButtonImage.tintColor = Colors.orangeDark
+            filterButtonImage.tintColor = GlobalColors.orangeDark
             filterButtonImage.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
             
             let filterStackView = UIStackView()
@@ -1043,10 +1043,10 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 momentsButton.translatesAutoresizingMaskIntoConstraints = false
                 momentsButton.tag = 3
                 momentsButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
-                if userPhotosDataState == .moments {momentsButton.setTitleColor(Colors.cyanRegular, for: .normal)}
-                else {momentsButton.setTitleColor(Colors.unselectedButtonColor, for: .normal)}
+                if userPhotosDataState == .moments {momentsButton.setTitleColor(GlobalColors.cyanRegular, for: .normal)}
+                else {momentsButton.setTitleColor(GlobalColors.unselectedButtonColor, for: .normal)}
                 momentsButton.setTitle("Moments", for: .normal)
-                momentsButton.titleLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
+                momentsButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
                 momentsButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
                 
                 let momentsImageButton = UIButton()
@@ -1054,19 +1054,19 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 momentsImageButton.tag = 4
                 momentsImageButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
                 momentsImageButton.setImage(#imageLiteral(resourceName: "UserMomentsButtonImage"), for: .normal)
-                if userPhotosDataState == .moments {momentsImageButton.tintColor = Colors.cyanRegular}
-                else {momentsImageButton.tintColor = Colors.unselectedButtonColor}
+                if userPhotosDataState == .moments {momentsImageButton.tintColor = GlobalColors.cyanRegular}
+                else {momentsImageButton.tintColor = GlobalColors.unselectedButtonColor}
                 momentsImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
                 
                 let albumsButton = UIButton()
                 albumsButton.translatesAutoresizingMaskIntoConstraints = false
                 albumsButton.tag = 5
                 albumsButton.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
-                if userPhotosDataState == .albums {albumsButton.setTitleColor(Colors.cyanRegular, for: .normal)}
-                else {albumsButton.setTitleColor(Colors.unselectedButtonColor, for: .normal)}
+                if userPhotosDataState == .albums {albumsButton.setTitleColor(GlobalColors.cyanRegular, for: .normal)}
+                else {albumsButton.setTitleColor(GlobalColors.unselectedButtonColor, for: .normal)}
                 albumsButton.setTitle("Albums", for: .normal)
                
-                albumsButton.titleLabel?.font = UIFont(name: Fonts.contentSecondaryFontName, size: 10.0)
+                albumsButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
                 albumsButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
                 
                 let albumsButtonImage = UIButton()
@@ -1074,8 +1074,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 albumsButtonImage.tag = 6
                 albumsButtonImage.addTarget(self, action: #selector(handleUserPhotosOptionsButtonClick(_:)), for: .touchUpInside)
                 albumsButtonImage.setImage(#imageLiteral(resourceName: "UserAlbumsButtonImage"), for: .normal)
-                if userPhotosDataState == .albums {albumsButtonImage.tintColor = Colors.cyanRegular}
-                else {albumsButtonImage.tintColor = Colors.unselectedButtonColor}
+                if userPhotosDataState == .albums {albumsButtonImage.tintColor = GlobalColors.cyanRegular}
+                else {albumsButtonImage.tintColor = GlobalColors.unselectedButtonColor}
                 albumsButtonImage.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
                 
                 optionsViewController.view = {
@@ -1353,7 +1353,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         filterViewController.preferredContentSize = CGSize(width: 200.0, height: 250.0)
         
         let popController = filterViewController.popoverPresentationController!
-        popController.backgroundColor = Colors.darkPurpleForFills
+        popController.backgroundColor = GlobalColors.darkPurpleForFills
         popController.delegate = self
         popController.sourceView = imagesTabBar
         switch tabBarSelection {

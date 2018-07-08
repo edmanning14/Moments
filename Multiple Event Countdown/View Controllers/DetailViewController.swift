@@ -87,7 +87,7 @@ class DetailViewController: UIViewController {
                 view.safeAreaLayoutGuide.rightAnchor.constraint(equalTo: detailViewCell!.rightAnchor).isActive = true
                 view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: detailViewCell!.bottomAnchor).isActive = true
                 view.safeAreaLayoutGuide.leftAnchor.constraint(equalTo: detailViewCell!.leftAnchor).isActive = true
-                detailViewCell.configuration = .detailView
+                detailViewCell.configuration = .detail
                 detailViewCell.useMask = false
                 
                 let bottomAnchorConstraint = detailViewCell.constraints.first {$0.secondAnchor == detailViewCell.viewWithMargins.bottomAnchor}
@@ -122,8 +122,8 @@ class DetailViewController: UIViewController {
     
     fileprivate func configureNavBar() {
         navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: Fonts.headingsFontName, size: 18.0) as Any,
-            .foregroundColor: Colors.orangeRegular
+            .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
+            .foregroundColor: GlobalColors.orangeRegular
         ]
     }
     
