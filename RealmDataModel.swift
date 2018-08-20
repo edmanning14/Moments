@@ -42,6 +42,123 @@ class EventDate: Object {
         self.date = date
         self.dateOnly = dateOnly
     }
+    
+    func prepareForDeletion() {}
+
+}
+
+class DefaultNotificationsConfig: Object {
+    @objc dynamic var allOn = true
+    @objc dynamic var dailyNotificationOn = true
+    @objc dynamic var dailyNotificationsScheduledTime: RealmEventNotificationComponents?
+    @objc dynamic var individualEventRemindersOn = true
+    let eventNotifications = List<RealmEventNotification>()
+    @objc dynamic var categoriesToNotify = "All"
+    
+    func prepareForDeletion() {
+        let deletionRealm = try! Realm(configuration: realmConfig)
+        if dailyNotificationsScheduledTime != nil {
+            dailyNotificationsScheduledTime?.prepareForDeletion()
+            do {try! deletionRealm.write {deletionRealm.delete(dailyNotificationsScheduledTime!)}}
+        }
+        if !eventNotifications.isEmpty {
+            for realmEventNotif in eventNotifications {realmEventNotif.prepareForDeletion()}
+            do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+        }
+    }
+    
+}
+
+class RealmEventNotificationConfig: Object {
+    @objc dynamic var eventNotificationsOn = true
+    @objc dynamic var isCustom = false
+    let eventNotifications = List<RealmEventNotification>()
+    
+    convenience init(eventNotifications: [RealmEventNotification], eventNotificationsOn: Bool = true, isCustom: Bool = false) {
+        self.init()
+        self.eventNotifications.append(objectsIn: eventNotifications)
+        self.eventNotificationsOn = eventNotificationsOn
+        self.isCustom = isCustom
+    }
+    
+    convenience init(fromEventNotificationConfig config: EventNotificationConfig) {
+        self.init()
+        self.eventNotificationsOn = config.eventNotificationsOn
+        self.isCustom = config.isCustom
+        
+        for eventNotif in config.eventNotifications {
+            eventNotifications.append(RealmEventNotification(fromEventNotification: eventNotif))
+        }
+    }
+    
+    func prepareForDeletion() {
+        let deletionRealm = try! Realm(configuration: realmConfig)
+        if !eventNotifications.isEmpty {
+            for realmEventNotif in eventNotifications {realmEventNotif.prepareForDeletion()}
+            do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+        }
+    }
+    
+}
+
+class RealmEventNotification: Object {
+    @objc dynamic var type = ""
+    @objc dynamic var uuid = ""
+    @objc dynamic var notificationComponents: RealmEventNotificationComponents?
+    
+    convenience init(fromEventNotification notif: EventNotification) {
+        self.init()
+        self.type = notif.type.stringEquivalent
+        self.uuid = notif.uuid
+        self.notificationComponents = RealmEventNotificationComponents(fromDateComponents: notif.components)
+    }
+    
+    convenience init(copyingEventNotification notif: EventNotification) {
+        self.init()
+        self.type = notif.type.stringEquivalent
+        self.uuid = UUID().uuidString
+        self.notificationComponents = RealmEventNotificationComponents(fromDateComponents: notif.components)
+    }
+    
+    func prepareForDeletion() {
+        autoreleasepool {
+            let deletionRealm = try! Realm(configuration: realmConfig)
+            if notificationComponents != nil {
+                notificationComponents!.prepareForDeletion()
+                do {try! deletionRealm.write {deletionRealm.delete(notificationComponents!)}}
+            }
+        }
+    }
+    
+}
+
+class RealmEventNotificationComponents: Object {
+    let month = RealmOptional<Int>()
+    let day = RealmOptional<Int>()
+    let hour = RealmOptional<Int>()
+    let minute = RealmOptional<Int>()
+    let second = RealmOptional<Int>()
+    
+    convenience init(month: Int?, day: Int?, hour: Int?, minute: Int?, second: Int?) {
+        self.init()
+        self.month.value = month
+        self.day.value = day
+        self.hour.value = hour
+        self.minute.value = minute
+        self.second.value = second
+    }
+    
+    convenience init(fromDateComponents components: DateComponents?) {
+        self.init()
+        self.month.value = components?.month
+        self.day.value = components?.day
+        self.hour.value = components?.hour
+        self.minute.value = components?.minute
+        self.second.value = components?.second
+    }
+    
+    func prepareForDeletion() {}
+    
 }
 
 class EventImageInfo: Object {
@@ -85,6 +202,9 @@ class EventImageInfo: Object {
     }
     
     override static func primaryKey() -> String? {return "title"}
+    
+    func prepareForDeletion() {}
+    
 }
 
 class SpecialEvent: Object {
@@ -96,21 +216,41 @@ class SpecialEvent: Object {
     @objc dynamic var creationDate = Date()
     @objc dynamic var date: EventDate?
     @objc dynamic var abridgedDisplayMode = false
+    @objc dynamic var infoDisplayed = "Tagline"
+    @objc dynamic var repeats = "Never"
+    @objc dynamic var notificationsConfig: RealmEventNotificationConfig?
     @objc dynamic var useMask = true
     @objc dynamic var image: EventImageInfo?
     let locationForCellView = RealmOptional<Int>()
     
-    convenience init(category: String, title: String, tagline: String?, date: EventDate, abridgedDisplayMode: Bool, useMask: Bool, image: EventImageInfo?, locationForCellView: CGFloat?) {
+    convenience init(category: String, title: String, tagline: String?, date: EventDate, abridgedDisplayMode: Bool, infoDisplayed: DisplayInfoOptions, repeats: RepeatingOptions, notificationsConfig: RealmEventNotificationConfig?, useMask: Bool, image: EventImageInfo?, locationForCellView: CGFloat?) {
         self.init()
         self.category = category
         self.title = title
         self.tagline = tagline
         self.date = date
         self.abridgedDisplayMode = abridgedDisplayMode
+        self.infoDisplayed = infoDisplayed.displayText
+        self.repeats = repeats.displayText
+        self.notificationsConfig = notificationsConfig
         if let _locationForCellView = locationForCellView {self.locationForCellView.value = Int(_locationForCellView * 100.0)}
         self.useMask = useMask
         self.image = image
     }
     
     override static func primaryKey() -> String? {return "title"}
+    
+    func prepareForDeletion() {
+        autoreleasepool {
+            let deletionRealm = try! Realm(configuration: realmConfig)
+            if date != nil {
+                date!.prepareForDeletion()
+                do {try! deletionRealm.write {deletionRealm.delete(date!)}}
+            }
+            if notificationsConfig != nil {
+                notificationsConfig!.prepareForDeletion()
+                do {try! deletionRealm.write {deletionRealm.delete(notificationsConfig!)}}
+            }
+        }
+    }
 }

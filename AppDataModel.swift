@@ -12,6 +12,42 @@ import QuartzCore
 import CloudKit
 import Photos
 
+internal enum RepeatingOptions {
+    case never, monthly, yearly
+    
+    var displayText: String {
+        switch self {
+        case .never: return "Never"
+        case .monthly: return "Monthly"
+        case .yearly: return "Yearly"
+        }
+    }
+}
+
+internal enum DisplayInfoOptions {
+    case none, tagline, date
+    
+    var displayText: String {
+        switch self {
+        case .none: return "None"
+        case .tagline: return "Tagline"
+        case .date: return "Date"
+        }
+    }
+}
+
+internal enum NotificationsOptions {
+    case custom, _default, off
+    
+    var displayText: String {
+        switch self {
+        case ._default: return "Default"
+        case .custom: return "Custom"
+        case .off: return "Off"
+        }
+    }
+}
+
 internal class CountdownImage {
     
     //

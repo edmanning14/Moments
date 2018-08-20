@@ -936,8 +936,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         
         if collectionView == catalogImagesCollectionView {
             let _selectedImage = catalogImages[indexPath.section][indexPath.row]
-            selectedImage = _selectedImage
             locationForCellView = _selectedImage.recommendedLocationForCellView
+            selectedImage = _selectedImage
             selectedCatalogImageIndexPath = indexPath
         }
         else if collectionView == userPhotosCollectionView {
@@ -1157,10 +1157,10 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         if !success.contains(where: {$0 == false}) && needToDismissSelf {
             let appImage = selectedImage as! AppEventImage
             guard appImage.mainImage != nil && appImage.maskImage != nil else {return}
-            let newEventController = navigationController!.viewControllers[0] as! NewEventViewController
+            let newEventController = navigationController!.viewControllers[1] as! NewEventViewController
             newEventController.selectedImage = selectedImage
             self.dismiss(animated: true, completion: nil)
-            newEventController.dismiss(animated: true, completion: nil)
+            navigationController!.viewControllers[0].dismiss(animated: true, completion: nil)
             needToDismissSelf = false
         }
     }

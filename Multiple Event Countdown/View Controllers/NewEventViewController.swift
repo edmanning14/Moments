@@ -13,9 +13,9 @@ import QuartzCore
 import os.log
 import CloudKit
 import StoreKit
+import UserNotifications
 
-class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate, SKProductsRequestDelegate, CAAnimationDelegate {
-
+class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate, SKProductsRequestDelegate, CAAnimationDelegate, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate, EventTableViewCellDelegate {
     
     //
     // MARK: - Parameters
@@ -33,20 +33,24 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 master.categoryDidChange = true
             }
             if eventCategory != nil && eventCategory != "" {
-                categoryLabel.layer.add(labelTransition, forKey: "transition")
+                categoryLabel.layer.add(GlobalAnimations.labelTransition, forKey: "transition")
                 categoryLabel.text = eventCategory
                 categoryLabel.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 20.0)
                 
-                categoryInputViewLabel.layer.add(labelTransition, forKey: nil)
+                categoryInputViewLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 categoryInputViewLabel.text = eventCategory
                 categoryInputViewLabel.textColor = GlobalColors.cyanRegular
-                categoryProgressImageView?.tintColor = GlobalColors.taskCompleteColor
             }
             else {
-                categoryLabel.layer.add(labelTransition, forKey: "transition")
-                categoryLabel.text = InactiveConstants.Text.category
-                categoryLabel.font = InactiveConstants.Fonts.smallEmphasis
+                categoryLabel.layer.add(GlobalAnimations.labelTransition, forKey: "transition")
+                categoryLabel.text = Constants.InactiveCellTextTitles.category
+                categoryLabel.font = Constants.Fonts.smallEmphasis
             }
+            
+            let row = DataSource.data[0].rows.index(where: {$0.rowType == .category})!
+            optionsTableView.beginUpdates()
+            optionsTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+            optionsTableView.endUpdates()
             
             checkFinishButtonEnable()
             isUserChange = false
@@ -56,27 +60,29 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     var eventTitle: String? {
         didSet {
             if eventTitle != oldValue && !initialLoad && specialEvent != nil {
-                try! localPersistentStore.write {
-                    localPersistentStore.delete(specialEvent!)
+                try! mainRealm.write {
+                    mainRealm.delete(specialEvent!)
                     specialEvent = nil
                 }
                 needNewObject = true
             }
             
             if eventTitle != nil {
-                specialEventView!.titleLabel.layer.add(labelTransition, forKey: nil)
+                specialEventView!.titleLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 specialEventView!.eventTitle = eventTitle
                 specialEventView!.titleLabel.font = UIFont(name: GlobalFontNames.ralewayMedium, size: 22.0)
-                
-                titleProgressImageView?.tintColor = GlobalColors.taskCompleteColor
             }
             else {
-                specialEventView!.titleLabel.layer.add(labelTransition, forKey: nil)
-                specialEventView!.eventTitle = InactiveConstants.Text.title
-                specialEventView!.titleLabel.font = InactiveConstants.Fonts.largeEmphasis
+                specialEventView!.titleLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                specialEventView!.eventTitle = Constants.InactiveCellTextTitles.title
+                specialEventView!.titleLabel.font = Constants.Fonts.largeEmphasis
 
-                titleProgressImageView?.tintColor = GlobalColors.inactiveColor
             }
+            
+            let row = DataSource.data[0].rows.index(where: {$0.rowType == .title})!
+            optionsTableView.beginUpdates()
+            optionsTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+            optionsTableView.endUpdates()
             
             checkFinishButtonEnable()
         }
@@ -85,19 +91,22 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     var eventTagline: String? {
         didSet {
             if eventTagline != nil {
-                specialEventView!.taglineLabel.layer.add(labelTransition, forKey: nil)
+                specialEventView!.taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 specialEventView!.eventTagline = eventTagline
                 specialEventView!.taglineLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 18.0)
                 
-                taglineProgressImageView?.tintColor = GlobalColors.taskCompleteColor
             }
             else {
-                specialEventView!.taglineLabel.layer.add(labelTransition, forKey: nil)
-                specialEventView!.eventTagline = InactiveConstants.Text.tagline
-                specialEventView!.taglineLabel.font = InactiveConstants.Fonts.smallEmphasis
+                specialEventView!.taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                specialEventView!.eventTagline = Constants.InactiveCellTextTitles.tagline
+                specialEventView!.taglineLabel.font = Constants.Fonts.smallEmphasis
                 
-                taglineProgressImageView?.tintColor = GlobalColors.inactiveColor
             }
+            
+            let row = DataSource.data[0].rows.index(where: {$0.rowType == .tagline})!
+            optionsTableView.beginUpdates()
+            optionsTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+            optionsTableView.endUpdates()
             
             checkFinishButtonEnable()
         }
@@ -118,9 +127,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     eventDatePicker.datePickerMode = .date
                     eventDatePicker.date = eventDate!.date
                 }
-                dateProgressImageView?.tintColor = GlobalColors.taskCompleteColor
             }
-            else {isUserChange = false; dateProgressImageView?.tintColor = GlobalColors.optionalTaskIncompleteColor}
+            else {isUserChange = false}
             
             if eventDate != nil && oldValue == nil {
                 eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
@@ -131,6 +139,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 eventTimer?.invalidate()
                 eventTimer = nil
             }
+            
+            let row = DataSource.data[0].rows.index(where: {$0.rowType == .date})!
+            optionsTableView.beginUpdates()
+            optionsTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+            optionsTableView.endUpdates()
+            
             checkFinishButtonEnable()
             isUserChange = false
         }
@@ -139,21 +153,51 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     var creationDate = Date() {didSet {specialEventView!.creationDate = creationDate}}
     
     var abridgedDisplayMode = false {didSet {specialEventView?.abridgedDisplayMode = abridgedDisplayMode}}
+    var infoDisplayed = DisplayInfoOptions.tagline {
+        didSet {
+            specialEventView?.infoDisplayed = infoDisplayed
+            switch infoDisplayed {
+            case .date:
+                if currentInputViewState == .tagline {
+                    specialEventView?.taglineLabel.textColor = GlobalColors.taskCompleteColor
+                }
+                else {specialEventView?.taglineLabel.textColor = GlobalColors.cyanRegular}
+                specialEventView?.taglineLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 18.0)
+            case .tagline:
+                if eventTagline == nil {
+                    if currentInputViewState == .tagline {
+                        specialEventView?.taglineLabel.textColor = GlobalColors.taskCompleteColor
+                    }
+                    else {specialEventView?.taglineLabel.textColor = GlobalColors.inactiveColor}
+                    specialEventView?.taglineLabel.font = Constants.Fonts.smallEmphasis
+                }
+                else {
+                    if currentInputViewState == .tagline {
+                        specialEventView?.taglineLabel.textColor = GlobalColors.taskCompleteColor
+                    }
+                    else {specialEventView?.taglineLabel.textColor = GlobalColors.cyanRegular}
+                    specialEventView?.taglineLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 18.0)
+                }
+            case .none: break
+            }
+            
+        }
+    }
+    var repeats = RepeatingOptions.never {didSet {specialEventView?.repeats = repeats}}
     
     var selectedImage: UserEventImage? {
         didSet {
             if let image = selectedImage {
                 hideImageNilLabel(animated: false)
                 specialEventView?.setSelectedImage(image: image, locationForCellView: locationForCellView)
-                imageTitleLabel.layer.add(labelTransition, forKey: nil)
+                imageTitleLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 imageTitleLabel.textColor = GlobalColors.orangeRegular
-                imageProgressImageView?.tintColor = GlobalColors.taskCompleteColor
                 enableButton(editImageButton)
                 enableButton(useImageButton)
                 enableButton(useMaskButton)
                 
                 if let appImage = selectedImage as? AppEventImage {imageTitleLabel.text = "\"\(appImage.title)\""}
-                else {imageTitleLabel.text = "Your moment!"}
+                else {imageTitleLabel.text = Constants.defaultUserImageTitle}
                 
                 useImageButton.tintColor = UIColor.green
                 if useMask {useMaskButton.tintColor = UIColor.green} else {useMaskButton.tintColor = GlobalColors.inactiveColor}
@@ -163,10 +207,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             else {
                 specialEventView?.clearEventImage()
                 showImageNilLabel()
-                imageTitleLabel.layer.add(labelTransition, forKey: nil)
+                imageTitleLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 imageTitleLabel.text = noImageSelectedTextForTitle
                 imageTitleLabel.textColor = GlobalColors.inactiveColor
-                imageProgressImageView?.tintColor = GlobalColors.optionalTaskIncompleteColor
                 disableButton(editImageButton)
                 if previousSelectedImage == nil {disableButton(useImageButton)}
                 disableButton(useMaskButton)
@@ -174,6 +217,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 useMaskButton.tintColor = GlobalColors.inactiveColor
             }
             isUserChange = false
+            
+            let row = DataSource.data[0].rows.index(where: {$0.rowType == .image})!
+            optionsTableView.beginUpdates()
+            optionsTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+            optionsTableView.endUpdates()
+            
             checkFinishButtonEnable()
         }
     }
@@ -278,8 +327,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     //
     // MARK: Constants
-    struct InactiveConstants {
-        struct Text {
+    struct Constants {
+        struct InactiveCellTextTitles {
             static let title = "1. Title"
             static let date = "2. Date"
             static let image = "3. Image"
@@ -290,13 +339,15 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             static let largeEmphasis = UIFont(name: GlobalFontNames.ralewayMedium, size: 24.0)!
             static let smallEmphasis = UIFont(name: GlobalFontNames.ralewayRegular, size: 18.0)!
         }
+        static let defaultUserImageTitle = "Your cool moment!"
     }
     
     //
     // MARK: Persistence
     
-    fileprivate var localPersistentStore: Realm!
+    fileprivate var mainRealm: Realm!
     fileprivate var localImageInfo: Results<EventImageInfo>!
+    fileprivate var defaultNotificationsConfig: Results<DefaultNotificationsConfig>!
     fileprivate let userDefaultsContainer = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")
     fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
     
@@ -314,33 +365,22 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = GlobalColors.inactiveColor
-        label.text = InactiveConstants.Text.date
-        label.font = InactiveConstants.Fonts.largeEmphasis
+        label.text = Constants.InactiveCellTextTitles.date
+        label.font = Constants.Fonts.largeEmphasis
         return label
     }()
     fileprivate lazy var imageNilLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = GlobalColors.inactiveColor
-        label.text = InactiveConstants.Text.image
-        label.font = InactiveConstants.Fonts.smallEmphasis
+        label.text = Constants.InactiveCellTextTitles.image
+        label.font = Constants.Fonts.smallEmphasis
         return label
     }()
     @IBOutlet weak var imageTitleLabel: UILabel!
     
-    @IBOutlet weak var categoryButton: UIButton!
-    @IBOutlet weak var titleButton: UIButton!
-    @IBOutlet weak var dateButton: UIButton!
-    @IBOutlet weak var taglineButton: UIButton!
-    @IBOutlet weak var imageButton: UIButton!
+    @IBOutlet weak var optionsTableView: UITableView!
     @IBOutlet weak var finishButton: UIButton!
-    
-    fileprivate var categoryProgressImageView: UIImageView?
-    fileprivate var titleProgressImageView: UIImageView?
-    fileprivate var dateProgressImageView: UIImageView?
-    fileprivate var taglineProgressImageView: UIImageView?
-    fileprivate var imageProgressImageView: UIImageView?
-    fileprivate var finishProgressImageView: UIImageView?
     
     @IBOutlet weak var toolbarView: UIView!
     @IBOutlet weak var dataInputView: UIView!
@@ -380,40 +420,49 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    let labelTransition = CATransition()
+    //
+    // MARK: Notifications
+    fileprivate var eventNotificationsConfig = EventNotificationConfig()
 
+    //
+    // MARK: Input View State
     fileprivate var currentInputViewState: Inputs = .none {
         didSet {
             if currentInputViewState != oldValue {
                 switch oldValue {
                 case .category:
-                    if eventCategory == nil {
-                        categoryLabel.layer.add(labelTransition, forKey: "transition")
-                        categoryLabel.textColor = GlobalColors.inactiveColor
-                    }
-                    else {
-                        categoryLabel.layer.add(labelTransition, forKey: "transition")
-                        categoryLabel.textColor = GlobalColors.cyanRegular
-                    }
+                    categoryLabel.layer.add(GlobalAnimations.labelTransition, forKey: "transition")
+                    if eventCategory == nil {categoryLabel.textColor = GlobalColors.inactiveColor}
+                    else {categoryLabel.textColor = GlobalColors.cyanRegular}
                 case .title:
-                    if eventTitle == nil {
-                        specialEventView!.titleLabel.layer.add(labelTransition, forKey: "transition")
-                        specialEventView!.titleLabel.textColor = GlobalColors.inactiveColor
-                    }
-                    else {
-                        specialEventView!.titleLabel.layer.add(labelTransition, forKey: "transition")
-                        specialEventView!.titleLabel.textColor = GlobalColors.cyanRegular
-                    }
+                    specialEventView!.titleLabel.layer.add(GlobalAnimations.labelTransition, forKey: "transition")
+                    if eventTitle == nil {specialEventView!.titleLabel.textColor = GlobalColors.inactiveColor}
+                    else {specialEventView!.titleLabel.textColor = GlobalColors.cyanRegular}
                 case .tagline:
-                    if eventTagline == nil {
-                        specialEventView!.taglineLabel.layer.add(labelTransition, forKey: "transition")
-                        specialEventView!.taglineLabel.textColor = GlobalColors.inactiveColor
-                    }
-                    else {
-                        specialEventView!.taglineLabel.layer.add(labelTransition, forKey: "transition")
-                        specialEventView!.taglineLabel.textColor = GlobalColors.cyanRegular
-                    }
-                case .date: break
+                    specialEventView!.taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: "transition")
+                    if eventTagline == nil {specialEventView!.taglineLabel.textColor = GlobalColors.inactiveColor}
+                    else {specialEventView!.taglineLabel.textColor = GlobalColors.cyanRegular}
+                case .date:
+                    specialEventView!.abridgedInLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedYearsLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedMonthsLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedDaysLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedYearsTextLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedMonthsTextLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedDaysTextLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.abridgedAgoLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.tomorrowLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.agoLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.inLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.weeksLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.weeksColon.textColor = GlobalColors.cyanRegular
+                    specialEventView!.daysLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.daysColon.textColor = GlobalColors.cyanRegular
+                    specialEventView!.hoursLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.hoursColon.textColor = GlobalColors.cyanRegular
+                    specialEventView!.minutesLabel.textColor = GlobalColors.cyanRegular
+                    specialEventView!.minutesColon.textColor = GlobalColors.cyanRegular
+                    specialEventView!.secondsLabel.textColor = GlobalColors.cyanRegular
                 case .image:
                     if selectedImage == nil {
                         imageNilLabel.textColor = GlobalColors.inactiveColor
@@ -435,7 +484,26 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 case .date:
                     if eventDate == nil {eventDate = defaultEventDate}
                     oldDataValue = eventDate
-                    formatHighlight(label: dateNilLabel)
+                    formatHighlight(label: specialEventView!.abridgedInLabel)
+                    formatHighlight(label: specialEventView!.abridgedYearsLabel)
+                    formatHighlight(label: specialEventView!.abridgedMonthsLabel)
+                    formatHighlight(label: specialEventView!.abridgedDaysLabel)
+                    formatHighlight(label: specialEventView!.abridgedYearsTextLabel)
+                    formatHighlight(label: specialEventView!.abridgedMonthsTextLabel)
+                    formatHighlight(label: specialEventView!.abridgedDaysTextLabel)
+                    formatHighlight(label: specialEventView!.abridgedAgoLabel)
+                    formatHighlight(label: specialEventView!.tomorrowLabel)
+                    formatHighlight(label: specialEventView!.agoLabel)
+                    formatHighlight(label: specialEventView!.inLabel)
+                    formatHighlight(label: specialEventView!.weeksLabel)
+                    formatHighlight(label: specialEventView!.weeksColon)
+                    formatHighlight(label: specialEventView!.daysLabel)
+                    formatHighlight(label: specialEventView!.daysColon)
+                    formatHighlight(label: specialEventView!.hoursLabel)
+                    formatHighlight(label: specialEventView!.hoursColon)
+                    formatHighlight(label: specialEventView!.minutesLabel)
+                    formatHighlight(label: specialEventView!.minutesColon)
+                    formatHighlight(label: specialEventView!.secondsLabel)
                     if abridgedDisplayMode {
                         viewTransition(from: dateNilLabel, to: specialEventView!.abridgedTimerContainerView)
                     }
@@ -466,6 +534,36 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // MARK: Flags
     var initialLoad = true
     var needNewObject = true
+    
+    var expandedCellIndexPath: IndexPath? {
+        didSet {
+            if expandedCellIndexPath != oldValue {
+                if let _oldValue = oldValue, let oldCell = optionsTableView.cellForRow(at: _oldValue) as? SettingsTableViewCell {
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.3,
+                        delay: 0.0,
+                        options: .curveLinear,
+                        animations: {oldCell.optionsPickerView.layer.opacity = 0.0},
+                        completion: {(position) in
+                            oldCell.optionsPickerView.isHidden = true; oldCell.optionsPickerView.layer.opacity = 1.0
+                        }
+                    )
+                }
+                if let newValue = expandedCellIndexPath, let newCell = optionsTableView.cellForRow(at: newValue) as? SettingsTableViewCell {
+                    newCell.optionsPickerView.layer.opacity = 0.0
+                    newCell.optionsPickerView.isHidden = false
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.3,
+                        delay: 0.0,
+                        options: .curveLinear,
+                        animations: {newCell.optionsPickerView.layer.opacity = 1.0},
+                        completion: nil
+                    )
+                }
+                optionsTableView.beginUpdates(); optionsTableView.endUpdates()
+            }
+        }
+    }
     
     override var canBecomeFirstResponder: Bool {return true}
     override var canResignFirstResponder: Bool {return true}
@@ -514,6 +612,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEventViewContainer.bottomAnchor.constraint(equalTo: specialEventView!.bottomAnchor).isActive = true
                 specialEventViewContainer.leftAnchor.constraint(equalTo: specialEventView!.leftAnchor).isActive = true
                 specialEventView!.configuration = .cell
+                specialEventView!.delegate = self
                 
                 specialEventView!.viewWithMargins.layer.cornerRadius = 3.0
                 specialEventView!.viewWithMargins.layer.masksToBounds = true
@@ -525,6 +624,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
         }
         
+        optionsTableView.delegate = self
+        optionsTableView.dataSource = self
+        optionsTableView.sectionHeaderHeight = 40.0
+        let settingsRowNib = UINib(nibName: "SettingsTableViewCell", bundle: nil)
+        optionsTableView.register(settingsRowNib, forCellReuseIdentifier: DataSource.ReuseIdentifiers.section2)
+        
         doneButton = UIBarButtonItem()
         doneButton.target = self
         doneButton.action = #selector(finish(_:))
@@ -532,6 +637,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
         doneButton.setTitleTextAttributes(attributes, for: .normal)
         doneButton.setTitleTextAttributes(attributes, for: .disabled)
+        
+        finishButton.layer.cornerRadius = GlobalCornerRadii.material
         
         navigationItem.rightBarButtonItem = doneButton
         if locationForCellView == nil {doneButton.isEnabled = false}
@@ -551,17 +658,14 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         let screenHeight = UIScreen.main.bounds.size.height
         let screenWidth = UIScreen.main.bounds.size.width
         if screenHeight >= 667.0 && screenWidth >= 375.0 {navigationItem.largeTitleDisplayMode = .always}
-        
-        labelTransition.duration = 0.3
-        labelTransition.type = kCATransitionFade
 
         setupGestureRecognizers()
         configureInputView()
-        configureOptionsView()
+        //configureOptionsView()
         
         if let categories = userDefaultsContainer?.value(forKey: "Categories") as? [String] {
             for category in categories {
-                if category != "Favorites" || category != "Previous" || category != "Uncategorized" {selectableCategories.append(category)}
+                if !immutableCategories.contains(category) {selectableCategories.append(category)}
             }
         }
         else {
@@ -577,27 +681,32 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
         
-        localPersistentStore = try! Realm(configuration: realmConfig)
+        mainRealm = try! Realm(configuration: realmConfig)
         fetchLocalImages()
+        defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
-        if specialEvent != nil {
+        if let event = specialEvent{
             needNewObject = false
 
-            eventCategory = specialEvent!.category
-            eventTitle = specialEvent!.title
-            if let tagline = specialEvent!.tagline {eventTagline = tagline}
+            eventCategory = event.category
+            eventTitle = event.title
+            if let tagline = event.tagline {eventTagline = tagline}
             else {eventTagline = nil}
-            eventDate = EventDate(date: specialEvent!.date!.date, dateOnly: specialEvent!.date!.dateOnly)
+            eventDate = EventDate(date: event.date!.date, dateOnly: event.date!.dateOnly)
             
-            creationDate = specialEvent!.creationDate
-            abridgedDisplayMode = specialEvent!.abridgedDisplayMode
-            useMask = specialEvent!.useMask
+            creationDate = event.creationDate
+            abridgedDisplayMode = event.abridgedDisplayMode
+            useMask = event.useMask
             
-            if let intLocationForCellView = specialEvent!.locationForCellView.value {
+            if let RealmNotificationsConfig = event.notificationsConfig {
+                eventNotificationsConfig = EventNotificationConfig(fromRealmEventNotificationConfig: RealmNotificationsConfig)
+            }
+            
+            if let intLocationForCellView = event.locationForCellView.value {
                 locationForCellView = CGFloat(intLocationForCellView) / 100.0
             }
             
-            if let imageInfo = specialEvent!.image {
+            if let imageInfo = event.image {
                 if imageInfo.isAppImage {selectedImage = AppEventImage(fromEventImageInfo: imageInfo)}
                 else {selectedImage = UserEventImage(fromEventImageInfo: imageInfo)}
             }
@@ -606,23 +715,29 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             specialEventView!.update()
         }
         else {
+            var newNotifs = [RealmEventNotification]()
+            for realmNotif in defaultNotificationsConfig[0].eventNotifications {
+                newNotifs.append(realmNotif)
+            }
+            
             specialEventView!.viewWithMargins.addSubview(dateNilLabel)
             specialEventView!.viewWithMargins.bottomAnchor.constraint(equalTo: dateNilLabel.bottomAnchor, constant: 8.0).isActive = true
             specialEventView!.viewWithMargins.rightAnchor.constraint(equalTo: dateNilLabel.rightAnchor, constant: 8.0).isActive = true
             specialEventView!.timerContainerView.isHidden = true
             specialEventView!.abridgedTimerContainerView.isHidden = true
+            specialEventView!.useMask = true
             
-            categoryLabel.text = InactiveConstants.Text.category
+            categoryLabel.text = Constants.InactiveCellTextTitles.category
             categoryLabel.textColor = GlobalColors.inactiveColor
-            categoryLabel.font = InactiveConstants.Fonts.smallEmphasis
+            categoryLabel.font = Constants.Fonts.smallEmphasis
             
-            specialEventView!.titleLabel.text = InactiveConstants.Text.title
+            specialEventView!.eventTitle = Constants.InactiveCellTextTitles.title
             specialEventView!.titleLabel.textColor = GlobalColors.inactiveColor
-            specialEventView!.titleLabel.font = InactiveConstants.Fonts.largeEmphasis
+            specialEventView!.titleLabel.font = Constants.Fonts.largeEmphasis
             
-            specialEventView!.taglineLabel.text = InactiveConstants.Text.tagline
+            specialEventView!.eventTagline = Constants.InactiveCellTextTitles.tagline
             specialEventView!.taglineLabel.textColor = GlobalColors.inactiveColor
-            specialEventView!.taglineLabel.font = InactiveConstants.Fonts.smallEmphasis
+            specialEventView!.taglineLabel.font = Constants.Fonts.smallEmphasis
             
             showImageNilLabel(animated: false)
             
@@ -673,8 +788,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         let backgroundThread = DispatchQueue(label: "background", qos: .background, target: nil)
         backgroundThread.async {
-            let realm = try! Realm(configuration: realmConfig)
-            let allImages = realm.objects(EventImageInfo.self)
+            let imageCleanupRealm = try! Realm(configuration: realmConfig)
+            let allImages = imageCleanupRealm.objects(EventImageInfo.self)
             for imageInfo in allImages {
                 if imageInfo.specialEvents.isEmpty && imageInfo.isAppImage == false {
                     let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -682,7 +797,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     let saveDest = documentsURL.appendingPathComponent(fileName + ".jpg", isDirectory: false)
                     do {
                         try FileManager.default.removeItem(at: saveDest)
-                        try realm.write {realm.delete(imageInfo)}
+                        try imageCleanupRealm.write {imageCleanupRealm.delete(imageInfo)}
                     }
                     catch {
                         // TODO: Error Handling
@@ -726,6 +841,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // Date Picker
     
     @IBAction func datePickerDateDidChange(_ sender: UIDatePicker) {
+        let todaysDate = Date()
+        let timeInterval = sender.date.timeIntervalSince(todaysDate)
+        if timeInterval < 0.0 {repeats = .never}
+        
         isUserChange = true
         var currentDateComponents: DateComponents!
         currentDateComponents = currentCalendar.dateComponents(calendarComponentsOfInterest, from: eventDate!.date)
@@ -849,11 +968,92 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     
     //
+    // MARK: TitleDetailTableViewCellDelegate
+    func selectedOptionDidUpdate(cell: SettingsTableViewCell) {
+        if let indexPath = optionsTableView.indexPath(for: cell), let selectedOption = cell.selectedOption {
+            switch DataSource.data[indexPath.section].rows[indexPath.row].rowType {
+            case .repeats:
+                switch selectedOption.text {
+                case RepeatingOptions.never.displayText: repeats = .never
+                case RepeatingOptions.monthly.displayText: repeats = .monthly
+                case RepeatingOptions.yearly.displayText: repeats = .yearly
+                default:
+                    // TODO: log an error
+                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                }
+            case .timerDisplayMode:
+                switch selectedOption {
+                case DataSource.data[1].rows[1].options![0]: abridgedDisplayMode = false //Detailed
+                case DataSource.data[1].rows[1].options![1]: abridgedDisplayMode = true //Abridged
+                default:
+                    // TODO: log an error
+                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                }
+            case .infoDisplayed:
+                switch selectedOption.text {
+                case DisplayInfoOptions.none.displayText: infoDisplayed = .none
+                case DisplayInfoOptions.tagline.displayText: infoDisplayed = .tagline
+                case DisplayInfoOptions.date.displayText: infoDisplayed = .date
+                default:
+                    // TODO: log an error
+                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                }
+            case .notifications:
+                switch selectedOption {
+                case DataSource.data[1].rows[3].options![0]: break //Default
+                case DataSource.data[1].rows[3].options![1]: break //Custom
+                default:
+                    // TODO: log an error
+                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                }
+            default:
+                // TODO: break //it's section 1
+                fatalError("Unexpected cell encountered! Do you need to add a new one?")
+            }
+        }
+    }
+    
+    //
+    // MARK: EventTableViewCellDelegate
+    func eventDateRepeatTriggered(cell: EventTableViewCell, newDate: EventDate) {
+        let master = navigationController!.viewControllers[0] as! MasterViewController
+        master.dateDidChange = true
+        eventDate = newDate
+    }
+    
+    //
     // MARK: From storyboard actions
     @IBAction func unwindToViewController(segue: UIStoryboardSegue) {
         if let sender = segue.source as? ImagePreviewViewController {
             locationForCellView = sender.locationForCellView
             selectedImage = sender.selectedImage
+        }
+    }
+    
+    @IBAction func unwindFromCustomEventNotifications(segue: UIStoryboardSegue) {
+        
+        if let configureNotificationsController = segue.source as? ConfigureNotificationsTableViewController {
+            
+            eventNotificationsConfig.eventNotifications = configureNotificationsController.modifiedEventNotifications
+            eventNotificationsConfig.eventNotificationsOn = configureNotificationsController.globalToggleOn
+            eventNotificationsConfig.isCustom = configureNotificationsController.useCustomNotifications
+            
+            let section = DataSource.data.index(where: {$0.title == "Configure Event"})!
+            let row = DataSource.data[section].rows.index(where: {$0.rowType == .notifications})!
+            let cellToModify = optionsTableView.cellForRow(at: IndexPath(row: row, section: section)) as! SettingsTableViewCell
+            
+            if !eventNotificationsConfig.eventNotificationsOn {
+                let index = DataSource.data[section].rows[row].options!.index(where: {$0.text == NotificationsOptions.off.displayText})!
+                cellToModify.selectedOption = DataSource.data[section].rows[row].options![index]
+            }
+            else if eventNotificationsConfig.isCustom {
+                let index = DataSource.data[section].rows[row].options!.index(where: {$0.text == NotificationsOptions.custom.displayText})!
+                cellToModify.selectedOption = DataSource.data[section].rows[row].options![index]
+            }
+            else {
+                let index = DataSource.data[section].rows[row].options!.index(where: {$0.text == NotificationsOptions._default.displayText})!
+                cellToModify.selectedOption = DataSource.data[section].rows[row].options![index]
+            }
         }
     }
     
@@ -863,15 +1063,285 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     
     //
-    // Picker View
+    // Table View
     
+    
+    struct DataSource {
+        
+        struct Section {
+            let title: String
+            let rows: [Row]
+            
+            init(title: String, rows: [Row]) {self.title = title; self.rows = rows}
+        }
+        struct Row {
+            enum RowTypes {
+                case title, date, image, category, tagline, repeats, timerDisplayMode, infoDisplayed, notifications
+                
+                var title: String {
+                    switch self {
+                    case .title: return Constants.InactiveCellTextTitles.title
+                    case .date: return Constants.InactiveCellTextTitles.date
+                    case .image: return Constants.InactiveCellTextTitles.image
+                    case .category: return Constants.InactiveCellTextTitles.category
+                    case .tagline: return Constants.InactiveCellTextTitles.tagline
+                    case .repeats: return "Repeats"
+                    case .timerDisplayMode: return "Timer Display Mode"
+                    case .infoDisplayed: return "Info Displayed"
+                    case .notifications: return "Notifications"
+                    }
+                }
+                
+                var options: [SettingsTypeDataSource.Option]? {
+                    switch self {
+                    case .title: return nil
+                    case .date: return nil
+                    case .image: return nil
+                    case .category: return nil
+                    case .tagline: return nil
+                    case .repeats: return [
+                        SettingsTypeDataSource.Option(text: RepeatingOptions.never.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: RepeatingOptions.monthly.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: RepeatingOptions.yearly.displayText, action: nil)
+                    ]
+                    case .timerDisplayMode: return [
+                        SettingsTypeDataSource.Option(text: "Detailed", action: nil),
+                        SettingsTypeDataSource.Option(text: "Abridged", action: nil),
+                    ]
+                    case .infoDisplayed: return [
+                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.none.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.tagline.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.date.displayText, action: nil)
+                    ]
+                    case .notifications: return [
+                        SettingsTypeDataSource.Option(text: NotificationsOptions._default.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: NotificationsOptions.custom.displayText, action: nil),
+                        SettingsTypeDataSource.Option(text: NotificationsOptions.off.displayText, action: nil)
+                    ]
+                    }
+                }
+            }
+            
+            let rowType: RowTypes
+            let title: String
+            let options: [SettingsTypeDataSource.Option]?
+            
+            init(rowType: RowTypes) {self.rowType = rowType; self.title = rowType.title; self.options = rowType.options}
+        }
+        //static let eventInfoData = [Inputs.title, Inputs.date, Inputs.image, Inputs.category, Inputs.tagline]
+
+        struct ReuseIdentifiers {
+            static let section1 = "Title Only"
+            static let section2 = "Title/Detail"
+        }
+        
+        static let data = [
+            Section(title: "Event Info", rows: [
+                Row(rowType: .title),
+                Row(rowType: .date),
+                Row(rowType: .image),
+                Row(rowType: .category),
+                Row(rowType: .tagline)
+                ]
+            ),
+            Section(title: "Configure Event", rows: [
+                Row(rowType: .repeats),
+                Row(rowType: .timerDisplayMode),
+                Row(rowType: .infoDisplayed),
+                Row(rowType: .notifications)
+                ]
+            )
+        ]
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {return DataSource.data.count}
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return DataSource.data[section].rows.count
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if let options = DataSource.data[indexPath.section].rows[indexPath.row].options { // It's section 2
+            if let cell = tableView.cellForRow(at: indexPath) as? SettingsTableViewCell {
+                switch cell.rowType {
+                case .selectOption:
+                    if options.count > 2 {
+                        if expandedCellIndexPath != indexPath {
+                            expandedCellIndexPath = indexPath
+                            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .top)
+                        }
+                        else {expandedCellIndexPath = nil}
+                    }
+                    else {expandedCellIndexPath = nil; cell.selectNextOption()}
+                case .segue:
+                    performSegue(withIdentifier: "Configure Notifications", sender: self)
+                case .action, .onOrOff:
+                    // TODO: break
+                    fatalError("Need implementation!")
+                }
+            }
+        }
+        else { // It's section 1
+            expandedCellIndexPath = nil
+            switch DataSource.data[indexPath.section].rows[indexPath.row].rowType {
+            case .title: currentInputViewState = .title
+            case .date: currentInputViewState = .date
+            case .image: currentInputViewState = .image
+            case .category: currentInputViewState = .category
+            case .tagline: currentInputViewState = .tagline
+            default:
+                // TODO: break
+                fatalError("Unexpected cell title encountered!")
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 1 {
+            if let selectedIP = expandedCellIndexPath, indexPath == selectedIP {
+                return SettingsTableViewCell.expandedHeight
+            }
+            else {return SettingsTableViewCell.collapsedHeight}
+        }
+        else if indexPath.section == 0 {return TitleOnlyTableViewCell.cellHeight}
+        else {
+            // TODO: Remove this, provide a standard height.
+            fatalError("Unknown cell encoutntered!")
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50.0
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return titleOnlyHeaderView(title: DataSource.data[section].title)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.textLabel!.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 20.0)
+            headerView.textLabel!.textColor = GlobalColors.orangeRegular
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if let options = DataSource.data[indexPath.section].rows[indexPath.row].options {
+            let cell = tableView.dequeueReusableCell(withIdentifier: DataSource.ReuseIdentifiers.section2) as! SettingsTableViewCell
+            cell.selectionStyle = .none
+            cell.optionsPickerView.dataSource = cell
+            cell.optionsPickerView.delegate = cell
+            if !cell.optionsPickerView.constraints.contains(where: {$0.firstAnchor == cell.optionsPickerView.widthAnchor}) {
+                cell.optionsPickerView.widthAnchor.constraint(equalToConstant: optionsView.bounds.width / 2).isActive = true
+            }
+            cell.optionsPickerView.backgroundColor = GlobalColors.lightGrayForFills
+            cell.optionsPickerView.layer.cornerRadius = GlobalCornerRadii.material
+            cell.title = DataSource.data[indexPath.section].rows[indexPath.row].title
+            cell.options = options
+            cell.delegate = self
+            
+            switch DataSource.data[indexPath.section].rows[indexPath.row].rowType {
+            case .repeats:
+                cell.rowType = .selectOption
+                cell.selectedOption = options[options.index(where: {$0.text == repeats.displayText})!]
+            case .timerDisplayMode:
+                cell.rowType = .selectOption
+                if abridgedDisplayMode {cell.selectedOption = options[1]}
+                else {cell.selectedOption = options[0]}
+            case .infoDisplayed:
+                cell.rowType = .selectOption
+                cell.selectedOption = options[options.index(where: {$0.text == infoDisplayed.displayText})!]
+            case .notifications:
+                cell.rowType = .segue
+                if let config = specialEvent?.notificationsConfig {
+                    if config.eventNotificationsOn {
+                        if config.isCustom {cell.selectedOption = options[1]}
+                        else {cell.selectedOption = options[0]}
+                    }
+                    else {cell.selectedOption = options[2]}
+                }
+            default:
+                // TODO: break // it's section 1
+                fatalError("Unexpected option encountered! Do you need to add a new one?")
+            }
+            
+            return cell
+        }
+        else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: DataSource.ReuseIdentifiers.section1) as! TitleOnlyTableViewCell
+            switch DataSource.data[indexPath.section].rows[indexPath.row].rowType {
+            case .title:
+                if let title = eventTitle {
+                    cell.title = title
+                    cell.titleLabel.textColor = GlobalColors.cyanRegular
+                }
+                else {
+                    cell.title = Constants.InactiveCellTextTitles.title
+                    cell.titleLabel.textColor = GlobalColors.inactiveColor
+                }
+            case .date:
+                if let date = eventDate {
+                    cell.title = longDateFormater.string(from: date.date)
+                    cell.titleLabel.textColor = GlobalColors.cyanRegular
+                }
+                else {
+                    cell.title = Constants.InactiveCellTextTitles.date
+                    cell.titleLabel.textColor = GlobalColors.inactiveColor
+                }
+            case .image:
+                if let image = selectedImage {
+                    if let appImage = image as? AppEventImage {cell.title = "\"\(appImage.title)\""}
+                    else {cell.title = Constants.defaultUserImageTitle}
+                    cell.titleLabel.textColor = GlobalColors.cyanRegular
+                }
+                else {
+                    cell.title = Constants.InactiveCellTextTitles.image
+                    cell.titleLabel.textColor = GlobalColors.inactiveColor
+                }
+            case .category:
+                if let category = eventCategory {
+                    cell.title = category
+                    cell.titleLabel.textColor = GlobalColors.cyanRegular
+                }
+                else {
+                    cell.title = Constants.InactiveCellTextTitles.category
+                    cell.titleLabel.textColor = GlobalColors.inactiveColor
+                }
+            case .tagline:
+                if let tagline = eventTagline {
+                    cell.title = tagline
+                    cell.titleLabel.textColor = GlobalColors.cyanRegular
+                }
+                else {
+                    cell.title = Constants.InactiveCellTextTitles.tagline
+                    cell.titleLabel.textColor = GlobalColors.inactiveColor
+                }
+            default:
+                // TODO: break
+                fatalError("Unrecognized options title handled!")
+            }
+            return cell
+        }
+    }
+    
+    //
+    // Picker View
     func numberOfComponents(in pickerView: UIPickerView) -> Int {return 1}
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return selectableCategories.count
     }
-    func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-        let stringToReturn = selectableCategories[row]
-        return NSAttributedString(string: stringToReturn, attributes: [NSAttributedStringKey.foregroundColor: GlobalColors.orangeRegular])
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        var _viewToReturn = view as? UILabel
+        if _viewToReturn == nil {
+            _viewToReturn = UILabel()
+            if pickerView == categoryPickerView {_viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayLight, size: 20.0)}
+            else {_viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayLight, size: 14.0)}
+            _viewToReturn!.textColor = GlobalColors.cyanRegular
+            _viewToReturn!.textAlignment = .center
+        }
+        let viewToReturn = _viewToReturn!
+        viewToReturn.text = selectableCategories[row]
+        return viewToReturn
     }
     
     //
@@ -898,6 +1368,13 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 destination.catalogImages.addImages(cachedImages)
                 destination.networkState = currentNetworkState
                 selectImageController = destination
+            case "Configure Notifications":
+                let destination = segue.destination as! ConfigureNotificationsTableViewController
+                destination.modifiedEventNotifications = eventNotificationsConfig.eventNotifications
+                destination.configuring = .eventReminders
+                destination.segueFrom = .individualEvent
+                destination.globalToggleOn = eventNotificationsConfig.eventNotificationsOn
+                destination.useCustomNotifications = eventNotificationsConfig.isCustom
             default:
                 // TODO: Error Handling
                 print("Unhandled Segue: \(ident)")
@@ -918,10 +1395,27 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 currentInputViewState = .title
             }
             else if specialEventView!.taglineLabel.frame.contains(sender.location(in: specialEventView!)) {
-                currentInputViewState = .tagline
+                if currentInputViewState == .tagline {
+                    switch infoDisplayed {
+                    case .tagline: infoDisplayed = .date
+                    case .date: infoDisplayed = .tagline
+                    case .none: break
+                    }
+                    let row = DataSource.data[1].rows.index(where: {$0.rowType == .infoDisplayed})!
+                    optionsTableView.beginUpdates()
+                    optionsTableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                    optionsTableView.endUpdates()
+                }
+                else {currentInputViewState = .tagline}
             }
             else if specialEventView!.timerContainerView.frame.contains(sender.location(in: specialEventView!)) || specialEventView!.abridgedTimerContainerView.frame.contains(sender.location(in: specialEventView!)) {
-                if currentInputViewState == .date {abridgedDisplayMode = !abridgedDisplayMode}
+                if currentInputViewState == .date {
+                    abridgedDisplayMode = !abridgedDisplayMode
+                    let row = DataSource.data[1].rows.index(where: {$0.rowType == .timerDisplayMode})!
+                    optionsTableView.beginUpdates()
+                    optionsTableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                    optionsTableView.endUpdates()
+                }
                 else {currentInputViewState = .date}
             }
             else if specialEventView!.frame.contains(sender.location(in: specialEventView!)) {
@@ -946,7 +1440,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         if needNewObject {
             let titlePredicate = NSPredicate(format: "title = %@", argumentArray: [eventTitle!])
-            let existingEvent = localPersistentStore.objects(SpecialEvent.self).filter(titlePredicate)
+            let existingEvent = mainRealm.objects(SpecialEvent.self).filter(titlePredicate)
             guard existingEvent.isEmpty else {
                 let alert = UIAlertController(title: "Event Already Exists", message: "An event with this title already exists. Did you want to replace that event with this one?", preferredStyle: .alert)
                 let yesAction = UIAlertAction(title: "Yes please!", style: .default) { (action) in
@@ -963,14 +1457,45 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 self.present(alert, animated: true, completion: nil)
                 return
             }
+            
             createNewObject(overwrite: false)
         }
         else {
-            try! localPersistentStore.write {
+            try! mainRealm.write {
                 specialEvent!.category = eventCategory ?? "Uncatagorized"
                 specialEvent!.tagline = eventTagline
                 specialEvent!.date = eventDate!
                 specialEvent!.abridgedDisplayMode = abridgedDisplayMode
+                specialEvent!.infoDisplayed = infoDisplayed.displayText
+                specialEvent!.repeats = repeats.displayText
+                
+                if specialEvent!.notificationsConfig != nil {
+                    mainRealm.delete(specialEvent!.notificationsConfig!)
+                    specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
+                }
+                
+                /*if specialEvent?.notificationsConfig != nil {
+                    specialEvent!.notificationsConfig!.eventNotificationsOn = eventNotificationsConfig.eventNotificationsOn
+                    specialEvent!.notificationsConfig!.isCustom = eventNotificationsConfig.isCustom
+                    for (i, notif) in eventNotificationsConfig.eventNotifications.enumerated() {
+                        notif.type = eventNotificationsConfig.eventNotifications[i].type.stringEquivalent
+                        notif.uuid = eventNotificationsConfig.eventNotifications[i].uuid
+                        if notif.notificationComponents != nil {
+                            notif.notificationComponents!.month.value = eventNotificationsConfig.eventNotifications[i].components?.month
+                            notif.notificationComponents!.day.value = eventNotificationsConfig.eventNotifications[i].components?.day
+                            notif.notificationComponents!.hour.value = eventNotificationsConfig.eventNotifications[i].components?.hour
+                            notif.notificationComponents!.minute.value = eventNotificationsConfig.eventNotifications[i].components?.minute
+                            notif.notificationComponents!.second.value = eventNotificationsConfig.eventNotifications[i].components?.second
+                        }
+                        else {
+                            notif.notificationComponents = RealmEventNotificationComponents(fromDateComponents: eventNotificationsConfig.eventNotifications[i].components)
+                        }
+                    }
+                }
+                else {
+                    specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
+                }*/
+                
                 specialEvent!.useMask = useMask
                 if let _selectedImage = selectedImage {
                     if specialEvent?.image == nil || specialEvent!.image!.title != _selectedImage.title {
@@ -987,6 +1512,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     specialEvent!.locationForCellView.value = Int(_locationForCellView * 100.0)
                 }
             }
+            
+            scheduleNewEvents(titled: [eventTitle!])
         }
         
         navigationController!.popViewController(animated: true)
@@ -995,11 +1522,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     @objc fileprivate func handleInputToolbarButtonTap(_ sender: UIButton) {
         if textInputAccessoryView?.isFirstResponder ?? false {dismissKeyboard()}
         if sender == nextInputButton || sender == textInputAccessoryView?.nextInputButton {
-            if eventCategory == nil {currentInputViewState = .category}
-            else if eventTitle == nil {currentInputViewState = .title}
+            if eventTitle == nil {currentInputViewState = .title}
             else if eventDate == nil {currentInputViewState = .date}
-            else if eventTagline == nil {currentInputViewState = .tagline}
             else if selectedImage == nil {currentInputViewState = .image}
+            else if eventCategory == nil {currentInputViewState = .category}
+            else if eventTagline == nil {currentInputViewState = .tagline}
             else {currentInputViewState = .none}
         }
         else if sender == enterDataButton || sender == textInputAccessoryView?.doneInputButton {currentInputViewState = .none}
@@ -1115,17 +1642,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         textInputAccessoryView?.textInputField.resignFirstResponder()
         textInputAccessoryView?.isHidden = true
         textInputAccessoryView?.textInputField.text = nil
-    }
-    
-    @objc fileprivate func handleOptionsButtonTap(_ sender: UIButton) {
-        switch sender.title(for: .selected) {
-        case "CATEGORY": currentInputViewState = .category
-        case "TITLE": currentInputViewState = .title
-        case "TAGLINE": currentInputViewState = .tagline
-        case "DATE": currentInputViewState = .date
-        case "IMAGE": currentInputViewState = .image
-        default: fatalError()
-        }
     }
     
     /*@objc fileprivate func handleDateTap(_ sender: UITapGestureRecognizer) {
@@ -1269,63 +1785,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    fileprivate func configureOptionsView() {
-        
-        categoryButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
-        titleButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
-        taglineButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
-        dateButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
-        imageButton.addTarget(self, action: #selector(handleOptionsButtonTap(_:)), for: .touchUpInside)
-        
-        configureButton(finishButton)
-        
-        let progressImage = #imageLiteral(resourceName: "InputProgressImage")
-        let finishButtonProgressImage = #imageLiteral(resourceName: "FinishButtonProgressImage")
-        let spacing: CGFloat = 15.0
-        
-        categoryProgressImageView = UIImageView(image: progressImage)
-        categoryProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        categoryProgressImageView!.tintColor = GlobalColors.inactiveColor
-        optionsView.addSubview(categoryProgressImageView!)
-        categoryButton.centerYAnchor.constraint(equalTo: categoryProgressImageView!.centerYAnchor).isActive = true
-        categoryButton.leftAnchor.constraint(equalTo: categoryProgressImageView!.rightAnchor, constant: spacing).isActive = true
-        
-        titleProgressImageView = UIImageView(image: progressImage)
-        titleProgressImageView!.tintColor = GlobalColors.inactiveColor
-        titleProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        optionsView.addSubview(titleProgressImageView!)
-        titleButton.centerYAnchor.constraint(equalTo: titleProgressImageView!.centerYAnchor).isActive = true
-        titleButton.leftAnchor.constraint(equalTo: titleProgressImageView!.rightAnchor, constant: spacing).isActive = true
-        
-        dateProgressImageView = UIImageView(image: progressImage)
-        dateProgressImageView!.tintColor = GlobalColors.inactiveColor
-        dateProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        optionsView.addSubview(dateProgressImageView!)
-        dateButton.centerYAnchor.constraint(equalTo: dateProgressImageView!.centerYAnchor).isActive = true
-        dateButton.leftAnchor.constraint(equalTo: dateProgressImageView!.rightAnchor, constant: spacing).isActive = true
-        
-        taglineProgressImageView = UIImageView(image: progressImage)
-        taglineProgressImageView!.tintColor = GlobalColors.optionalTaskIncompleteColor
-        taglineProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        optionsView.addSubview(taglineProgressImageView!)
-        taglineButton.centerYAnchor.constraint(equalTo: taglineProgressImageView!.centerYAnchor).isActive = true
-        taglineButton.leftAnchor.constraint(equalTo: taglineProgressImageView!.rightAnchor, constant: spacing).isActive = true
-        
-        imageProgressImageView = UIImageView(image: progressImage)
-        imageProgressImageView!.tintColor = GlobalColors.optionalTaskIncompleteColor
-        imageProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        optionsView.addSubview(imageProgressImageView!)
-        imageButton.centerYAnchor.constraint(equalTo: imageProgressImageView!.centerYAnchor).isActive = true
-        imageButton.leftAnchor.constraint(equalTo: imageProgressImageView!.rightAnchor, constant: spacing).isActive = true
-        
-        finishProgressImageView = UIImageView(image: finishButtonProgressImage)
-        finishProgressImageView!.tintColor = GlobalColors.inactiveColor
-        finishProgressImageView!.translatesAutoresizingMaskIntoConstraints = false
-        optionsView.addSubview(finishProgressImageView!)
-        finishButton.centerYAnchor.constraint(equalTo: finishProgressImageView!.centerYAnchor).isActive = true
-        finishButton.leftAnchor.constraint(equalTo: finishProgressImageView!.rightAnchor, constant: spacing).isActive = true
-    }
-    
     fileprivate func configureInputView() -> Void {
     
         nextInputButton.addTarget(self, action: #selector(handleInputToolbarButtonTap(_:)), for: .touchUpInside)
@@ -1416,7 +1875,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     
     fileprivate func formatHighlight(label: UILabel) {
-        label.layer.add(labelTransition, forKey: nil)
+        label.layer.add(GlobalAnimations.labelTransition, forKey: nil)
         label.textColor = UIColor.green
     }
     
@@ -1454,6 +1913,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             },
             completion: { [weak self] (position) in
                 if self != nil {
+                    self!.expandedCellIndexPath = nil
                     self!.dataInputView.isUserInteractionEnabled = false
                     self!.dataInputView.isHidden = true
                     self!.optionsView.isUserInteractionEnabled = false
@@ -1603,7 +2063,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate func fetchLocalImages() {
         
         let filterPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [true])
-        localImageInfo = localPersistentStore.objects(EventImageInfo.self).filter(filterPredicate)
+        localImageInfo = mainRealm.objects(EventImageInfo.self).filter(filterPredicate)
         
         var imagesToReturn = [AppEventImage]()
         
@@ -1778,42 +2238,51 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         return Date(timeIntervalSinceReferenceDate: timeIntervalToReturn)
     }
     
-    fileprivate func getEventImageInfo() -> EventImageInfo {
-        if !selectedImage!.imagesAreSavedToDisk {
-            let results = selectedImage!.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
-            if results.contains(false) {
-                // TODO: Error Handling
-                fatalError("Images were unable to be saved to the disk!")
+    fileprivate func getEventImageInfo() -> EventImageInfo? {
+        if let image = selectedImage {
+            if !image.imagesAreSavedToDisk {
+                let results = image.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
+                if results.contains(false) {
+                    // TODO: return nil Error Handling
+                    fatalError("Images were unable to be saved to the disk!")
+                }
+            }
+            if let appImage = image as? AppEventImage {
+                if let i = localImageInfo.index(where: {$0.title == appImage.title}) {return localImageInfo[i]}
+                else {return EventImageInfo(fromEventImage: appImage)}
+            }
+            else {
+                let localUserImagesPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [false])
+                let localUserImageInfos = mainRealm.objects(EventImageInfo.self).filter(localUserImagesPredicate)
+                if let i = localUserImageInfos.index(where: {$0.title == image.title}) {
+                    return localUserImageInfos[i]
+                }
+                else {return EventImageInfo(fromEventImage: image)}
             }
         }
-        if let appImage = selectedImage! as? AppEventImage {
-            if let i = localImageInfo.index(where: {$0.title == appImage.title}) {return localImageInfo[i]}
-            else {return EventImageInfo(fromEventImage: appImage)}
-        }
-        else {
-            let localUserImagesPredicate = NSPredicate(format: "isAppImage = %@", argumentArray: [false])
-            let localUserImageInfos = localPersistentStore.objects(EventImageInfo.self).filter(localUserImagesPredicate)
-            if let i = localUserImageInfos.index(where: {$0.title == selectedImage!.title}) {
-                return localUserImageInfos[i]
-            }
-            else {return EventImageInfo(fromEventImage: selectedImage!)}
-        }
+        else {return nil}
     }
     
     fileprivate func createNewObject(overwrite: Bool) {
         if let _eventTitle = eventTitle, let _eventDate = eventDate {
+            let realmNotificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
+            
             let imageInfo = getEventImageInfo()
             let newEvent = SpecialEvent(
-                category: eventCategory ?? "Uncatagorized",
+                category: eventCategory ?? "Uncategorized",
                 title: _eventTitle,
                 tagline: eventTagline,
                 date: _eventDate,
                 abridgedDisplayMode: abridgedDisplayMode,
+                infoDisplayed: infoDisplayed,
+                repeats: repeats,
+                notificationsConfig: realmNotificationsConfig,
                 useMask: useMask,
                 image: imageInfo,
                 locationForCellView: locationForCellView
             )
-            try! localPersistentStore.write {localPersistentStore.add(newEvent, update: overwrite)}
+            try! mainRealm.write {mainRealm.add(newEvent, update: overwrite)}
+            scheduleNewEvents(titled: [_eventTitle])
         }
         else {
             // TODO: Remove for production, should never hit this if earlier guards work.
@@ -1822,15 +2291,13 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }
     
     fileprivate func checkFinishButtonEnable() {
-        if eventCategory != nil && eventTitle != nil && eventDate != nil {
+        if eventTitle != nil && eventDate != nil {
             enableButton(finishButton)
             doneButton.isEnabled = true
-            finishProgressImageView?.tintColor = UIColor.green
         }
         else {
             disableButton(finishButton)
             doneButton.isEnabled = false
-            finishProgressImageView?.tintColor = GlobalColors.inactiveColor
         }
     }
     

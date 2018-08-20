@@ -17,7 +17,7 @@ class EventTableViewCell: UITableViewCell {
     //
     
     fileprivate let computationalQueue = DispatchQueue(label: "computationalQueue", qos: DispatchQoS.userInitiated)
-    
+    var delegate: EventTableViewCellDelegate?
     
     // Data Model
     var eventTitle: String? {
@@ -30,15 +30,25 @@ class EventTableViewCell: UITableViewCell {
     var eventTagline: String? {
         didSet{
             if !shadowsInitialized {initializeShadows()}
-            if eventTagline != nil {taglineLabel.text = eventTagline}
-            else {taglineLabel.isHidden = true; taglineLabel.isUserInteractionEnabled = false}
+            if infoDisplayed == .tagline {
+                if eventTagline != nil {taglineLabel.text = eventTagline}
+                else {taglineLabel.isHidden = true; taglineLabel.isUserInteractionEnabled = false}
+            }
         }
     }
     
     var eventDate: EventDate? {
         didSet {
             if !shadowsInitialized {initializeShadows()}
-            if eventDate != nil {update()}
+            if let _eventDate = eventDate {
+                update()
+                if infoDisplayed == .date {
+                    taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                    if _eventDate.dateOnly {infoDateFormatter.timeStyle = .none}
+                    else {infoDateFormatter.timeStyle = .short}
+                    taglineLabel.text = infoDateFormatter.string(from: _eventDate.date)
+                }
+            }
             else {
                 agoLabel.isHidden = true
                 inLabel.isHidden = false
@@ -47,31 +57,65 @@ class EventTableViewCell: UITableViewCell {
                 hoursLabel.text = "00"
                 minutesLabel.text = "00"
                 secondsLabel.text = "00"
+                if infoDisplayed == .date {
+                    taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                    taglineLabel.text = "Set a date"
+                }
             }
         }
     }
     
     var abridgedDisplayMode = false {
         didSet {
-            if abridgedDisplayMode {
-                if abridgedTimerContainerView.isHidden {
-                    if !timerContainerView.isHidden {
-                        viewTransition(from: [timerContainerView], to: [abridgedTimerContainerView])
+            if eventDate != nil {
+                if abridgedDisplayMode {
+                    if abridgedTimerContainerView.isHidden {
+                        if !timerContainerView.isHidden {
+                            viewTransition(from: [timerContainerView], to: [abridgedTimerContainerView])
+                        }
+                        else {show(views: [abridgedTimerContainerView], animated: true)}
                     }
-                    else {show(view: abridgedTimerContainerView)}
                 }
-            }
-            else {
-                if timerContainerView.isHidden {
-                    if !abridgedTimerContainerView.isHidden {
-                        viewTransition(from: [abridgedTimerContainerView], to: [timerContainerView])
+                else {
+                    if timerContainerView.isHidden {
+                        if !abridgedTimerContainerView.isHidden {
+                            viewTransition(from: [abridgedTimerContainerView], to: [timerContainerView])
+                        }
+                        else {show(views: [timerContainerView], animated: true)}
                     }
-                    else {show(view: timerContainerView)}
                 }
+                update()
             }
-            update()
         }
     }
+    
+    var infoDisplayed = DisplayInfoOptions.tagline {
+        didSet {
+            if infoDisplayed != oldValue {
+                taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                switch infoDisplayed {
+                case .none:
+                    taglineLabel.isHidden = true
+                    taglineLabel.isUserInteractionEnabled = false
+                case .tagline, .date:
+                    if infoDisplayed == .tagline {taglineLabel.text = eventTagline}
+                    else {
+                        if let _eventDate = eventDate {
+                            if _eventDate.dateOnly {infoDateFormatter.timeStyle = .none}
+                            else {infoDateFormatter.timeStyle = .short}
+                            taglineLabel.text = infoDateFormatter.string(from: _eventDate.date)}
+                        else {taglineLabel.text = "Set a date"}
+                    }
+                    if taglineLabel.isHidden {
+                        taglineLabel.isHidden = false
+                        taglineLabel.isUserInteractionEnabled = true
+                    }
+                }
+            }
+        }
+    }
+    
+    var repeats = RepeatingOptions.never {didSet {if eventDate != nil {update()}}}
     
     var creationDate: Date? {didSet {updateMask()}}
     
@@ -115,6 +159,23 @@ class EventTableViewCell: UITableViewCell {
     var locationForCellView: CGFloat {return _locationForCellView}
     fileprivate var _locationForCellView: CGFloat = 0.5
     
+    fileprivate var infoDateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        let dateDisplayMode = UserDefaults.standard.value(forKey: UserDefaultKeys.dateDisplayMode) as! String
+        switch dateDisplayMode {
+        case Defaults.DateDisplayMode.short:
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+        case Defaults.DateDisplayMode.long:
+            formatter.dateStyle = .long
+            formatter.timeStyle = .short
+        default:
+            // TODO: log and break
+            fatalError("Need to add a case??")
+        }
+        return formatter
+    }
+    
     //
     // MARK: Types
     
@@ -127,20 +188,34 @@ class EventTableViewCell: UITableViewCell {
     enum Configurations {case cell, detail}
     var configuration: Configurations = .cell
     
-    fileprivate enum Stages {
-        case weeks, days, hours, minutes, seconds
+    fileprivate enum Stages: Comparable {
+        
+        case seconds, minutes, hours, days, weeks, months, years
+        
+        static func < (lhs: EventTableViewCell.Stages, rhs: EventTableViewCell.Stages) -> Bool {
+            if lhs.interval < rhs.interval {return true}
+            else {return false}
+        }
+        
+        static func == (lhs: EventTableViewCell.Stages, rhs: EventTableViewCell.Stages) -> Bool {
+            if lhs.interval == rhs.interval {return true}
+            else {return false}
+        }
         
         var interval: TimeInterval {
             switch self {
+            case .years: return 31104000 // 12 months to a year
+            case .months: return 2592000.0 // Arbitrary 30 days to a month
             case .weeks: return 604800.0
             case .days: return 86400.0
             case .hours: return 3600.0
             case .minutes: return 60.0
-            case .seconds: return 0.0
+            case .seconds: return 1.0
             }
         }
     }
-    fileprivate var currentStage = Stages.weeks
+    fileprivate var currentStage = Stages.months
+    fileprivate var precision = Stages.months
     
     //
     // MARK: Mask parameters
@@ -162,7 +237,6 @@ class EventTableViewCell: UITableViewCell {
             if useMask == true && oldValue == false && mainImageView.image != nil {
                 updateMask()
                 addGradientView()
-                addMaskImageView()
             }
             else if useMask == false && oldValue == true {
                 removeGradientView()
@@ -184,28 +258,14 @@ class EventTableViewCell: UITableViewCell {
                 removeMaskImageView()
                 
                 viewTransition(from: [inLabel], to: [agoLabel])
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.abridgedInLabel.isHidden = true},
-                    completion: nil
-                )
-                transitionText(inLabel: abridgedDaysTextLabel, toText: "Days Ago")
+                viewTransition(from: [abridgedInLabel], to: [abridgedAgoLabel])
             }
                 
             else if !isPastEvent && oldValue != isPastEvent {
-                if useMask {updateMask(); addGradientView(); addMaskImageView()}
+                if useMask {updateMask(); addGradientView()}
                 
                 viewTransition(from: [agoLabel], to: [inLabel])
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.abridgedInLabel.isHidden = false},
-                    completion: nil
-                )
-                transitionText(inLabel: abridgedDaysTextLabel, toText: "Days")
+                viewTransition(from: [abridgedAgoLabel], to: [abridgedInLabel])
             }
         }
     }
@@ -244,15 +304,19 @@ class EventTableViewCell: UITableViewCell {
     @IBOutlet weak var abridgedTimerContainerView: UIView!
     @IBOutlet weak var abridgedTimerStackView: UIStackView!
     @IBOutlet weak var abridgedInLabel: UILabel!
+    @IBOutlet weak var abridgedAgoLabel: UILabel!
+    @IBOutlet weak var abridgedYearsStackView: UIStackView!
+    @IBOutlet weak var abridgedMonthsStackView: UIStackView!
+    @IBOutlet weak var abridgedWeeksStackView: UIStackView!
+    @IBOutlet weak var abridgedDaysStackView: UIStackView!
+    @IBOutlet weak var abridgedYearsLabel: UILabel!
+    @IBOutlet weak var abridgedMonthsLabel: UILabel!
     @IBOutlet weak var abridgedWeeksLabel: UILabel!
     @IBOutlet weak var abridgedDaysLabel: UILabel!
+    @IBOutlet weak var abridgedYearsTextLabel: UILabel!
+    @IBOutlet weak var abridgedMonthsTextLabel: UILabel!
     @IBOutlet weak var abridgedWeeksTextLabel: UILabel!
     @IBOutlet weak var abridgedDaysTextLabel: UILabel!
-    
-    /*var titleWaveEffectView: WaveEffectView?
-    var taglineWaveEffectView: WaveEffectView?
-    var timerWaveEffectView: WaveEffectView?
-    var timerLabelsWaveEffectView: WaveEffectView?*/
     
     fileprivate var gradientView: GradientMaskView?
     fileprivate var maskImageView: CountdownMaskImageView?
@@ -309,29 +373,52 @@ class EventTableViewCell: UITableViewCell {
     // Function to update the displayed event times and masks.
     internal func update() {
         
-        func fullFormat(label: UILabel, withNumber number: Double) {
-            let intNumber = Int(number)
-            if intNumber < 10 {label.text = "0" + String(intNumber)}
-            else {label.text = String(intNumber)}
+        func checkIfPastEvent(intervalToCheck timeInterval: inout Double) {
+            if timeInterval < 0.0 {
+                if repeats == .never {
+                    isPastEvent = true
+                    timeInterval = -timeInterval
+                }
+                else {
+                    isPastEvent = false
+                    let currentCalendar = Calendar.current
+                    
+                    switch repeats {
+                    case .never: break
+                    case .monthly:
+                        if let nextMonth = currentCalendar.date(byAdding: .month, value: 1, to: eventDate!.date, wrappingComponents: true) {
+                            delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextMonth, dateOnly: eventDate!.dateOnly))
+                        }
+                        else {
+                            // TODO: log an error, make sure this breaks and just keeps the same date.
+                            fatalError("There was an issue creating the next date!")
+                        }
+                    case .yearly:
+                        if let nextYear = currentCalendar.date(byAdding: .year, value: 1, to: eventDate!.date, wrappingComponents: true) {
+                            delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextYear, dateOnly: eventDate!.dateOnly))
+                        }
+                        else {
+                            // TODO: log an error, make sure this breaks and just keeps the same date.
+                            fatalError("There was an issue creating the next date!")
+                        }
+                    }
+                    
+                    //timeInterval = eventDate!.date.timeIntervalSince(todaysDate)
+                }
+            }
+            else {isPastEvent = false}
         }
-        
-        func abridgedFormat(label: UILabel, withNumber number: Double) {label.text = String(Int(number))}
         
         let todaysDate = Date()
         var timeInterval = eventDate!.date.timeIntervalSince(todaysDate)
-        if timeInterval < 0.0 {
-            isPastEvent = true
-            timeInterval = todaysDate.timeIntervalSince(eventDate!.date)
-        }
-        else {isPastEvent = false}
-        
+        checkIfPastEvent(intervalToCheck: &timeInterval)
         currentStage = .weeks
+        
         let weeks = (timeInterval/Stages.weeks.interval).rounded(.towardZero)
         if weeks == 0 {currentStage = .days}
         
         var remainder = timeInterval - (weeks * Stages.weeks.interval)
         let days = (remainder/Stages.days.interval).rounded(.towardZero)
-        
         if days == 0.0 && weeks == 0.0 {currentStage = .hours}
         
         remainder -= days * Stages.days.interval
@@ -346,227 +433,194 @@ class EventTableViewCell: UITableViewCell {
         let seconds = remainder.rounded(.towardZero)
         
         if abridgedDisplayMode {
+            
+            func abridgedFormat(label: UILabel, withNumber number: Double) {label.text = String(Int(number))}
+            
             let currentCalendar = Calendar.current
-            let dayNow = currentCalendar.component(.day, from: todaysDate)
-            let eventDay = currentCalendar.component(.day, from: eventDate!.date)
+            let calendarComponents: Set<Calendar.Component> = [.year, .month, .day]
+            let todaysDateComponents = currentCalendar.dateComponents(calendarComponents, from: Date())
+            let eventDateComponents = currentCalendar.dateComponents(calendarComponents, from: eventDate!.date)
             
-            var midnightDateComponents = DateComponents()
-            midnightDateComponents.year = currentCalendar.component(.year, from: eventDate!.date)
-            midnightDateComponents.month = currentCalendar.component(.month, from: eventDate!.date)
-            midnightDateComponents.day = currentCalendar.component(.day, from: eventDate!.date)
-            midnightDateComponents.hour = 0
-            midnightDateComponents.minute = 0
-            midnightDateComponents.second = 0
-            let midnightDate = currentCalendar.date(from: midnightDateComponents)!
+            var years = 0.0
+            var months = 0.0
+            var abridgedDays = 0.0
             
-            let abridgedTimeInterval = midnightDate.timeIntervalSince(todaysDate)
-            var abridgedModeWeeks = (abridgedTimeInterval/Stages.weeks.interval).rounded(.towardZero)
-            let abridgedRemainder = abridgedTimeInterval - (abridgedModeWeeks * Stages.weeks.interval)
-            var abridgedModeDays = (abridgedRemainder/Stages.days.interval).rounded(.up)
-            abridgedModeWeeks = abs(abridgedModeWeeks)
-            abridgedModeDays = abs(abridgedModeDays)
-            if abridgedModeDays == 7.0 {abridgedModeDays = 0.0; abridgedModeWeeks += 1.0}
-            
-            var formatDays = true
-            if abridgedModeWeeks == 0.0 {
-                if !abridgedWeeksLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.abridgedWeeksLabel.isHidden = true; self.abridgedWeeksTextLabel.isHidden = true},
-                        completion: nil
-                    )
-                }
-                
-                if eventDay == dayNow + 1 {
-                    if !abridgedTimerStackView.isHidden {
-                        tomorrowLabel.text = "Tomorrow!"
-                        viewTransition(from: [abridgedTimerStackView], to: [tomorrowLabel])
-                    }
-                    else if let labelText = tomorrowLabel.text, labelText != "Tomorrow!" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Tomorrow!")
-                    }
-                    formatDays = false
-                }
-                
-                else if eventDay == dayNow {
-                    if !abridgedTimerStackView.isHidden {
-                        tomorrowLabel.text = "Today!!!"
-                        viewTransition(from: [abridgedTimerStackView], to: [tomorrowLabel])
-                    }
-                    else if let labelText = tomorrowLabel.text, labelText != "Today!!!" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Today!!!")
-                    }
-                    formatDays = false
-                }
-                
-                else if eventDay == dayNow - 1 {
-                    if !abridgedTimerStackView.isHidden {
-                        tomorrowLabel.text = "Yesterday"
-                        viewTransition(from: [abridgedTimerStackView], to: [tomorrowLabel])
-                    }
-                    else if let labelText = tomorrowLabel.text, labelText != "Yesterday" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Yesterday")
-                    }
-                    formatDays = false
+            if isPastEvent {
+                abridgedDays = Double(todaysDateComponents.day! - eventDateComponents.day!)
+                if abridgedDays < 0.0 {
+                    months -= 1.0
+                    let todaysDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: todaysDate)!
+                    let daysInTodaysDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: todaysDatePreviousMonth)!.count
+                    //print(eventDateComponents.day ?? "No Days")
+                    let daysLeftInTodaysDatePreviousMonth = daysInTodaysDatePreviousMonth - eventDateComponents.day!
+                    abridgedDays = Double(daysLeftInTodaysDatePreviousMonth + todaysDateComponents.day!)
                 }
             }
             else {
-                abridgedFormat(label: abridgedWeeksLabel, withNumber: abridgedModeWeeks)
-                
-                if abridgedModeWeeks == 1.0 && abridgedModeDays != 0.0 {abridgedWeeksTextLabel.text = "Week, "}
-                else if abridgedModeWeeks == 1.0 && abridgedModeDays == 0.0 {abridgedWeeksTextLabel.text = "Week"}
-                else if abridgedModeWeeks > 1.0 && abridgedModeDays != 0.0 {abridgedWeeksTextLabel.text = "Weeks, "}
-                else {abridgedWeeksTextLabel.text = "Weeks"}
-                
-                if abridgedWeeksLabel.isHidden {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.3,
-                        delay: 0.0,
-                        options: [.curveLinear],
-                        animations: {self.abridgedWeeksLabel.isHidden = false; self.abridgedWeeksTextLabel.isHidden = false},
-                        completion: nil
-                    )
+                abridgedDays = Double(eventDateComponents.day! - todaysDateComponents.day!)
+                if abridgedDays < 0.0 {
+                    months -= 1.0
+                    let eventDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: eventDate!.date)!
+                    let daysInEventDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: eventDatePreviousMonth)!.count
+                    //print(eventDateComponents.day ?? "No Days")
+                    let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - todaysDateComponents.day!
+                    abridgedDays = Double(daysLeftInEventDatePreviousMonth + eventDateComponents.day!)
                 }
             }
             
-            if formatDays {
-                if abridgedModeDays == 0 {
-                    if !abridgedDaysLabel.isHidden {
-                        UIViewPropertyAnimator.runningPropertyAnimator(
-                            withDuration: 0.3,
-                            delay: 0.0,
-                            options: [.curveLinear],
-                            animations: {self.abridgedDaysLabel.isHidden = true; self.abridgedDaysTextLabel.isHidden = true},
-                            completion: nil
-                        )
+            if isPastEvent {months += Double(todaysDateComponents.month! - eventDateComponents.month!)}
+            else {months += Double(eventDateComponents.month! - todaysDateComponents.month!)}
+            if months < 0.0 {
+                years -= 1.0
+                months = 12 + months
+            }
+            
+            if isPastEvent {years += Double(todaysDateComponents.year! - eventDateComponents.year!)}
+            else {years += Double(eventDateComponents.year! - todaysDateComponents.year!)}
+            
+            if years == 0 && months == 0 && (abridgedDays == 1 || abridgedDays == 0) { // Within one day
+                if tomorrowLabel.isHidden {
+                    if eventDateComponents.day! == todaysDateComponents.day! + 1 {tomorrowLabel.text = "Tomorrow!"}
+                    else if eventDateComponents.day! == todaysDateComponents.day! {tomorrowLabel.text = "Today!!!"}
+                    else if eventDateComponents.day! == todaysDateComponents.day! - 1 {tomorrowLabel.text = "Yesterday"}
+                    
+                    if !abridgedTimerStackView.isHidden {viewTransition(from: [abridgedTimerStackView], to: [tomorrowLabel])}
+                    else if !timerContainerView.isHidden {
+                        abridgedTimerStackView.isHidden = true
+                        tomorrowLabel.isHidden = false
+                        viewTransition(from: [timerContainerView], to: [abridgedTimerContainerView])
                     }
-                    if isPastEvent {abridgedWeeksTextLabel.text = abridgedWeeksTextLabel.text! + " ago"}
                 }
-                else  {
-                    abridgedFormat(label: abridgedDaysLabel, withNumber: abridgedModeDays)
-                    if !isPastEvent {
-                        if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day"}
-                        else {abridgedDaysTextLabel.text = "Days"}
+                else {
+                    if eventDateComponents.day! == todaysDateComponents.day! + 1 && tomorrowLabel.text != "Tomorrow!" {
+                        transitionText(inLabel: tomorrowLabel, toText: "Tomorrow!")
                     }
+                    else if eventDateComponents.day! == todaysDateComponents.day! && tomorrowLabel.text != "Today!!!" {
+                        transitionText(inLabel: tomorrowLabel, toText: "Today!!!")
+                    }
+                    else if eventDateComponents.day! == todaysDateComponents.day! - 1 && tomorrowLabel.text != "Yesterday" {
+                        transitionText(inLabel: tomorrowLabel, toText: "Yesterday")
+                    }
+                }
+            }
+                
+            else { // Not within one day
+                if !abridgedTimerStackView.isHidden {
+                    if years == 0 {hide(views: [abridgedYearsStackView], animated: true)}
                     else {
-                        if abridgedModeDays == 1.0 {abridgedDaysTextLabel.text = "Day Ago"}
-                        else {abridgedDaysTextLabel.text = "Days Ago"}
+                        abridgedFormat(label: abridgedYearsLabel, withNumber: years)
+                        show(views: [abridgedYearsStackView], animated: true)
+                        if years > 1.0 {
+                            if months != 0.0 || abridgedDays != 0.0 {abridgedYearsTextLabel.text = "Years,"}
+                            else {abridgedYearsTextLabel.text = "Years"}
+                        }
+                        else {
+                            if months != 0.0 || abridgedDays != 0.0 {abridgedYearsTextLabel.text = "Year,"}
+                            else {abridgedYearsTextLabel.text = "Year"}
+                        }
                     }
-                    if abridgedDaysLabel.isHidden {
-                        UIViewPropertyAnimator.runningPropertyAnimator(
-                            withDuration: 0.3,
-                            delay: 0.0,
-                            options: [.curveLinear],
-                            animations: {self.abridgedDaysLabel.isHidden = false; self.abridgedDaysTextLabel.isHidden = false},
-                            completion: nil
-                        )
+                    
+                    if months == 0 {hide(views: [abridgedMonthsStackView], animated: true)}
+                    else {
+                        abridgedFormat(label: abridgedMonthsLabel, withNumber: months)
+                        show(views: [abridgedMonthsStackView], animated: true)
+                        if months > 1.0 {
+                            if abridgedDays != 0.0 {abridgedMonthsTextLabel.text = "Months,"}
+                            else {abridgedMonthsTextLabel.text = "Months"}
+                        }
+                        else {
+                            if abridgedDays != 0.0 {abridgedMonthsTextLabel.text = "Month,"}
+                            else {abridgedMonthsTextLabel.text = "Month"}
+                        }
+                    }
+                    
+                    if abridgedDays == 0 {hide(views: [abridgedDaysStackView], animated: true)}
+                    else {
+                        abridgedFormat(label: abridgedDaysLabel, withNumber: abridgedDays)
+                        show(views: [abridgedDaysStackView], animated: true)
+                        if abridgedDays > 1.0 {abridgedDaysTextLabel.text = "Days"}
+                        else {abridgedDaysTextLabel.text = "Day"}
                     }
                 }
-                
-                if !tomorrowLabel.isHidden {viewTransition(from: [tomorrowLabel], to: [abridgedTimerStackView])}
+                else {
+                    if years == 0 {hide(views: [abridgedYearsStackView], animated: false)}
+                    else {
+                        abridgedFormat(label: abridgedYearsLabel, withNumber: years)
+                        show(views: [abridgedYearsStackView], animated: false)
+                        if years > 1.0 {
+                            if months != 0.0 || days != 0.0 {abridgedYearsTextLabel.text = "Years,"}
+                            else {abridgedYearsTextLabel.text = "Years"}
+                        }
+                        else {
+                            if months != 0.0 || days != 0.0 {abridgedYearsTextLabel.text = "Year,"}
+                            else {abridgedYearsTextLabel.text = "Year"}
+                        }
+                    }
+                    
+                    if months == 0 {hide(views: [abridgedMonthsStackView], animated: false)}
+                    else {
+                        abridgedFormat(label: abridgedMonthsLabel, withNumber: months)
+                        show(views: [abridgedMonthsStackView], animated: false)
+                        if months > 1.0 {
+                            if days != 0.0 {abridgedMonthsTextLabel.text = "Months,"}
+                            else {abridgedMonthsTextLabel.text = "Months"}
+                        }
+                        else {
+                            if days != 0.0 {abridgedMonthsTextLabel.text = "Month,"}
+                            else {abridgedMonthsTextLabel.text = "Month"}
+                        }
+                    }
+                    
+                    if abridgedDays == 0 {hide(views: [abridgedDaysStackView], animated: false)}
+                    else {
+                        abridgedFormat(label: abridgedDaysLabel, withNumber: days)
+                        show(views: [abridgedDaysStackView], animated: false)
+                        if days > 1.0 {abridgedDaysTextLabel.text = "Days"}
+                        else {abridgedDaysTextLabel.text = "Day"}
+                    }
+                    
+                    if !tomorrowLabel.isHidden {viewTransition(from: [tomorrowLabel], to: [abridgedTimerStackView])}
+                    else if !timerContainerView.isHidden {
+                        abridgedTimerStackView.isHidden = false
+                        tomorrowLabel.isHidden = true
+                        viewTransition(from: [timerContainerView], to: [abridgedTimerContainerView])
+                    }
+                }
             }
         }
-        
-        if weeks == 0 {
-            if !weeksLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.weeksLabel.isHidden = true; self.weeksTextLabel.isHidden = true; self.weeksColon.isHidden = true},
-                    completion: nil
-                )
-            }
-        }
-        else {
-            fullFormat(label: weeksLabel, withNumber: weeks)
-            if weeksLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.weeksLabel.isHidden = false; self.weeksTextLabel.isHidden = false; self.weeksColon.isHidden = false},
-                    completion: nil
-                )
-            }
-        }
-        
-        if days == 0.0 && weeks == 0.0 {
-            if !daysLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.daysLabel.isHidden = true; self.daysTextLabel.isHidden = true; self.daysColon.isHidden = true},
-                    completion: nil
-                )
-            }
-        }
-        else {
-            fullFormat(label: daysLabel, withNumber: days)
-            if daysLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.daysLabel.isHidden = false; self.daysTextLabel.isHidden = false; self.daysColon.isHidden = false},
-                    completion: nil
-                )
-            }
-        }
-        
-        if hours == 0.0 && days == 0.0 && weeks == 0.0 {
-            if !hoursLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.hoursLabel.isHidden = true; self.hoursTextLabel.isHidden = true; self.hoursColon.isHidden = true},
-                    completion: nil
-                )
-            }
-        }
-        else {
-            fullFormat(label: hoursLabel, withNumber: hours)
-            if hoursLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.hoursLabel.isHidden = false; self.hoursTextLabel.isHidden = false; self.hoursColon.isHidden = false},
-                    completion: nil
-                )
+            
+        else { // Not abridged display mode
+            
+            func fullFormat(label: UILabel, withNumber number: Double) {
+                let intNumber = Int(number)
+                if intNumber < 10 {label.text = "0" + String(intNumber)}
+                else {label.text = String(intNumber)}
             }
             
-        }
-        
-        if minutes == 0.0 && hours == 0.0 && days == 0.0 && weeks == 0.0 {
-            if !minutesLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.minutesLabel.isHidden = true; self.minutesTextLabel.isHidden = true; self.minutesColon.isHidden = true},
-                    completion: nil
-                )
+            if timerContainerView.isHidden {viewTransition(from: [abridgedTimerContainerView], to: [timerContainerView])}
+            
+            if weeks == 0.0 {hide(views: [weeksLabel, weeksColon, weeksTextLabel], animated: true)}
+            else {
+                fullFormat(label: weeksLabel, withNumber: weeks)
+                show(views: [weeksLabel, weeksColon, weeksTextLabel], animated: true)
             }
-        }
-        else {
-            fullFormat(label: minutesLabel, withNumber: minutes)
-            if minutesLabel.isHidden {
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.3,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {self.minutesLabel.isHidden = false; self.minutesTextLabel.isHidden = false; self.minutesColon.isHidden = false},
-                    completion: nil
-                )
+            if weeks == 0.0 && days == 0.0 {hide(views: [daysLabel, daysColon, daysTextLabel], animated: true)}
+            else {
+                fullFormat(label: daysLabel, withNumber: days)
+                show(views: [daysLabel, daysColon, daysTextLabel], animated: true)
             }
+            if weeks == 0.0 && days == 0.0 && hours == 0.0 {hide(views: [hoursLabel, hoursColon, hoursTextLabel], animated: true)}
+            else {
+                fullFormat(label: hoursLabel, withNumber: hours)
+                show(views: [hoursLabel, hoursColon, hoursTextLabel], animated: true)
+            }
+            if weeks == 0.0 && days == 0.0 && hours == 0.0 && minutes == 0.0 {hide(views: [minutesLabel, minutesColon, minutesTextLabel], animated: true)}
+            else {
+                fullFormat(label: minutesLabel, withNumber: minutes)
+                show(views: [minutesLabel, minutesColon, minutesTextLabel], animated: true)
+            }
+            fullFormat(label: secondsLabel, withNumber: seconds)
         }
-        
-        fullFormat(label: secondsLabel, withNumber: seconds)
         
         updateMask()
     }
@@ -590,11 +644,11 @@ class EventTableViewCell: UITableViewCell {
             
             var previousStageTimeInterval: TimeInterval {
                 switch currentStage {
-                case .weeks: return eventDate!.date.timeIntervalSince(creationDate!)
                 case .days: return Stages.weeks.interval
                 case .hours: return Stages.days.interval
                 case .minutes: return Stages.hours.interval
                 case .seconds: return Stages.minutes.interval
+                default: return eventDate!.date.timeIntervalSince(creationDate!)
                 }
             }
             
@@ -629,7 +683,7 @@ class EventTableViewCell: UITableViewCell {
     }
     
     fileprivate func addGradientView() {
-        if useMask && !isPastEvent {
+        if useMask && !isPastEvent && mainHomeImage != nil {
             if let _gradientView = gradientView {_gradientView.percentMaskCoverage = percentMaskCoverage}
             else {initializeGradientView()}
             
@@ -885,8 +939,39 @@ class EventTableViewCell: UITableViewCell {
         shadowsInitialized = true
     }
     
-    fileprivate func hide(view: UIView) {view.isHidden = true; view.isUserInteractionEnabled = false}
-    fileprivate func show(view: UIView) {view.isHidden = false; view.isUserInteractionEnabled = true}
+    fileprivate func hide(views: [UIView], animated: Bool) {
+        var viewsToHide = [UIView]()
+        for view in views {if !view.isHidden {viewsToHide.append(view)}}
+        if !viewsToHide.isEmpty {
+            if animated {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {for view in viewsToHide {view.isHidden = true; view.isUserInteractionEnabled = false}},
+                    completion: nil
+                )
+            }
+            else {for view in viewsToHide {view.isHidden = true; view.isUserInteractionEnabled = false}}
+        }
+    }
+    
+    fileprivate func show(views: [UIView], animated: Bool) {
+        var viewsToShow = [UIView]()
+        for view in views {if view.isHidden {viewsToShow.append(view)}}
+        if !viewsToShow.isEmpty {
+            if animated {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.3,
+                    delay: 0.0,
+                    options: [.curveLinear],
+                    animations: {for view in viewsToShow {view.isHidden = false; view.isUserInteractionEnabled = true}},
+                    completion: nil
+                )
+            }
+            else {for view in viewsToShow {view.isHidden = false; view.isUserInteractionEnabled = true}}
+        }
+    }
     
     //
     // MARK: Animation helpers

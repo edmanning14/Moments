@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Raleway-Light.ttf">
+            <string>Raleway-Light</string>
+        </array>
+        <array key="Raleway-Regular.ttf">
+            <string>Raleway-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="SettingsTableViewCell" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lfn-xt-2ys">
+                    <rect key="frame" x="8" y="35.5" width="36.5" height="16.5"/>
+                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="14"/>
+                    <color key="textColor" red="0.90196078431372551" green="0.31764705882352939" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R10-3Z-Mjd">
+                    <rect key="frame" x="44.5" y="35.5" width="267.5" height="16.5"/>
+                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                    <color key="textColor" red="0.39215686274509803" green="1" blue="0.85490196078431369" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TIq-nn-Yau">
+                    <rect key="frame" x="263" y="28" width="51" height="31"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <color key="tintColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <color key="onTintColor" red="0.3921568627" green="1" blue="0.85490196080000003" alpha="1" colorSpace="calibratedRGB"/>
+                    <color key="thumbTintColor" red="0.90196078431372551" green="0.31764705882352939" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                </switch>
+                <pickerView hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8C-ps-8uk">
+                    <rect key="frame" x="0.0" y="67" width="320" height="80"/>
+                    <color key="backgroundColor" red="0.12941176470588234" green="0.12941176470588234" blue="0.12941176470588234" alpha="0.0" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="80" id="TvB-ac-tDm"/>
+                    </constraints>
+                </pickerView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="TIq-nn-Yau" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="8" id="6j7-VM-M60"/>
+                <constraint firstItem="k8C-ps-8uk" firstAttribute="top" secondItem="TIq-nn-Yau" secondAttribute="bottom" constant="8" id="Frr-IY-sd1"/>
+                <constraint firstItem="k8C-ps-8uk" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="ITj-Kx-T2q"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="TIq-nn-Yau" secondAttribute="trailing" constant="8" id="NY1-FZ-DP1"/>
+                <constraint firstItem="TIq-nn-Yau" firstAttribute="centerY" secondItem="Lfn-xt-2ys" secondAttribute="centerY" id="Ncj-HQ-7ra"/>
+                <constraint firstItem="R10-3Z-Mjd" firstAttribute="leading" secondItem="Lfn-xt-2ys" secondAttribute="trailing" id="Otg-HJ-1mw"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="R10-3Z-Mjd" secondAttribute="trailing" constant="8" id="T4Y-zH-eCD"/>
+                <constraint firstItem="R10-3Z-Mjd" firstAttribute="centerY" secondItem="Lfn-xt-2ys" secondAttribute="centerY" id="akz-iL-Ugr"/>
+                <constraint firstItem="Lfn-xt-2ys" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="eA3-OO-3AD"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="onOffSwitch" destination="TIq-nn-Yau" id="tKB-Sk-TOZ"/>
+                <outlet property="optionsPickerView" destination="k8C-ps-8uk" id="PoH-Ad-Bu7"/>
+                <outlet property="selectedOptionLabel" destination="R10-3Z-Mjd" id="i9o-db-a8p"/>
+                <outlet property="titleLabel" destination="Lfn-xt-2ys" id="Wbd-47-DfM"/>
+            </connections>
+            <point key="canvasLocation" x="33.5" y="53.5"/>
+        </view>
+    </objects>
+</document>

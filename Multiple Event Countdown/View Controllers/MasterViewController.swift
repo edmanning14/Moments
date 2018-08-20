@@ -8,8 +8,9 @@
 
 import UIKit
 import RealmSwift
+import UserNotifications
 
-class MasterViewController: UITableViewController {
+class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
     
     
     //
@@ -17,38 +18,61 @@ class MasterViewController: UITableViewController {
     //
     
     //
-    // MARK: Types
-    enum EventSortMethods {
-        case chronologicalNewestFirst, chronologicalOldestFirst
-        
-        var sortPredicate: (SpecialEvent, SpecialEvent) -> Bool {
-            switch self {
-            case .chronologicalNewestFirst:
-                return {$0.date!.date < $1.date!.date}
-            case .chronologicalOldestFirst:
-                return {$0.date!.date > $1.date!.date}
+    // MARK: Data Management
+    fileprivate var currentFilter = EventFilters.all {
+        didSet {
+            UserDefaults.standard.set(currentFilter.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
+            navItemTitle.setTitle(currentFilter.string, for: .normal)
+            if isUserChange {
+                updateActiveCategories()
+                updateIndexPathMap()
+                tableView.reloadData()
+                isUserChange = false
+            }
+        }
+    }
+    fileprivate var currentSort = SortMethods.chronologically {
+        didSet {
+            UserDefaults.standard.set(currentSort.string, forKey: UserDefaultKeys.DataManagement.currentSort)
+            if isUserChange {
+                updateActiveCategories()
+                updateIndexPathMap()
+                tableView.reloadData()
+                isUserChange = false
+            }
+        }
+    }
+    fileprivate var futureToPast = true {
+        didSet {
+            UserDefaults.standard.set(futureToPast, forKey: UserDefaultKeys.DataManagement.futureToPast)
+            if isUserChange {
+                updateActiveCategories()
+                updateIndexPathMap()
+                tableView.reloadData()
+                isUserChange = false
             }
         }
     }
     
     //
     // MARK: Data Model
-    var specialEvents: Results<SpecialEvent>!
+    var mainRealmSpecialEvents: Results<SpecialEvent>!
+    var defaultNotificationsConfig: Results<DefaultNotificationsConfig>!
     var activeCategories = [String]()
     var indexPathMap = [IndexPath]()
     var allCategories = [String]()
-    var eventSortMethod = EventSortMethods.chronologicalNewestFirst
     var lastIndexPath = IndexPath(row: 0, section: 0)
 
     //
     // MARK: Persistence
-    var localPersistentStore: Realm!
-    var localPersistentStoreNotificationToken: NotificationToken!
+    var mainRealm: Realm!
+    var specialEventsOnMainRealmNotificationToken: NotificationToken!
     let userDefaultsContainer = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")
     
     //
     // MARK: References and Outlets
     var detailViewController: DetailViewController? = nil
+    var navItemTitle = UIButton()
     
     //
     // MARK: Constants
@@ -59,12 +83,118 @@ class MasterViewController: UITableViewController {
     }
     
     //
+    // MARK: Expanding Header Parameters
+    lazy var headerExpansion: UIView = {
+        let contentView = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.backgroundColor = UIColor.black
+        return contentView
+    }()
+    lazy var separator: UIView = {
+        let line = UIView()
+        line.translatesAutoresizingMaskIntoConstraints = false
+        line.backgroundColor = UIColor.white
+        line.layer.opacity = 0.2
+        return line
+    }()
+    lazy var expandedHeaderContents: UIView = {
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.backgroundColor = UIColor.clear
+        
+        let material1 = UIView()
+        let material2 = UIView()
+        let material3 = UIView()
+        material1.backgroundColor = GlobalColors.lightGrayForFills
+        material2.backgroundColor = GlobalColors.lightGrayForFills
+        material3.backgroundColor = GlobalColors.lightGrayForFills
+        material1.layer.cornerRadius = GlobalCornerRadii.material
+        material2.layer.cornerRadius = GlobalCornerRadii.material
+        material3.layer.cornerRadius = GlobalCornerRadii.material
+        
+        let materialStackView = UIStackView()
+        let spacing: CGFloat = 2.0
+        materialStackView.translatesAutoresizingMaskIntoConstraints = false
+        materialStackView.backgroundColor = UIColor.clear
+        materialStackView.spacing = spacing
+        materialStackView.axis = .horizontal
+        materialStackView.distribution = .fillEqually
+        materialStackView.addArrangedSubview(material1)
+        materialStackView.addArrangedSubview(material2)
+        materialStackView.addArrangedSubview(material3)
+        containerView.addSubview(materialStackView)
+        
+        let headingsStackView = UIStackView()
+        headingsStackView.translatesAutoresizingMaskIntoConstraints = false
+        headingsStackView.backgroundColor = UIColor.clear
+        headingsStackView.axis = .horizontal
+        headingsStackView.distribution = .fillEqually
+        
+        let filterTitleLabel = UILabel()
+        let sortTitleLabel = UILabel()
+        let orderTitleLabel = UILabel()
+        filterTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        sortTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        orderTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        filterTitleLabel.textColor = GlobalColors.orangeRegular
+        sortTitleLabel.textColor = GlobalColors.orangeRegular
+        orderTitleLabel.textColor = GlobalColors.orangeRegular
+        filterTitleLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 16.0)
+        sortTitleLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 16.0)
+        orderTitleLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 16.0)
+        filterTitleLabel.textAlignment = .center
+        sortTitleLabel.textAlignment = .center
+        orderTitleLabel.textAlignment = .center
+        filterTitleLabel.text = headerColumnTitles.filter
+        sortTitleLabel.text = headerColumnTitles.sort
+        orderTitleLabel.text = headerColumnTitles.order
+        headingsStackView.addArrangedSubview(filterTitleLabel)
+        headingsStackView.addArrangedSubview(sortTitleLabel)
+        headingsStackView.addArrangedSubview(orderTitleLabel)
+        containerView.addSubview(headingsStackView)
+        
+        let pickerView = UIPickerView()
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
+        pickerView.backgroundColor = UIColor.clear
+        pickerView.dataSource = self
+        pickerView.delegate = self
+        containerView.addSubview(pickerView)
+        
+        containerView.topAnchor.constraint(equalTo: headingsStackView.topAnchor, constant: -8.0).isActive = true
+        containerView.leftAnchor.constraint(equalTo: headingsStackView.leftAnchor).isActive = true
+        containerView.rightAnchor.constraint(equalTo: headingsStackView.rightAnchor).isActive = true
+        containerView.leftAnchor.constraint(equalTo: pickerView.leftAnchor).isActive = true
+        containerView.rightAnchor.constraint(equalTo: pickerView.rightAnchor).isActive = true
+        containerView.bottomAnchor.constraint(equalTo: pickerView.bottomAnchor, constant: 8.0).isActive = true
+        headingsStackView.bottomAnchor.constraint(equalTo: pickerView.topAnchor).isActive = true
+    
+        containerView.leftAnchor.constraint(equalTo: materialStackView.leftAnchor, constant: -spacing).isActive = true
+        containerView.rightAnchor.constraint(equalTo: materialStackView.rightAnchor, constant: spacing).isActive = true
+        containerView.topAnchor.constraint(equalTo: materialStackView.topAnchor).isActive = true
+        containerView.bottomAnchor.constraint(equalTo: materialStackView.bottomAnchor, constant: 8.0).isActive = true
+
+        return containerView
+    }()
+    var headerIsExpanded = false
+    let filterPickerViewData = [
+        [EventFilters.all.string, EventFilters.upcoming.string, EventFilters.past.string],
+        [SortMethods.chronologically.string, SortMethods.byCategory.string],
+        ["Yes", "No"]
+    ]
+    struct headerColumnTitles {
+        static let filter = "Show"
+        static let sort = "Organized"
+        static let order = "Ascending?"
+    }
+    
+    //
     // MARK: - Design
     // MARK: Layout
     fileprivate let cellSpacing: CGFloat = 10.0
     
     //
     // MARK: Flags
+    var firstRun = false
     var isUserChange = false
     var dateDidChange = false
     var categoryDidChange = false
@@ -80,6 +210,10 @@ class MasterViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        currentFilter = EventFilters.type(from: UserDefaults.standard.string(forKey: UserDefaultKeys.DataManagement.currentFilter)!)!
+        currentSort = SortMethods.type(from: UserDefaults.standard.string(forKey: UserDefaultKeys.DataManagement.currentSort)!)!
+        futureToPast = UserDefaults.standard.bool(forKey: UserDefaultKeys.DataManagement.futureToPast)
         
         setupDataModel()
         
@@ -111,15 +245,10 @@ class MasterViewController: UITableViewController {
         settingsButton.tintColor = GlobalColors.orangeDark
         navigationItem.leftBarButtonItem = settingsButton
         
-        let navItemTitleLabel = UILabel()
-        navItemTitleLabel.text = "Moments"
-        navItemTitleLabel.textAlignment = .center
-        navItemTitleLabel.backgroundColor = UIColor.clear
-        navItemTitleLabel.textColor = GlobalColors.orangeRegular
-        navItemTitleLabel.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 20.0)
-        navigationItem.titleView = navItemTitleLabel
-        
-        tableView.sectionHeaderHeight = 50.0
+        navItemTitle = createHeaderDropdownButton()
+        navItemTitle.setTitle(currentFilter.string, for: .normal)
+        navItemTitle.addTarget(self, action: #selector(handleNavTitleTap(_:)), for: .touchUpInside)
+        navigationItem.titleView = navItemTitle
         
         NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
@@ -132,7 +261,7 @@ class MasterViewController: UITableViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if !specialEvents.isEmpty && eventTimer == nil {
+        if !mainRealmSpecialEvents.isEmpty && eventTimer == nil {
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
         }
         
@@ -140,8 +269,49 @@ class MasterViewController: UITableViewController {
         super.viewWillAppear(animated)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Setup notifications
+        if firstRun {
+            firstRun = false
+            let notifcationPermissionsPopUp = UIAlertController(title: "Enable Notifications", message: "Moments would like to send you notifications to remind you when your special moments will or have occured. Click enable on the next prompt to allow these kinds of notifications. When you have time, click the gear in the upper left of the main screen to see how you can customize these notifications.", preferredStyle: .alert)
+            let okayButton = UIAlertAction(title: "Okay!", style: .default) { (action) in
+                self.dismiss(animated: true, completion: nil)
+                let center = UNUserNotificationCenter.current()
+                center.requestAuthorization(options: [.alert, .badge, .sound])
+                { (granted, error) in
+                    if let _error = error {
+                        // TODO: Log and break
+                        print(_error.localizedDescription)
+                        fatalError("^ Check error")
+                    }
+                    
+                    autoreleasepool {
+                        let authorizationRealm = try! Realm(configuration: realmConfig)
+                        if granted {
+                            updateDailyNotifications(async: false)
+                        
+                            let authorizationSpecialEvents = authorizationRealm.objects(SpecialEvent.self)
+                            var titles = [String]()
+                            for event in authorizationSpecialEvents {titles.append(event.title)}
+                            scheduleNewEvents(titled: titles)
+
+                        }
+                        else {
+                            let authorizationDefaultNotificationsConfig = authorizationRealm.objects(DefaultNotificationsConfig.self)
+                            authorizationDefaultNotificationsConfig[0].allOn = false
+                        }
+                    }
+                }
+            }
+            notifcationPermissionsPopUp.addAction(okayButton)
+            self.present(notifcationPermissionsPopUp, animated: true, completion: nil)
+        }
+    }
+    
     @objc fileprivate func applicationDidBecomeActive(notification: NSNotification) {
-        if !specialEvents.isEmpty && eventTimer == nil {
+        if !mainRealmSpecialEvents.isEmpty && eventTimer == nil {
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
         }
     }
@@ -165,7 +335,7 @@ class MasterViewController: UITableViewController {
     }
     
     deinit {
-        localPersistentStoreNotificationToken?.invalidate()
+        specialEventsOnMainRealmNotificationToken?.invalidate()
         eventTimer?.invalidate()
         eventTimer = nil
     }
@@ -215,7 +385,10 @@ class MasterViewController: UITableViewController {
             let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
             backButton.setTitleTextAttributes(attributes, for: .normal)
             backButton.title = "BACK"
+            navigationItem.backBarButtonItem = backButton
             
+            let settingsController = segue.destination as! SettingsViewController
+            settingsController.masterViewController = self
         default: break
         }
     }
@@ -232,27 +405,24 @@ class MasterViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UITableViewHeaderFooterView()
-        let blurEffect = UIBlurEffect(style: .dark)
-        let backgroundView = UIVisualEffectView(effect: blurEffect)
-        headerView.backgroundView = backgroundView
-        
-        let headerLabel = UILabel(frame: CGRect(x: 5.0, y: 5.0, width: 100.0, height: 100.0))
-        headerLabel.translatesAutoresizingMaskIntoConstraints = false
-        headerLabel.backgroundColor = UIColor.clear
-        headerLabel.textColor = GlobalColors.cyanRegular
-        headerLabel.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0)
-        headerLabel.text = activeCategories[section]
-        headerLabel.textAlignment = .left
-        
-        headerView.contentView.addSubview(headerLabel)
-        headerLabel.sizeToFit()
-        headerView.leftAnchor.constraint(equalTo: headerLabel.leftAnchor, constant: -20.0).isActive = true
-        headerView.topAnchor.constraint(equalTo: headerLabel.topAnchor, constant: 0.0).isActive = true
-        headerView.rightAnchor.constraint(equalTo: headerLabel.rightAnchor, constant: 0.0).isActive = true
-        headerView.bottomAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 0.0).isActive = true
-        
-        return headerView
+        switch currentSort {
+        case .byCategory: return titleOnlyHeaderView(title: activeCategories[section])
+        case .chronologically: return nil
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.textLabel!.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0)
+            headerView.textLabel!.textColor = GlobalColors.orangeRegular
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        switch currentSort {
+        case .byCategory: return 60.0
+        case .chronologically: return 0.0
+        }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -277,7 +447,23 @@ class MasterViewController: UITableViewController {
         
         cell.eventTitle = items(forSection: indexPath.section)[indexPath.row].title
         cell.eventTagline = items(forSection: indexPath.section)[indexPath.row].tagline
+        switch items(forSection: indexPath.section)[indexPath.row].infoDisplayed {
+        case DisplayInfoOptions.none.displayText: cell.infoDisplayed = DisplayInfoOptions.none
+        case DisplayInfoOptions.tagline.displayText: cell.infoDisplayed = DisplayInfoOptions.tagline
+        case DisplayInfoOptions.date.displayText: cell.infoDisplayed = DisplayInfoOptions.date
+        default:
+            // TODO: Log and set a default info display
+            fatalError("Unexpected display info option encoutered, do you need to add a new one?")
+        }
         cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
+        switch items(forSection: indexPath.section)[indexPath.row].repeats {
+        case RepeatingOptions.never.displayText: cell.repeats = RepeatingOptions.never
+        case RepeatingOptions.monthly.displayText: cell.repeats = RepeatingOptions.monthly
+        case RepeatingOptions.yearly.displayText: cell.repeats = RepeatingOptions.yearly
+        default:
+            // TODO: Log and set a default info display
+            fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
+        }
         cell.abridgedDisplayMode = items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
         cell.creationDate = items(forSection: indexPath.section)[indexPath.row].creationDate
         cell.useMask = items(forSection: indexPath.section)[indexPath.row].useMask
@@ -301,8 +487,10 @@ class MasterViewController: UITableViewController {
         func addGestures() {
             let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
             let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+            let changeInfoDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeInfoDisplayModeTap(_:)))
             cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
             cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
+            cell.taglineLabel.addGestureRecognizer(changeInfoDisplayModeTapGestureRecognizer)
         }
         
         if cell.timerContainerView.gestureRecognizers == nil {addGestures()}
@@ -347,19 +535,35 @@ class MasterViewController: UITableViewController {
                 guard let livingSelf = self else {completion(false); return}
                 let categoryOfDeletedItem = livingSelf.items(forSection: indexPath.section)[indexPath.row].category
                 
-                livingSelf.localPersistentStore.beginWrite()
-                livingSelf.localPersistentStore.delete(livingSelf.items(forSection: indexPath.section)[indexPath.row])
-                try! livingSelf.localPersistentStore.commitWrite(withoutNotifying: [livingSelf.localPersistentStoreNotificationToken])
+                if let config = livingSelf.items(forSection: indexPath.section)[indexPath.row].notificationsConfig {
+                    var uuidsToDeschedule = [String]()
+                    for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
+                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
+                }
+                
+                let dateToUpdate = livingSelf.items(forSection: indexPath.section)[indexPath.row].date!.date
+                
+                livingSelf.mainRealm.beginWrite()
+                livingSelf.mainRealm.delete(livingSelf.items(forSection: indexPath.section)[indexPath.row])
+                try! livingSelf.mainRealm.commitWrite(withoutNotifying: [livingSelf.specialEventsOnMainRealmNotificationToken])
                 
                 livingSelf.updateActiveCategories()
                 livingSelf.updateIndexPathMap()
                 
                 tableView.beginUpdates()
-                if !livingSelf.activeCategories.contains(categoryOfDeletedItem) {
-                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                switch livingSelf.currentSort {
+                case .byCategory:
+                    if !livingSelf.activeCategories.contains(categoryOfDeletedItem) {
+                        tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                    }
+                    else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                case .chronologically:
+                    tableView.deleteRows(at: [indexPath], with: .fade)
                 }
-                else {tableView.deleteRows(at: [indexPath], with: .fade)}
                 tableView.endUpdates()
+                
+                shouldUpdateDailyNotifications = true
+                updatePendingNotifcationsBadges(forDate: dateToUpdate)
                 
                 completion(true)
             }
@@ -375,10 +579,50 @@ class MasterViewController: UITableViewController {
         performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)
     }
     
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        if let _tableView = scrollView as? UITableView {
+            if _tableView == tableView {
+                if headerIsExpanded {collapseHeader(animated: true)}
+            }
+        }
+    }
+    
     
     //
-    // MARK: - Delegation Methods
+    // MARK: - Picker View Delegate/Data Source
     //
+    //
+    // Picker View Data Source
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {return filterPickerViewData.count}
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return filterPickerViewData[component].count
+    }
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        var _viewToReturn = view as? UILabel
+        if _viewToReturn == nil {
+            _viewToReturn = UILabel()
+            _viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayLight, size: 14.0)
+            _viewToReturn!.textColor = GlobalColors.cyanRegular
+            _viewToReturn!.textAlignment = .center
+        }
+        let viewToReturn = _viewToReturn!
+        viewToReturn.text = filterPickerViewData[component][row]
+        return viewToReturn
+    }
+    
+    //
+    // Picker View Delegate
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        isUserChange = true
+        let newValue = filterPickerViewData[component][row]
+        if let filterChange = EventFilters.type(from: newValue) {currentFilter = filterChange}
+        else if let sortChange = SortMethods.type(from: newValue) {currentSort = sortChange}
+        else if newValue == filterPickerViewData[component][0] {futureToPast = true}
+        else if newValue == filterPickerViewData[component][1] {futureToPast = false}
+    }
+    
+    //func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {return 12.0}
     
     
     //
@@ -397,15 +641,152 @@ class MasterViewController: UITableViewController {
         let cell = sender.view!.superview!.superview! as! EventTableViewCell
         let indexPath = tableView.indexPath(for: cell)!
         cell.abridgedDisplayMode = !cell.abridgedDisplayMode
-        localPersistentStore.beginWrite()
+        mainRealm.beginWrite()
         items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode = !items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
-        try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
+        try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+    }
+    
+    @objc fileprivate func handleChangeInfoDisplayModeTap(_ sender: UITapGestureRecognizer) {
+        let cell = sender.view!.superview!.superview! as! EventTableViewCell
+        let indexPath = tableView.indexPath(for: cell)!
+        switch cell.infoDisplayed {
+        case .tagline:
+            cell.infoDisplayed = .date
+            mainRealm.beginWrite()
+            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.date.displayText
+            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+        case .date:
+            cell.infoDisplayed = .tagline
+            mainRealm.beginWrite()
+            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.tagline.displayText
+            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+        case .none: break
+        }
     }
     
     @objc fileprivate func cancel() {self.dismiss(animated: true, completion: nil)}
     
     @objc fileprivate func handleSettingsButtonTap() {
         performSegue(withIdentifier: SegueIdentifiers.showSettings, sender: self)
+    }
+    
+    @objc fileprivate func handleNavTitleTap(_ sender: UIButton) {
+        if headerIsExpanded {collapseHeader(animated: true)}
+        else {expandHeader(animated: true)}
+    }
+    
+    fileprivate func collapseHeader(animated: Bool) {
+        navItemTitle.setImage(#imageLiteral(resourceName: "ExpandSelectionImage"), for: .normal)
+        headerIsExpanded = false
+        if animated {
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.15,
+                delay: 0.0,
+                options: .curveLinear,
+                animations: {
+                    self.expandedHeaderContents.layer.opacity = 0.0
+                },
+                completion: {[weak self] (position) in
+                    self?.expandedHeaderContents.removeFromSuperview()
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.15,
+                        delay: 0.0,
+                        options: .curveLinear,
+                        animations: {
+                            self?.headerExpansion.frame = CGRect(
+                                origin: self!.headerExpansion.frame.origin,
+                                size: CGSize(width: self!.headerExpansion.bounds.width, height: 1.0)
+                            )
+                            self?.separator.frame = CGRect(
+                                origin: self!.headerExpansion.frame.origin,
+                                size: self!.separator.frame.size
+                            )
+                        },
+                        completion: {(position) in
+                            self!.headerExpansion.removeFromSuperview()
+                            self!.separator.removeFromSuperview()
+                        }
+                    )
+                }
+            )
+        }
+        else {
+            expandedHeaderContents.removeFromSuperview()
+            headerExpansion.removeFromSuperview()
+            separator.removeFromSuperview()
+        }
+    }
+    
+    fileprivate func expandHeader(animated: Bool) {
+        navItemTitle.setImage(#imageLiteral(resourceName: "ColapseSelectionImage"), for: .normal)
+        headerIsExpanded = true
+        let endHeight: CGFloat = 150.0
+        navigationController!.view.addSubview(headerExpansion)
+        navigationController!.view.addSubview(separator)
+        headerExpansion.frame = CGRect(
+            origin: tableView.frame.origin,
+            size: CGSize(width: navigationController!.view.bounds.width, height: 1.0)
+        )
+        separator.frame = CGRect(
+            origin: tableView.frame.origin,
+            size: CGSize(width: navigationController!.view.bounds.width, height: 1.0)
+        )
+        
+        let pickerViewIndex = expandedHeaderContents.subviews.index(where: {(view) in if let _ = view as? UIPickerView {return true} else {return false}})!
+        let pickerView = expandedHeaderContents.subviews[pickerViewIndex] as! UIPickerView
+        
+        let filterToSelect = filterPickerViewData[0].index(where: {$0 == currentFilter.string})!
+        let sortToSelect = filterPickerViewData[1].index(where: {$0 == currentSort.string})!
+        var orderToSelect: Int
+        if futureToPast {orderToSelect = filterPickerViewData[2].index(where: {$0 == "Yes"})!}
+        else {orderToSelect = filterPickerViewData[2].index(where: {$0 == "No"})!}
+        
+        pickerView.selectRow(filterToSelect, inComponent: 0, animated: false)
+        pickerView.selectRow(sortToSelect, inComponent: 1, animated: false)
+        pickerView.selectRow(orderToSelect, inComponent: 2, animated: false)
+
+        if animated {
+            expandedHeaderContents.layer.opacity = 0.0
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.15,
+                delay: 0.0,
+                options: .curveLinear,
+                animations: {
+                    self.headerExpansion.frame = CGRect(
+                        origin: self.headerExpansion.frame.origin,
+                        size: CGSize(width: self.headerExpansion.bounds.width, height: endHeight + 1)
+                    )
+                    self.separator.frame = CGRect(
+                        origin: CGPoint(x: self.headerExpansion.frame.origin.x, y: self.headerExpansion.frame.origin.y + endHeight),
+                        size: self.separator.frame.size
+                    )
+                },
+                completion: {[weak self] (position) in
+                    self?.navigationController!.view.addSubview(self!.expandedHeaderContents)
+                    self?.navigationController!.view.topAnchor.constraint(equalTo: self!.expandedHeaderContents.topAnchor, constant: -self!.navigationController!.navigationBar.bounds.height - UIApplication.shared.statusBarFrame.height).isActive = true
+                    self?.navigationController!.view.leftAnchor.constraint(equalTo: self!.expandedHeaderContents.leftAnchor).isActive = true
+                    self?.navigationController!.view.rightAnchor.constraint(equalTo: self!.expandedHeaderContents.rightAnchor).isActive = true
+                    self?.expandedHeaderContents.heightAnchor.constraint(equalToConstant: endHeight).isActive = true
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.15,
+                        delay: 0.0,
+                        options: .curveLinear,
+                        animations: {self?.expandedHeaderContents.layer.opacity = 1.0},
+                        completion: nil
+                    )
+                }
+            )
+        }
+        else {
+            headerExpansion.frame = CGRect(
+                origin: headerExpansion.frame.origin,
+                size: CGSize(width: headerExpansion.bounds.width, height: endHeight + 1)
+            )
+            separator.frame = CGRect(
+                origin: CGPoint(x: headerExpansion.frame.origin.x, y: self.headerExpansion.frame.origin.y + endHeight),
+                size: separator.frame.size
+            )
+        }
     }
     
     fileprivate func handleActionButtonTap(action: UIContextualAction, view: UIView, completion: (Bool) -> Void) {
@@ -420,18 +801,28 @@ class MasterViewController: UITableViewController {
         case "Delete":
             let categoryOfDeletedItem = items(forSection: indexPath.section)[indexPath.row].category
             
-            localPersistentStore.beginWrite()
-            localPersistentStore.delete(items(forSection: indexPath.section)[indexPath.row])
-            try! localPersistentStore.commitWrite(withoutNotifying: [localPersistentStoreNotificationToken])
+            if let config = items(forSection: indexPath.section)[indexPath.row].notificationsConfig {
+                var uuidsToDeschedule = [String]()
+                for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
+            }
+            mainRealm.beginWrite()
+            mainRealm.delete(items(forSection: indexPath.section)[indexPath.row])
+            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
             
             updateActiveCategories()
             updateIndexPathMap()
             
             tableView.beginUpdates()
-            if !activeCategories.contains(categoryOfDeletedItem) {
-                tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+            switch currentSort {
+            case .byCategory:
+                if !activeCategories.contains(categoryOfDeletedItem) {
+                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                }
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+            case .chronologically:
+                tableView.deleteRows(at: [indexPath], with: .fade)
             }
-            else {tableView.deleteRows(at: [indexPath], with: .fade)}
             tableView.endUpdates()
         default: break
         }
@@ -449,8 +840,9 @@ class MasterViewController: UITableViewController {
             
             if let temp = userDefaultsContainer?.value(forKey: "Categories") as? [String] {allCategories = temp}
             else { // Perform initial app load setup
+                firstRun = true
                 if userDefaultsContainer != nil {
-                    allCategories = ["Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"]
+                    allCategories = ["All", "Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"]
                     userDefaultsContainer!.set(allCategories, forKey: "Categories")
                 }
                 else {
@@ -460,10 +852,11 @@ class MasterViewController: UITableViewController {
                 
             }
             
-            try localPersistentStore = Realm(configuration: realmConfig)
+            try mainRealm = Realm(configuration: realmConfig)
             syncRealmWithCloud()
             
-            specialEvents = localPersistentStore!.objects(SpecialEvent.self)
+            mainRealmSpecialEvents = mainRealm!.objects(SpecialEvent.self)
+            defaultNotificationsConfig = mainRealm!.objects(DefaultNotificationsConfig.self)
             updateActiveCategories()
             updateIndexPathMap()
             tableView.reloadData()
@@ -471,10 +864,11 @@ class MasterViewController: UITableViewController {
             addOrRemoveNewCellPrompt()
             
             // Setup notification token for database changes
-            localPersistentStoreNotificationToken = specialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
+            specialEventsOnMainRealmNotificationToken = mainRealmSpecialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
                 if !weakSelf!.isUserChange {
                     switch changes {
                     case .error(let error):
+                        // TODO: Log and break
                         fatalError("Error with Realm notifications: \(error.localizedDescription)")
                     case .initial: break
                     case .update(_, let deletions, let insertions, let modifications):
@@ -541,6 +935,8 @@ class MasterViewController: UITableViewController {
                             }
                         }
                         
+                        shouldUpdateDailyNotifications = true
+                        
                         DispatchQueue.main.async { [weak weakSelf = self] in
                             if weakSelf != nil {
                                 
@@ -586,9 +982,23 @@ class MasterViewController: UITableViewController {
     
     // Function to update the active categories when changes to the data model occur.
     fileprivate func updateActiveCategories() {
+        
         activeCategories.removeAll()
-        for event in specialEvents {
-            if !activeCategories.contains(event.category) {activeCategories.append(event.category)}
+        var filteredEvents = mainRealmSpecialEvents!
+        
+        let todaysDate = Date()
+        switch currentFilter {
+        case .all: break
+        case .upcoming: filteredEvents = filteredEvents.filter("date.date > %@", todaysDate)
+        case .past: filteredEvents = filteredEvents.filter("date.date < %@", todaysDate)
+        }
+        
+        switch currentSort {
+        case .chronologically: if filteredEvents.count != 0 {activeCategories.append("All")}
+        case .byCategory:
+            for event in filteredEvents {
+                if !activeCategories.contains(event.category) {activeCategories.append(event.category)}
+            }
         }
         
         if !activeCategories.isEmpty {
@@ -612,10 +1022,10 @@ class MasterViewController: UITableViewController {
     }
     
     fileprivate func updateIndexPathMap() {
-        indexPathMap = Array(repeating: IndexPath(), count: specialEvents.count)
+        indexPathMap = Array(repeating: IndexPath(), count: mainRealmSpecialEvents.count)
         for section in 0..<activeCategories.count {
             for (row, event) in items(forSection: section).enumerated() {
-                let index = specialEvents.index(of: event)!
+                let index = mainRealmSpecialEvents.index(of: event)!
                 indexPathMap[index] = IndexPath(row: row, section: section)
             }
         }
@@ -623,17 +1033,6 @@ class MasterViewController: UITableViewController {
     
     // Function to add a new event from the events page.
     @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
-    
-    /*@objc fileprivate func editTableView(_ sender: UIBarButtonItem) {
-        if sender.title == "EDIT" {
-            tableView.setEditing(true, animated: true)
-            sender.title = "DONE"
-        }
-        else if sender.title == "DONE" {
-            tableView.setEditing(false, animated: true)
-            sender.title = "EDIT"
-        }
-    }*/
     
     fileprivate func addOrRemoveNewCellPrompt() -> Void {
         // TODO: Make this a soft and comfortable glyph instead of harsh text.
@@ -651,18 +1050,30 @@ class MasterViewController: UITableViewController {
     }
     
     func items(forSection section: Int) -> Results<SpecialEvent> {
-        switch eventSortMethod {
-        case .chronologicalNewestFirst:
-            return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: true)
-        case .chronologicalOldestFirst:
-            return specialEvents.filter("category = %@", activeCategories[section]).sorted(byKeyPath: "date.date", ascending: false)
+        var eventsToReturn = mainRealmSpecialEvents!
+        
+        let todaysDate = Date()
+        switch currentFilter {
+        case .all: break
+        case .upcoming: eventsToReturn = eventsToReturn.filter("date.date > %@", todaysDate)
+        case .past: eventsToReturn = eventsToReturn.filter("date.date < %@", todaysDate)
         }
+        
+        switch currentSort {
+        case .byCategory: eventsToReturn = eventsToReturn.filter("category = %@", activeCategories[section])
+        case .chronologically: break
+        }
+        
+        if futureToPast {eventsToReturn = eventsToReturn.sorted(byKeyPath: "date.date", ascending: true)}
+        else {eventsToReturn = eventsToReturn.sorted(byKeyPath: "date.date", ascending: false)}
+        
+        return eventsToReturn
     }
     
     fileprivate func indexPaths(forEvents indicies: [Int]) -> [IndexPath] {
         var indexPathsToReturn = [IndexPath]()
         for index in indicies {
-            let category = specialEvents[index].category
+            let category = mainRealmSpecialEvents[index].category
             let section = activeCategories.index(where: {$0 == category})!
             let items = self.items(forSection: section)
             let row = items.index(where: {$0.category == category})!
