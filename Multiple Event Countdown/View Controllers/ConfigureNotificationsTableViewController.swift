@@ -756,6 +756,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             switch segueFrom {
             case .individualEvent: performSegue(withIdentifier: "Unwind to Event", sender: self)
             case .settings:
+                for notif in defaultNotificationsConfig[0].eventNotifications {notif.cascadeDelete()}
                 do {
                     try! mainRealm.write {
                         defaultNotificationsConfig[0].individualEventRemindersOn = globalToggleOn

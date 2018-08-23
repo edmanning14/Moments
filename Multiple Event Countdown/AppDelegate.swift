@@ -82,6 +82,7 @@ struct UserDefaultKeys {
     }
     static let dateDisplayMode = "Date Display Mode"
 }
+let defaultCategories = ["Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Anniversaries", "Wedding", "Family", "Other"]
 let immutableCategories = ["Favorites", "Uncategorized", "All"]
 
 //
@@ -106,7 +107,9 @@ struct GlobalFontNames {
     static let ralewayLight = "Raleway-Light" // Small Text
     static let ralewayRegular = "Raleway-Regular" // Text
     static let ralewayMedium = "Raleway-Medium" // Cell Title
+    static let ralewayMediumItalic = "Raleway-MediumItalic" // Modified category2
 }
+
 
 // MARK: Animation
 struct GlobalAnimations {
@@ -180,7 +183,7 @@ func scheduleNewEvents  (titled eventTitles: [String]) {
                 
                 //
                 // Create notifs for the new event.
-                if let specialEventConfig = localManagedSpecialEvent.notificationsConfig {
+                if let specialEventConfig = localManagedSpecialEvent.notificationsConfig, specialEventConfig.eventNotificationsOn {
                     
                     for (i, realmEventNotification) in specialEventConfig.eventNotifications.enumerated() {
                         
@@ -240,8 +243,8 @@ func scheduleNewEvents  (titled eventTitles: [String]) {
                                 let triggerComponents = Calendar.current.dateComponents(yearToSecondsComponents, from: newDate)
                                 trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
                                 
-                                if precision == "month" || precision == "months" {notificationContent.title = "The Big Event is Coming Up! ⏳"}
-                                else {notificationContent.title = "Almost There! ⌛️"}
+                                if precision == "month" || precision == "months" {notificationContent.title = "Your Special Moment is Coming Up! ⏳"}
+                                else {notificationContent.title = "It's Almost Time! ⌛️"}
                                 
                                 let bodyString = "\"\(localManagedSpecialEvent.title)\" is in \(value) \(precision)!"
                                 notificationContent.body = bodyString
@@ -318,95 +321,93 @@ func scheduleNewEvents  (titled eventTitles: [String]) {
                     }
                 }
             }
-        }
-    }
-    
-    print("Trigger group count: \(notifsThatNeedBadge.count)")
-    for value in notifsThatNeedBadge.values {
-        print("Number of values in each trigger group: \(value.count)")
-    }
-    
-    if !notifsThatNeedBadge.isEmpty {
-        UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
             
-            for request in requests {
-                guard request.content.title != dailyNotificationsTitle else {continue}
-                if let calendarTrigger = request.trigger as? UNCalendarNotificationTrigger, let triggerDate = calendarTrigger.nextTriggerDate() {
-                    for keyDate in notifsThatNeedBadge.keys {
-                        if currentCalendar.isDate(triggerDate, inSameDayAs: keyDate) {
-                            
-                            let content = UNMutableNotificationContent()
-                            content.title = request.content.title
-                            content.body = request.content.body
-                            content.sound = request.content.sound
-                            let newIdent = UUID().uuidString
-                            
-                            autoreleasepool {
-                                let changeUUIDRealm = try! Realm(configuration: realmConfig)
-                                let configs = changeUUIDRealm.objects(RealmEventNotification.self)
-                                print("Looking for: \(request.identifier)")
-                                for config in configs {print("Available: \(config.uuid)")}
-                                let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
-                                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
-                                do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
-                                print("Written ident: \(newIdent)")
-                                
-                                print("Notifications stored during old notifications fetch:")
-                                let allEventNotifications = changeUUIDRealm.objects(RealmEventNotification.self)
-                                for (i, realmNotif) in allEventNotifications.enumerated() {
-                                    print("\(i + 1): \(realmNotif.uuid)")
+            print("Trigger group count: \(notifsThatNeedBadge.count)")
+            for value in notifsThatNeedBadge.values {
+                print("Number of values in each trigger group: \(value.count)")
+            }
+            
+            if !notifsThatNeedBadge.isEmpty {
+                UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
+                    
+                    for request in requests {
+                        guard request.content.title != dailyNotificationsTitle else {continue}
+                        if let calendarTrigger = request.trigger as? UNCalendarNotificationTrigger, let triggerDate = calendarTrigger.nextTriggerDate() {
+                            for keyDate in notifsThatNeedBadge.keys {
+                                if currentCalendar.isDate(triggerDate, inSameDayAs: keyDate) {
+                                    
+                                    let content = UNMutableNotificationContent()
+                                    content.title = request.content.title
+                                    content.body = request.content.body
+                                    content.sound = request.content.sound
+                                    let newIdent = UUID().uuidString
+                                    
+                                    autoreleasepool {
+                                        let changeUUIDRealm = try! Realm(configuration: realmConfig)
+                                        print("Looking for: \(request.identifier)")
+                                        let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
+                                        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
+                                        do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
+                                        print("Written ident: \(newIdent)")
+                                        
+                                        print("Notifications stored during old notifications fetch:")
+                                        let allEventNotifications = changeUUIDRealm.objects(RealmEventNotification.self)
+                                        for (i, realmNotif) in allEventNotifications.enumerated() {
+                                            print("\(i + 1): \(realmNotif.uuid)")
+                                        }
+                                    }
+                                    
+                                    notifsThatNeedBadge[keyDate]!.append((newIdent, content, calendarTrigger))
                                 }
                             }
-                            
-                            notifsThatNeedBadge[keyDate]!.append((newIdent, content, calendarTrigger))
+                        }
+                        else {
+                            // TODO: Log, continue
+                            fatalError("Unexpected trigger type or no trigger!")
                         }
                     }
-                }
-                else {
-                    // TODO: Log, continue
-                    fatalError("Unexpected trigger type or no trigger!")
-                }
-            }
-            
-            guard !notifsThatNeedBadge.isEmpty else {return}
-            
-            //
-            // Order requests
-            for triggerGroup in notifsThatNeedBadge {
-                let newValue = triggerGroup.value.sorted { (request1, request2) -> Bool in
-                    let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
-                    let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
-                    let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
-                    let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
-                    if request1TriggerDate < request2TriggerDate {return true} else {return false}
-                }
-                notifsThatNeedBadge[triggerGroup.key] = newValue
-            }
-            
-            for value in notifsThatNeedBadge.values {
-                for data in value {
-                    let trigger = data.2 as! UNCalendarNotificationTrigger
-                    let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
-                    print("\(data.1.body) triggers \(triggerDate)")
-                }
-            }
-            
-            for triggerGroup in notifsThatNeedBadge {
-                for (i, value) in triggerGroup.value.enumerated() {
-                    value.1.badge = NSNumber(integerLiteral: i + 1)
-                }
-            }
-            
-            for triggerGroup in notifsThatNeedBadge {
-                for value in triggerGroup.value {print("\(value.1.body) Badge num: \(Int(truncating: value.1.badge ?? 0))")}
-            }
-            
-            //
-            // Schedule the new requests
-            for value in notifsThatNeedBadge.values {
-                for data in value {
-                    let newRequest = UNNotificationRequest(identifier: data.0, content: data.1, trigger: data.2)
-                    schedule(request: newRequest)
+                    
+                    guard !notifsThatNeedBadge.isEmpty else {return}
+                    
+                    //
+                    // Order requests
+                    for triggerGroup in notifsThatNeedBadge {
+                        let newValue = triggerGroup.value.sorted { (request1, request2) -> Bool in
+                            let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
+                            let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
+                            let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
+                            let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
+                            if request1TriggerDate < request2TriggerDate {return true} else {return false}
+                        }
+                        notifsThatNeedBadge[triggerGroup.key] = newValue
+                    }
+                    
+                    for value in notifsThatNeedBadge.values {
+                        for data in value {
+                            let trigger = data.2 as! UNCalendarNotificationTrigger
+                            let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
+                            print("\(data.1.body) triggers \(triggerDate)")
+                        }
+                    }
+                    
+                    for triggerGroup in notifsThatNeedBadge {
+                        for (i, value) in triggerGroup.value.enumerated() {
+                            value.1.badge = NSNumber(integerLiteral: i + 1)
+                        }
+                    }
+                    
+                    for triggerGroup in notifsThatNeedBadge {
+                        for value in triggerGroup.value {print("\(value.1.body) Badge num: \(Int(truncating: value.1.badge ?? 0))")}
+                    }
+                    
+                    //
+                    // Schedule the new requests
+                    for value in notifsThatNeedBadge.values {
+                        for data in value {
+                            let newRequest = UNNotificationRequest(identifier: data.0, content: data.1, trigger: data.2)
+                            schedule(request: newRequest)
+                        }
+                    }
                 }
             }
             
@@ -501,7 +502,7 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
 let dailyNotificationsTitle = "Daily Update 🗞"
 let notificationTimeAsDateKey = "Notification Time As Date"
 let currentlyScheduledUUIDKey = "currently Scheduled UUID"
-let userDefaults = UserDefaults.standard
+let userDefaults = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")!
 let currentCalendar = Calendar.current
 let yearToSecondsComponents: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
 
@@ -701,6 +702,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        /*for family in UIFont.familyNames.sorted() {
+            let names = UIFont.fontNames(forFamilyName: family)
+            print("Family: \(family) Font names: \(names)")
+        }*/
         
         UIApplication.shared.statusBarStyle = .lightContent
         UIApplication.shared.setMinimumBackgroundFetchInterval(60 * 60 * 8)

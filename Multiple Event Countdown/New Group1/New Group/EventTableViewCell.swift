@@ -275,6 +275,7 @@ class EventTableViewCell: UITableViewCell {
     //
     // MARK: UI Elements
     @IBOutlet weak var viewWithMargins: UIView!
+    @IBOutlet weak var spacingAdjustmentConstraint: NSLayoutConstraint!
     @IBOutlet weak var mainImageView: UIImageView!
     
     @IBOutlet weak var titleLabel: UILabel!

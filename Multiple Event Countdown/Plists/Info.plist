@@ -26,11 +26,13 @@
 	<string>Your past moments will be used in app, if you choose. Your moments may be stored in-app, but never online, and they will never be edited or deleted by the app. Thanks for your support and happy counting down!</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>DS-DIGIB.TTF</string>
-		<string>FiraSans</string>
 		<string>Comfortaa-Bold.ttf</string>
 		<string>Comfortaa-Light.ttf</string>
 		<string>Comfortaa-Regular.ttf</string>
+		<string>Raleway-MediumItalic.ttf</string>
+		<string>Raleway-Light.ttf</string>
+		<string>Raleway-Regular.ttf</string>
+		<string>Raleway-Medium.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -65,6 +67,12 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fb</string>
+		<string>instagram</string>
+		<string>twitter</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

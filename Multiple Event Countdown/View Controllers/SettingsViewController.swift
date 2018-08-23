@@ -9,8 +9,9 @@
 import UIKit
 import RealmSwift
 import UserNotifications
+import MessageUI
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate, MFMailComposeViewControllerDelegate {
 
     //
     // MARK: Paramters
@@ -34,20 +35,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         static let resetAllThemes = SettingsTypeDataSource.Option(text: nil) {}
         static let resetNotifsToDefaults = SettingsTypeDataSource.Option(text: nil) {}
         struct dateDisplayMode {
-            static let short = SettingsTypeDataSource.Option(text: "Short") {
-                
-            }
-            static let long = SettingsTypeDataSource.Option(text: "Long") {
-                
-            }
+            static let short = SettingsTypeDataSource.Option(text: "Short") {}
+            static let long = SettingsTypeDataSource.Option(text: "Long") {}
         }
         struct widgetSort {
-            static let random = SettingsTypeDataSource.Option(text: "Random") {
-                
-            }
-            static let upcoming = SettingsTypeDataSource.Option(text: "Upcoming") {
-                
-            }
+            static let random = SettingsTypeDataSource.Option(text: "Random") {}
+            static let upcoming = SettingsTypeDataSource.Option(text: "Upcoming") {}
         }
         struct allNotifications {
             static let on = SettingsTypeDataSource.Option(text: "On") {}
@@ -67,14 +60,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let dataSource = SettingsTypeDataSource()
         
         // Section 1
-        let s1 = dataSource.addSection(title: "Appearence")
+        let s1 = dataSource.addSection(title: Text.SectionTitles.general)
         
-        let s1r1 = dataSource[s1].addRow(type: .action, title: Text.RowTitles.resetAllThemes)
-        dataSource[s1].rows[s1r1].options.append(Options.resetAllThemes)
+        let s1r1 = dataSource[s1].addRow(type: .segue, title: Text.RowTitles.organizeCategories)
         
-        let s1r2 = dataSource[s1].addRow(type: .selectOption, title: Text.RowTitles.dateDisplayMode)
-        dataSource[s1].rows[s1r2].options.append(Options.dateDisplayMode.short)
-        dataSource[s1].rows[s1r2].options.append(Options.dateDisplayMode.long)
+        let s1r2 = dataSource[s1].addRow(type: .action, title: Text.RowTitles.resetAllThemes)
+        dataSource[s1].rows[s1r2].options.append(Options.resetAllThemes)
+        
+        let s1r3 = dataSource[s1].addRow(type: .selectOption, title: Text.RowTitles.dateDisplayMode)
+        dataSource[s1].rows[s1r3].options.append(Options.dateDisplayMode.short)
+        dataSource[s1].rows[s1r3].options.append(Options.dateDisplayMode.long)
         
         // Section 2
         let s2 = dataSource.addSection(title: Text.SectionTitles.widgit)
@@ -137,21 +132,23 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     //
     // MARK: Realm
     var mainRealm: Realm!
-    var notificationsConfig: Results<DefaultNotificationsConfig>!
+    var defaultNotificationsConfig: Results<DefaultNotificationsConfig>!
     
     //
     // MARK: Other Constants
+    let headerViewTitles = ["Contact Me!", "Say Hello!", "Have a Question?", "Have Feedback?", "Have an Idea?", "I don't bite!", "How do you like the app?"]
     struct cellReuseIdentifiers {
         static let settingsCell = "Settings Cell"
     }
     
     struct Text {
         struct SectionTitles {
-            static let apperence = "Appearence"
+            static let general = "General"
             static let widgit = "Configure Widget"
             static let notifications = "Notifications"
         }
         struct RowTitles {
+            static let organizeCategories = "Organize Categories"
             static let resetAllThemes = "Reset All Themes"
             static let dateDisplayMode = "Date Display Mode"
             static let widgetSort = "Sort"
@@ -163,14 +160,174 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     //
+    // MARK: Flags
+    var composingBugReport = false
+    var composingContactMeMessage = false
+    
+    //
     // MARK: GUI
     
     @IBOutlet weak var headerView: UIView!
+    @IBOutlet weak var headerViewTitle: UILabel!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var secondaryButtonsStackView: UIStackView!
     @IBOutlet weak var headerViewMeImageConstraint: NSLayoutConstraint!
+    @IBOutlet weak var headerViewMeImageToButtonsConstraint: NSLayoutConstraint!
     @IBOutlet weak var headerViewTopAnchor: NSLayoutConstraint!
-    let maxTopAnchorDimension: CGFloat = 12.0
+    @IBOutlet weak var headerViewBottomAnchor: NSLayoutConstraint!
+    
+    @IBAction func sendMeMail(_ sender: UIButton) {
+        if MFMailComposeViewController.canSendMail() {
+            composingContactMeMessage = true
+            let composeVC = MFMailComposeViewController()
+            composeVC.mailComposeDelegate = self
+            
+            composeVC.setToRecipients(["indiedeved@gmail.com"])
+            composeVC.setSubject("Hello!")
+            
+            self.present(composeVC, animated: true, completion: nil)
+        }
+        else {
+            guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
+                #if DEBUG
+                fatalError("Expected a valid URL here.")
+                #endif
+                // TODO: Tell user there was a problem sending the mail.
+            }
+            guard UIApplication.shared.canOpenURL(mailToURL) else {
+                // TODO: Tell user they may not be configured to send mail.
+                return
+            }
+            UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
+        }
+    }
+    
+    @IBAction func sendFBMessage(_ sender: UIButton) {
+        if let fbAppURL = URL(string: "fb://profile/191744958342767") {
+            if UIApplication.shared.canOpenURL(fbAppURL) {
+                UIApplication.shared.open(fbAppURL, options: [:], completionHandler: nil)
+            }
+            else {
+                if let fbInternetURL = URL(string: "https://www.facebook.com/IndieDevEd") {
+                    UIApplication.shared.open(fbInternetURL, options: [:], completionHandler: nil)
+                }
+                else {
+                    // TODO: Log, continue
+                    fatalError("URL couldnt be created for some reason...")
+                }
+            }
+        }
+        else {
+            // TODO: Log, continue
+            fatalError("URL couldnt be created for some reason...")
+        }
+    }
+    
+    @IBAction func tweetAtMe(_ sender: UIButton) {
+        if let twitterAppURL = URL(string: "twitter://user?id=1012615671362928642") {
+            if UIApplication.shared.canOpenURL(twitterAppURL) {
+                UIApplication.shared.open(twitterAppURL, options: [:], completionHandler: nil)
+            }
+            else {
+                if let twitterInternetURL = URL(string: "https://twitter.com/IndieMakerEd") {
+                    UIApplication.shared.open(twitterInternetURL, options: [:], completionHandler: nil)
+                }
+                else {
+                    // TODO: Log, continue
+                    fatalError("URL couldnt be created for some reason...")
+                }
+            }
+        }
+        else {
+            // TODO: Log, continue
+            fatalError("URL couldnt be created for some reason...")
+        }
+    }
+    
+    @IBAction func sendInstaMessage(_ sender: UIButton) {
+        if let instaAppURL = URL(string: "instagram://user?username=indiemakered") {
+            if UIApplication.shared.canOpenURL(instaAppURL) {
+                UIApplication.shared.open(instaAppURL, options: [:], completionHandler: nil)
+            }
+            else {
+                if let instaInternetURL = URL(string: "https://www.instagram.com/indiemakered/") {
+                    UIApplication.shared.open(instaInternetURL, options: [:], completionHandler: nil)
+                }
+                else {
+                    // TODO: Log, continue
+                    fatalError("URL couldnt be created for some reason...")
+                }
+            }
+        }
+        else {
+            // TODO: Log, continue
+            fatalError("URL couldnt be created for some reason...")
+        }
+    }
+    
+    @IBAction func request(_ sender: UIButton) {
+        if MFMailComposeViewController.canSendMail() {
+            composingBugReport = true
+            let composeVC = MFMailComposeViewController()
+            composeVC.mailComposeDelegate = self
+            
+            composeVC.setToRecipients(["indiedeved@gmail.com"])
+            composeVC.setSubject("I have an idea!")
+            composeVC.setMessageBody("Have an idea how this app can be better? Is it missing a feature you desparately want? Does somthing not quite look right? How can I do better?:\n\n", isHTML: false)
+            
+            self.present(composeVC, animated: true, completion: nil)
+        }
+        else {
+            guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
+                #if DEBUG
+                fatalError("Expected a valid URL here.")
+                #endif
+                // TODO: Tell user there was a problem sending the mail.
+            }
+            guard UIApplication.shared.canOpenURL(mailToURL) else {
+                // TODO: Tell user they may not be configured to send mail.
+                return
+            }
+            UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
+        }
+    }
+    
+    @IBAction func reportBug(_ sender: UIButton) {
+        if MFMailComposeViewController.canSendMail() {
+            composingBugReport = true
+            let composeVC = MFMailComposeViewController()
+            composeVC.mailComposeDelegate = self
+            
+            composeVC.setToRecipients(["indiedeved@gmail.com"])
+            composeVC.setSubject("I found a bug!")
+            composeVC.setMessageBody("Please describe the bug in detail. e.g. What happened? Did the app fail to perform as expected? Did it fail at a task? Does somthing look funny?:\n\n\n\nPlease describe what you were doing when the bug occured or what was the last thing you did when the bug occured. e.g. Did you tap a button? Were you scrolling through a view?:\n\n", isHTML: false)
+            
+            self.present(composeVC, animated: true, completion: nil)
+        }
+        else {
+            guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
+                #if DEBUG
+                fatalError("Expected a valid URL here.")
+                #endif
+                // TODO: Tell user there was a problem sending the mail.
+            }
+            guard UIApplication.shared.canOpenURL(mailToURL) else {
+                // TODO: Tell user they may not be configured to send mail.
+                return
+            }
+            UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
+        }
+    }
+    
+    @IBAction func rateApp(_ sender: UIButton) {
+        guard let writeReviewURL = URL(string: "https://itunes.apple.com/app/id1342990841?action=write-review") else { fatalError("Expected a valid URL") }
+        UIApplication.shared.open(writeReviewURL, options: [:], completionHandler: nil)
+    }
+    
+    let maxTopAnchorDimension: CGFloat = 18.0
+    let maxBottomAnchorDimension: CGFloat = 12.0
     var minTopAnchorDimension: CGFloat = 0.0
+    var minBottomAnchorDimension: CGFloat = 0.0
     var previousScrollOffset: CGFloat = 0.0
     
     //
@@ -182,15 +339,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         tableView.delegate = self
         tableView.tableFooterView = UIView()
         
-        minTopAnchorDimension = -headerViewMeImageConstraint.constant
+        headerViewTopAnchor.constant = maxTopAnchorDimension
+        headerViewBottomAnchor.constant = maxBottomAnchorDimension
+        minTopAnchorDimension = -headerViewMeImageConstraint.constant - max((headerViewMeImageToButtonsConstraint.constant - maxTopAnchorDimension), 0.0)
+        minBottomAnchorDimension = -secondaryButtonsStackView.bounds.height
 
         let settingsCellNib = UINib(nibName: "SettingsTableViewCell", bundle: nil)
         tableView.register(settingsCellNib, forCellReuseIdentifier: cellReuseIdentifiers.settingsCell)
         
         try! mainRealm = Realm(configuration: realmConfig)
-        notificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
+        defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
-        if notificationsConfig.count != 1 {
+        if defaultNotificationsConfig.count != 1 {
             // TODO: Log this error, delete the first one maybe for production?
             fatalError("There were multiple notification configs! Should only be one.")
         }
@@ -199,12 +359,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             dateDisplayMode = Options.dateDisplayMode.short
         }
         else {dateDisplayMode = Options.dateDisplayMode.long}
-        if notificationsConfig[0].allOn {allNotifications = Options.allNotifications.on}
+        if defaultNotificationsConfig[0].allOn {allNotifications = Options.allNotifications.on}
         else {allNotifications = Options.allNotifications.off}
-        if notificationsConfig[0].dailyNotificationOn {dailyReminders = Options.dailyReminders.on}
+        if defaultNotificationsConfig[0].dailyNotificationOn {dailyReminders = Options.dailyReminders.on}
         else {dailyReminders = Options.dailyReminders.off}
-        if notificationsConfig[0].individualEventRemindersOn {eventReminders = Options.eventReminders.on}
+        if defaultNotificationsConfig[0].individualEventRemindersOn {eventReminders = Options.eventReminders.on}
         else {eventReminders = Options.eventReminders.off}
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        let randomIndex = Int(arc4random_uniform(UInt32(headerViewTitles.count)))
+        headerViewTitle.text = headerViewTitles[randomIndex]
     }
     
     override func didReceiveMemoryWarning() {super.didReceiveMemoryWarning()}
@@ -257,6 +422,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             case Text.RowTitles.allNotifications: cell.selectedOption = allNotifications
             case Text.RowTitles.dailyReminders: cell.selectedOption = dailyReminders
             case Text.RowTitles.eventReminders: cell.selectedOption = eventReminders
+            case Text.RowTitles.organizeCategories: break
             default:
                 // TODO: break
                 fatalError("Need to add a row title?")
@@ -276,6 +442,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         switch rowData.type {
         case .action, .segue:
             switch rowData.title {
+            case Text.RowTitles.organizeCategories:
+                performSegue(withIdentifier: "Order Categories", sender: self)
             case Text.RowTitles.dailyReminders:
                 configuring = .dailyReminders
                 performSegue(withIdentifier: "Configure Notifications", sender: self)
@@ -286,27 +454,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 let alert = UIAlertController(title: "Are You Sure?", message: "Are you sure you want to reset all notifications to default settings?", preferredStyle: .alert)
                 let yes = UIAlertAction(title: "Yes please", style: .default) { (action) in
                     self.dismiss(animated: true, completion: nil)
+                    self.defaultNotificationsConfig[0].cascadeDelete()
                     do {
                         try! self.mainRealm.write {
-                            self.notificationsConfig[0].allOn = Defaults.Notifications.allOn
-                            self.notificationsConfig[0].dailyNotificationOn = Defaults.Notifications.dailyNotificationsOn
+                            self.defaultNotificationsConfig[0].allOn = Defaults.Notifications.allOn
+                            self.defaultNotificationsConfig[0].dailyNotificationOn = Defaults.Notifications.dailyNotificationsOn
                             
                             let newScheduleTime = RealmEventNotificationComponents(fromDateComponents: Defaults.Notifications.dailyNotificationsScheduledTime)
-                            if let oldScheduleTime = self.notificationsConfig[0].dailyNotificationsScheduledTime {
-                                self.mainRealm.delete(oldScheduleTime)
-                            }
-                            self.notificationsConfig[0].dailyNotificationsScheduledTime = newScheduleTime
+                            self.defaultNotificationsConfig[0].dailyNotificationsScheduledTime = newScheduleTime
                             
-                            self.notificationsConfig[0].individualEventRemindersOn = Defaults.Notifications.individualEventRemindersOn
+                            self.defaultNotificationsConfig[0].individualEventRemindersOn = Defaults.Notifications.individualEventRemindersOn
                             
                             let newRealmNotifTimes = List<RealmEventNotification>()
                             for eventNotif in Defaults.Notifications.eventNotifications {
-                                newRealmNotifTimes.append(RealmEventNotification(fromEventNotification: eventNotif))
+                                newRealmNotifTimes.append(RealmEventNotification(copyingEventNotification: eventNotif))
                             }
-                            self.mainRealm.delete(self.notificationsConfig[0].eventNotifications)
-                            self.notificationsConfig[0].eventNotifications.append(objectsIn: newRealmNotifTimes)
+                            self.defaultNotificationsConfig[0].eventNotifications.append(objectsIn: newRealmNotifTimes)
                             
-                            self.notificationsConfig[0].categoriesToNotify = Defaults.Notifications.categoriesToNotify
+                            self.defaultNotificationsConfig[0].categoriesToNotify = Defaults.Notifications.categoriesToNotify
                         }
                     }
                     
@@ -329,25 +494,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                 //
                                 // Reset all events to default, get uuids
                                 var uuidsToDeschedule = [String]()
+                                
                                 for event in resetDefaultsSpecialEvents {
-                                    print(event.title)
+                                    print("Reseting \"\(event.title)\"")
+                                    
                                     if event.notificationsConfig != nil { // Old config
+                                        for notif in event.notificationsConfig!.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
+                                        event.notificationsConfig!.cascadeDelete()
+                                        
+                                        let newRealmNotifications = List<RealmEventNotification>()
+                                        for eventNotif in Defaults.Notifications.eventNotifications {
+                                            let realmNotif = RealmEventNotification(copyingEventNotification: eventNotif)
+                                            newRealmNotifications.append(realmNotif)
+                                        }
+                                        
                                         do {
                                             try! resetDefaultsRealm.write {
-                                                for notif in event.notificationsConfig!.eventNotifications {
-                                                    print("Old notif: \(notif.uuid)")
-                                                    uuidsToDeschedule.append(notif.uuid)
-                                                    resetDefaultsRealm.delete(notif)
-                                                }
                                                 event.notificationsConfig!.eventNotificationsOn = Defaults.Notifications.individualEventRemindersOn
                                                 event.notificationsConfig!.isCustom = false
-                                                
-                                                let newRealmNotifications = List<RealmEventNotification>()
-                                                for eventNotif in Defaults.Notifications.eventNotifications {
-                                                    let realmNotif = RealmEventNotification(copyingEventNotification: eventNotif)
-                                                    print("New notif: \(realmNotif.uuid)")
-                                                    newRealmNotifications.append(realmNotif)
-                                                }
                                                 event.notificationsConfig!.eventNotifications.append(objectsIn: newRealmNotifications)
                                             }
                                         }
@@ -356,12 +520,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                     else { // New config
                                         var realmEventNotifs = [RealmEventNotification]()
                                         for eventNotif in Defaults.Notifications.eventNotifications {
-                                            let realmEventNotif = RealmEventNotification(fromEventNotification: eventNotif)
+                                            let realmEventNotif = RealmEventNotification(copyingEventNotification: eventNotif)
                                             realmEventNotifs.append(realmEventNotif)
                                         }
                                         let newConfig = RealmEventNotificationConfig(
                                             eventNotifications: realmEventNotifs,
-                                            eventNotificationsOn: Defaults.Notifications.individualEventRemindersOn,
+                                            eventNotificationsOn: true,
                                             isCustom: false)
                                         
                                         do {try! resetDefaultsRealm.write {event.notificationsConfig = newConfig}}
@@ -421,17 +585,26 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     //
     // MARK: Scroll view delegate
-    /*func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView == tableView {
             let scrollDiff = scrollView.contentOffset.y - previousScrollOffset
+            let absoluteTop: CGFloat = 0;
+            let absoluteBottom: CGFloat = scrollView.contentSize.height - scrollView.frame.size.height
             let isScrollingDown = scrollDiff > 0
             
             var newHeight = headerViewTopAnchor.constant
-            if isScrollingDown {
-                newHeight = max(minTopAnchorDimension, headerViewTopAnchor.constant - abs(scrollDiff))
+            if isScrollingDown && scrollView.contentOffset.y > absoluteTop {
+                let possibleNewValue = headerViewTopAnchor.constant - abs(scrollDiff)
+                if minTopAnchorDimension > possibleNewValue {newHeight = minTopAnchorDimension}
+                else {
+                    newHeight = possibleNewValue
+                    scrollView.contentOffset.y = previousScrollOffset
+                }
+                
             }
-            else {
-                if scrollView.contentOffset.y == 0.0 {
+            else if scrollView.contentOffset.y < absoluteBottom {
+                if scrollView.contentOffset.y <= 0.0 {
                     newHeight = min(maxTopAnchorDimension, headerViewTopAnchor.constant + abs(scrollDiff))
                 }
             }
@@ -439,7 +612,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             if newHeight != headerViewTopAnchor.constant {headerViewTopAnchor.constant = newHeight}
             previousScrollOffset = scrollView.contentOffset.y
         }
-    }*/
+    }
     
     //
     // MARK: SettingsTableViewCellDelegate
@@ -469,6 +642,67 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     //
+    // MARK: mailComposeDelegate
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        if let _error = error {
+            #if DEBUG
+            print(_error.localizedDescription)
+            fatalError("^ Check Error")
+            #endif
+            // TODO: Tell user there was an error sending the message.
+        }
+        self.dismiss(animated: true) {
+            switch result {
+            case .sent:
+                if self.composingBugReport {
+                    let thanksController = UIAlertController(title: "Report Submitted!", message: "\nThank you for getting in touch with me and helping to make this app better! I may return your e-mail to get more information about the bug or issue you are having.\n\nEnjoy each moment!", preferredStyle: .alert)
+                    let dismissAction = UIAlertAction(title: "Dismiss", style: .default) { (action) in
+                        self.dismiss(animated: true, completion: nil)
+                        self.composingBugReport = false
+                    }
+                    
+                    thanksController.addAction(dismissAction)
+                    self.present(thanksController, animated: true, completion: nil)
+                }
+                
+                if self.composingContactMeMessage {
+                    let thanksController = UIAlertController(title: "Thanks!", message: "\nI value bringing humanity into software, so your contact is appreciated! I look forward to reading your e-mail and helping you in any way.\n\nEnjoy each moment!", preferredStyle: .alert)
+                    let dismissAction = UIAlertAction(title: "Dismiss", style: .default) { (action) in
+                        self.dismiss(animated: true, completion: nil)
+                        self.composingContactMeMessage = false
+                    }
+                    
+                    thanksController.addAction(dismissAction)
+                    self.present(thanksController, animated: true, completion: nil)
+                }
+            case .failed:
+                let failedController = UIAlertController(title: "There Was a Problem", message: "\nSorry, but the mail app told me there was a problem sending your message. You can try again later, or we can try sending from your default mail app.", preferredStyle: .alert)
+                let dismissAction = UIAlertAction(title: "I'll try later.", style: .cancel) { (action) in
+                    self.dismiss(animated: true, completion: nil)
+                }
+                let mailtoAction = UIAlertAction(title: "Try default mail app", style: .default) { (Action) in
+                    guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
+                        #if DEBUG
+                        fatalError("Expected a valid URL here.")
+                        #endif
+                        // TODO: Tell user there was a problem sending the mail.
+                    }
+                    guard UIApplication.shared.canOpenURL(mailToURL) else {
+                        // TODO: Tell user they may not be configured to send mail.
+                        return
+                    }
+                    UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
+                }
+                
+                failedController.addAction(dismissAction)
+                failedController.addAction(mailtoAction)
+                self.present(failedController, animated: true, completion: nil)
+            default: break
+            }
+        }
+    }
+    
+    //
     // MARK: Cell buttons action methods
     @objc fileprivate func cellSwitchFlipped(_ sender: UISwitch) {
         let cell = sender.superview as! SettingsTableViewCell
@@ -477,26 +711,31 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case Text.RowTitles.allNotifications:
             let section = tableView.indexPath(for: cell)!.section
             let ipsToModify = [IndexPath(row: 1, section: section), IndexPath(row: 2, section: section), IndexPath(row: 3, section: section)]
+            do {try! mainRealm.write {defaultNotificationsConfig[0].allOn = sender.isOn}}
             if sender.isOn {
                 allNotifications = Options.allNotifications.on
-                // TODO: turn all notifications back on
+                updateDailyNotifications(async: true)
+                let allEvents = mainRealm.objects(SpecialEvent.self)
+                var eventsToSchedule = [String]()
+                for event in allEvents {eventsToSchedule.append(event.title)}
+                scheduleNewEvents(titled: eventsToSchedule)
+                
                 tableView.beginUpdates()
                 tableView.insertRows(at: ipsToModify, with: .fade)
                 tableView.endUpdates()
             }
             else {
                 allNotifications = Options.allNotifications.off
-                // TODO: turn all notifications off
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                
                 tableView.beginUpdates()
                 tableView.deleteRows(at: ipsToModify, with: .fade)
                 tableView.endUpdates()
             }
-            do {try! mainRealm.write {notificationsConfig[0].allOn = sender.isOn}}
         default:
             // TODO: log and break
             fatalError("Need to add a case?")
         }
-        tableView.reloadData()
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -514,10 +753,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             destination.segueFrom = .settings
             destination.configuring = configuring
             switch configuring {
-            case .dailyReminders: destination.globalToggleOn = notificationsConfig[0].dailyNotificationOn
-            case .eventReminders: destination.globalToggleOn = notificationsConfig[0].individualEventRemindersOn
+            case .dailyReminders: destination.globalToggleOn = defaultNotificationsConfig[0].dailyNotificationOn
+            case .eventReminders: destination.globalToggleOn = defaultNotificationsConfig[0].individualEventRemindersOn
             }
             destination.useCustomNotifications = false
+        case "Order Categories": break
         default:
             // TODO: log and break
             fatalError("Need to add a case?")
@@ -541,5 +781,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 else {cellToModify.selectedOption = Options.eventReminders.off}
             }
         }
+    }
+    
+    @IBAction func unwindFromEditCategories(segue: UIStoryboardSegue) {
+        masterViewController?.updateActiveCategories()
+        masterViewController?.updateIndexPathMap()
+        masterViewController?.tableView.reloadData()
     }
 }

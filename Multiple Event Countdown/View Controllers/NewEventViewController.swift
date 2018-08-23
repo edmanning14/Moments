@@ -60,6 +60,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     var eventTitle: String? {
         didSet {
             if eventTitle != oldValue && !initialLoad && specialEvent != nil {
+                specialEvent!.cascadeDelete()
                 try! mainRealm.write {
                     mainRealm.delete(specialEvent!)
                     specialEvent = nil
@@ -100,7 +101,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEventView!.taglineLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
                 specialEventView!.eventTagline = Constants.InactiveCellTextTitles.tagline
                 specialEventView!.taglineLabel.font = Constants.Fonts.smallEmphasis
-                
             }
             
             let row = DataSource.data[0].rows.index(where: {$0.rowType == .tagline})!
@@ -348,7 +348,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate var mainRealm: Realm!
     fileprivate var localImageInfo: Results<EventImageInfo>!
     fileprivate var defaultNotificationsConfig: Results<DefaultNotificationsConfig>!
-    fileprivate let userDefaultsContainer = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")
     fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
     
     //
@@ -411,6 +410,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // Other
     
+    var masterViewController: MasterViewController?
     fileprivate var productRequest: SKProductsRequest?
     fileprivate var imagesForPurchace = [CKRecordID]() {
         didSet {
@@ -663,7 +663,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         configureInputView()
         //configureOptionsView()
         
-        if let categories = userDefaultsContainer?.value(forKey: "Categories") as? [String] {
+        if let categories = userDefaults.value(forKey: "Categories") as? [String] {
             for category in categories {
                 if !immutableCategories.contains(category) {selectableCategories.append(category)}
             }
@@ -691,7 +691,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             eventCategory = event.category
             eventTitle = event.title
             if let tagline = event.tagline {eventTagline = tagline}
-            else {eventTagline = nil}
+            else {eventTagline = nil; specialEventView!.taglineLabel.textColor = GlobalColors.inactiveColor}
             eventDate = EventDate(date: event.date!.date, dateOnly: event.date!.dateOnly)
             
             creationDate = event.creationDate
@@ -795,6 +795,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                     let fileName = imageInfo.title.convertToFileName()
                     let saveDest = documentsURL.appendingPathComponent(fileName + ".jpg", isDirectory: false)
+                    imageInfo.cascadeDelete()
                     do {
                         try FileManager.default.removeItem(at: saveDest)
                         try imageCleanupRealm.write {imageCleanupRealm.delete(imageInfo)}
@@ -1438,6 +1439,13 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             return
         }
         
+        
+        if let config = specialEvent?.notificationsConfig {
+            var uuidsToDeschedule = [String]()
+            for oldNotif in config.eventNotifications {uuidsToDeschedule.append(oldNotif.uuid)}
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
+        }
+        
         if needNewObject {
             let titlePredicate = NSPredicate(format: "title = %@", argumentArray: [eventTitle!])
             let existingEvent = mainRealm.objects(SpecialEvent.self).filter(titlePredicate)
@@ -1461,6 +1469,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             createNewObject(overwrite: false)
         }
         else {
+            specialEvent!.cascadeDelete()
+            print("Notifications stored after special event cascade delete:")
+            let allEventNotifications = mainRealm.objects(RealmEventNotification.self)
+            for (i, realmNotif) in allEventNotifications.enumerated() {
+                print("\(i + 1): \(realmNotif.uuid)")
+            }
             try! mainRealm.write {
                 specialEvent!.category = eventCategory ?? "Uncatagorized"
                 specialEvent!.tagline = eventTagline
@@ -1468,33 +1482,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEvent!.abridgedDisplayMode = abridgedDisplayMode
                 specialEvent!.infoDisplayed = infoDisplayed.displayText
                 specialEvent!.repeats = repeats.displayText
+                specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
                 
-                if specialEvent!.notificationsConfig != nil {
-                    mainRealm.delete(specialEvent!.notificationsConfig!)
-                    specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
+                print("Notifications stored after special event new config add:")
+                for (i, realmNotif) in allEventNotifications.enumerated() {
+                    print("\(i + 1): \(realmNotif.uuid)")
                 }
-                
-                /*if specialEvent?.notificationsConfig != nil {
-                    specialEvent!.notificationsConfig!.eventNotificationsOn = eventNotificationsConfig.eventNotificationsOn
-                    specialEvent!.notificationsConfig!.isCustom = eventNotificationsConfig.isCustom
-                    for (i, notif) in eventNotificationsConfig.eventNotifications.enumerated() {
-                        notif.type = eventNotificationsConfig.eventNotifications[i].type.stringEquivalent
-                        notif.uuid = eventNotificationsConfig.eventNotifications[i].uuid
-                        if notif.notificationComponents != nil {
-                            notif.notificationComponents!.month.value = eventNotificationsConfig.eventNotifications[i].components?.month
-                            notif.notificationComponents!.day.value = eventNotificationsConfig.eventNotifications[i].components?.day
-                            notif.notificationComponents!.hour.value = eventNotificationsConfig.eventNotifications[i].components?.hour
-                            notif.notificationComponents!.minute.value = eventNotificationsConfig.eventNotifications[i].components?.minute
-                            notif.notificationComponents!.second.value = eventNotificationsConfig.eventNotifications[i].components?.second
-                        }
-                        else {
-                            notif.notificationComponents = RealmEventNotificationComponents(fromDateComponents: eventNotificationsConfig.eventNotifications[i].components)
-                        }
-                    }
-                }
-                else {
-                    specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
-                }*/
                 
                 specialEvent!.useMask = useMask
                 if let _selectedImage = selectedImage {
@@ -1516,6 +1509,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             scheduleNewEvents(titled: [eventTitle!])
         }
         
+        masterViewController?.updateActiveCategories()
+        masterViewController?.updateIndexPathMap()
+        masterViewController?.tableView.reloadData()
         navigationController!.popViewController(animated: true)
     }
     

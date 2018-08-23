@@ -43,7 +43,7 @@ class EventDate: Object {
         self.dateOnly = dateOnly
     }
     
-    func prepareForDeletion() {}
+    func cascadeDelete() {}
 
 }
 
@@ -55,15 +55,17 @@ class DefaultNotificationsConfig: Object {
     let eventNotifications = List<RealmEventNotification>()
     @objc dynamic var categoriesToNotify = "All"
     
-    func prepareForDeletion() {
-        let deletionRealm = try! Realm(configuration: realmConfig)
-        if dailyNotificationsScheduledTime != nil {
-            dailyNotificationsScheduledTime?.prepareForDeletion()
-            do {try! deletionRealm.write {deletionRealm.delete(dailyNotificationsScheduledTime!)}}
-        }
-        if !eventNotifications.isEmpty {
-            for realmEventNotif in eventNotifications {realmEventNotif.prepareForDeletion()}
-            do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+    func cascadeDelete() {
+        autoreleasepool {
+            let deletionRealm = try! Realm(configuration: realmConfig)
+            if dailyNotificationsScheduledTime != nil {
+                dailyNotificationsScheduledTime?.cascadeDelete()
+                do {try! deletionRealm.write {deletionRealm.delete(dailyNotificationsScheduledTime!)}}
+            }
+            if !eventNotifications.isEmpty {
+                for realmEventNotif in eventNotifications {realmEventNotif.cascadeDelete()}
+                do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+            }
         }
     }
     
@@ -91,11 +93,13 @@ class RealmEventNotificationConfig: Object {
         }
     }
     
-    func prepareForDeletion() {
-        let deletionRealm = try! Realm(configuration: realmConfig)
-        if !eventNotifications.isEmpty {
-            for realmEventNotif in eventNotifications {realmEventNotif.prepareForDeletion()}
-            do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+    func cascadeDelete() {
+        autoreleasepool {
+            let deletionRealm = try! Realm(configuration: realmConfig)
+            if !eventNotifications.isEmpty {
+                for realmEventNotif in eventNotifications {realmEventNotif.cascadeDelete()}
+                do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
+            }
         }
     }
     
@@ -120,11 +124,11 @@ class RealmEventNotification: Object {
         self.notificationComponents = RealmEventNotificationComponents(fromDateComponents: notif.components)
     }
     
-    func prepareForDeletion() {
+    func cascadeDelete() {
         autoreleasepool {
             let deletionRealm = try! Realm(configuration: realmConfig)
             if notificationComponents != nil {
-                notificationComponents!.prepareForDeletion()
+                notificationComponents!.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(notificationComponents!)}}
             }
         }
@@ -157,7 +161,7 @@ class RealmEventNotificationComponents: Object {
         self.second.value = components?.second
     }
     
-    func prepareForDeletion() {}
+    func cascadeDelete() {}
     
 }
 
@@ -203,7 +207,7 @@ class EventImageInfo: Object {
     
     override static func primaryKey() -> String? {return "title"}
     
-    func prepareForDeletion() {}
+    func cascadeDelete() {}
     
 }
 
@@ -240,15 +244,15 @@ class SpecialEvent: Object {
     
     override static func primaryKey() -> String? {return "title"}
     
-    func prepareForDeletion() {
+    func cascadeDelete() {
         autoreleasepool {
             let deletionRealm = try! Realm(configuration: realmConfig)
             if date != nil {
-                date!.prepareForDeletion()
+                date!.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(date!)}}
             }
             if notificationsConfig != nil {
-                notificationsConfig!.prepareForDeletion()
+                notificationsConfig!.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(notificationsConfig!)}}
             }
         }

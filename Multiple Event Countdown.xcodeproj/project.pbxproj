@@ -11,8 +11,13 @@
 		64004AEF20D0F33E002BF8A7 /* UIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */; };
 		64074C3F2018470600BD6C39 /* TextInputAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */; };
 		64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64074C402018473000BD6C39 /* TextInputAccessoryView.xib */; };
+		64098334212D3C6800A16898 /* DictionaryExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64098333212D3C6800A16898 /* DictionaryExtensions.swift */; };
 		640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */; };
 		64100B8B2115CB75005E76AA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64100B8A2115CB75005E76AA /* SettingsViewController.swift */; };
+		641189D4212EA2C40021EA3D /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 641189D3212EA2C40021EA3D /* NotificationCenter.framework */; };
+		641189D7212EA2C40021EA3D /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641189D6212EA2C40021EA3D /* TodayViewController.swift */; };
+		641189DA212EA2C40021EA3D /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 641189D8212EA2C40021EA3D /* MainInterface.storyboard */; };
+		641189DE212EA2C40021EA3D /* Multiple Event Countdown Widget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 641189D2212EA2C40021EA3D /* Multiple Event Countdown Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		641FB2E821187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641FB2E721187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift */; };
 		641FB2EA211897FB006BEDE3 /* DatePickerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641FB2E9211897FB006BEDE3 /* DatePickerTableViewCell.swift */; };
 		6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6444D8DA1F9CFDFE005C0F9C /* AppDelegate.swift */; };
@@ -83,6 +88,10 @@
 		64B1D9AB2022D1C50034FE21 /* SelectImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B1D9AA2022D1C50034FE21 /* SelectImageViewController.swift */; };
 		64B1D9AD2022E3160034FE21 /* SelectImageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */; };
 		64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BFC8A92008644D002DA9EF /* StringExtensions.swift */; };
+		64C2F581212C386000A79E98 /* EventActivityItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F580212C386000A79E98 /* EventActivityItemProvider.swift */; };
+		64C2F583212C409B00A79E98 /* UIViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F582212C409B00A79E98 /* UIViewExtensions.swift */; };
+		64C2F585212C4B0900A79E98 /* CategoriesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F584212C4B0900A79E98 /* CategoriesTableViewController.swift */; };
+		64C2F587212C524D00A79E98 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */; };
 		64D5FF8F1FC6C31E0043E064 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */; };
 		64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */; };
 		64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E057292032AC6400ABCF3B /* BoolExtensions.swift */; };
@@ -96,13 +105,43 @@
 		B65F908917762A0A66BE04AC /* Pods_Multiple_Event_Countdown.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		641189DC212EA2C40021EA3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6444D8CF1F9CFDFE005C0F9C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 641189D1212EA2C40021EA3D;
+			remoteInfo = "Multiple Event Countdown Widget";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		641189E2212EA2C50021EA3D /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				641189DE212EA2C40021EA3D /* Multiple Event Countdown Widget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellExpandSegue.swift; sourceTree = "<group>"; };
 		64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtensions.swift; sourceTree = "<group>"; };
 		64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputAccessoryView.swift; sourceTree = "<group>"; };
 		64074C402018473000BD6C39 /* TextInputAccessoryView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextInputAccessoryView.xib; sourceTree = "<group>"; };
+		64098333212D3C6800A16898 /* DictionaryExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryExtensions.swift; sourceTree = "<group>"; };
 		640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKAssetExtensions.swift; sourceTree = "<group>"; };
 		64100B8A2115CB75005E76AA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		641189D2212EA2C40021EA3D /* Multiple Event Countdown Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Multiple Event Countdown Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		641189D3212EA2C40021EA3D /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		641189D6212EA2C40021EA3D /* TodayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewController.swift; sourceTree = "<group>"; };
+		641189D9212EA2C40021EA3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
+		641189DB212EA2C40021EA3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		641FB2E721187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureNotificationsTableViewController.swift; sourceTree = "<group>"; };
 		641FB2E9211897FB006BEDE3 /* DatePickerTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerTableViewCell.swift; sourceTree = "<group>"; };
 		6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiple Event Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -174,6 +213,10 @@
 		64B1D9AA2022D1C50034FE21 /* SelectImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectImageViewController.swift; path = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"; sourceTree = SOURCE_ROOT; };
 		64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectImageCollectionViewCell.swift; sourceTree = "<group>"; };
 		64BFC8A92008644D002DA9EF /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StringExtensions.swift; path = "Multiple Event Countdown/Extensions/StringExtensions.swift"; sourceTree = SOURCE_ROOT; };
+		64C2F580212C386000A79E98 /* EventActivityItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventActivityItemProvider.swift; sourceTree = "<group>"; };
+		64C2F582212C409B00A79E98 /* UIViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtensions.swift; sourceTree = "<group>"; };
+		64C2F584212C4B0900A79E98 /* CategoriesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesTableViewController.swift; sourceTree = "<group>"; };
+		64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
 		64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventViewController.swift; sourceTree = "<group>"; };
 		64E057292032AC6400ABCF3B /* BoolExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BoolExtensions.swift; path = Extensions/BoolExtensions.swift; sourceTree = SOURCE_ROOT; };
@@ -192,6 +235,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		641189CF212EA2C40021EA3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				641189D4212EA2C40021EA3D /* NotificationCenter.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6444D8D41F9CFDFE005C0F9C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -205,6 +256,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		641189D5212EA2C40021EA3D /* Multiple Event Countdown Widget */ = {
+			isa = PBXGroup;
+			children = (
+				641189D6212EA2C40021EA3D /* TodayViewController.swift */,
+				641189D8212EA2C40021EA3D /* MainInterface.storyboard */,
+				641189DB212EA2C40021EA3D /* Info.plist */,
+			);
+			path = "Multiple Event Countdown Widget";
+			sourceTree = "<group>";
+		};
 		641A38201F9E1D7D00B238A0 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -214,6 +275,7 @@
 				64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */,
 				64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */,
 				64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */,
+				64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */,
 			);
 			name = Cells;
 			path = "New Group";
@@ -228,6 +290,7 @@
 				64537F622046643100FDAC5A /* Protocols */,
 				6477FB102016F89000EDFF50 /* Custom Classes */,
 				6444D8D91F9CFDFE005C0F9C /* Multiple Event Countdown */,
+				641189D5212EA2C40021EA3D /* Multiple Event Countdown Widget */,
 				6444D8D81F9CFDFE005C0F9C /* Products */,
 				C0A394DBF7E81E121B026FE7 /* Pods */,
 				DD3060DC2AD974C5A5F703F5 /* Frameworks */,
@@ -238,6 +301,7 @@
 			isa = PBXGroup;
 			children = (
 				6444D8D71F9CFDFE005C0F9C /* Multiple Event Countdown.app */,
+				641189D2212EA2C40021EA3D /* Multiple Event Countdown Widget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -279,6 +343,7 @@
 				644BBAAD2047C0AF00CF0C29 /* ImagePreviewViewController.swift */,
 				64100B8A2115CB75005E76AA /* SettingsViewController.swift */,
 				641FB2E721187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift */,
+				64C2F584212C4B0900A79E98 /* CategoriesTableViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -338,6 +403,7 @@
 		6477FB102016F89000EDFF50 /* Custom Classes */ = {
 			isa = PBXGroup;
 			children = (
+				64C2F580212C386000A79E98 /* EventActivityItemProvider.swift */,
 				64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */,
 			);
 			path = "Custom Classes";
@@ -354,7 +420,9 @@
 		64BFC8A820086441002DA9EF /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				64098333212D3C6800A16898 /* DictionaryExtensions.swift */,
 				64004AEE20D0F33E002BF8A7 /* UIImageExtensions.swift */,
+				64C2F582212C409B00A79E98 /* UIViewExtensions.swift */,
 				640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */,
 				64E057292032AC6400ABCF3B /* BoolExtensions.swift */,
 				64BFC8A92008644D002DA9EF /* StringExtensions.swift */,
@@ -439,6 +507,7 @@
 				64B1D9A62022C8820034FE21 /* StoreKit.framework */,
 				64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */,
 				BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */,
+				641189D3212EA2C40021EA3D /* NotificationCenter.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -446,6 +515,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		641189D1212EA2C40021EA3D /* Multiple Event Countdown Widget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 641189E1212EA2C50021EA3D /* Build configuration list for PBXNativeTarget "Multiple Event Countdown Widget" */;
+			buildPhases = (
+				641189CE212EA2C40021EA3D /* Sources */,
+				641189CF212EA2C40021EA3D /* Frameworks */,
+				641189D0212EA2C40021EA3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Multiple Event Countdown Widget";
+			productName = "Multiple Event Countdown Widget";
+			productReference = 641189D2212EA2C40021EA3D /* Multiple Event Countdown Widget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		6444D8D61F9CFDFE005C0F9C /* Multiple Event Countdown */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6444D8EB1F9CFDFF005C0F9C /* Build configuration list for PBXNativeTarget "Multiple Event Countdown" */;
@@ -455,10 +541,12 @@
 				6444D8D41F9CFDFE005C0F9C /* Frameworks */,
 				6444D8D51F9CFDFE005C0F9C /* Resources */,
 				FD8F03B817B9977787C76D58 /* [CP] Embed Pods Frameworks */,
+				641189E2212EA2C50021EA3D /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				641189DD212EA2C40021EA3D /* PBXTargetDependency */,
 			);
 			name = "Multiple Event Countdown";
 			productName = "Multiple Event Countdown";
@@ -471,10 +559,14 @@
 		6444D8CF1F9CFDFE005C0F9C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0900;
+				LastSwiftUpdateCheck = 0940;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Ed Manning";
 				TargetAttributes = {
+					641189D1212EA2C40021EA3D = {
+						CreatedOnToolsVersion = 9.4.1;
+						ProvisioningStyle = Automatic;
+					};
 					6444D8D61F9CFDFE005C0F9C = {
 						CreatedOnToolsVersion = 9.0.1;
 						ProvisioningStyle = Automatic;
@@ -512,11 +604,20 @@
 			projectRoot = "";
 			targets = (
 				6444D8D61F9CFDFE005C0F9C /* Multiple Event Countdown */,
+				641189D1212EA2C40021EA3D /* Multiple Event Countdown Widget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		641189D0212EA2C40021EA3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				641189DA212EA2C40021EA3D /* MainInterface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6444D8D51F9CFDFE005C0F9C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -621,6 +722,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		641189CE212EA2C40021EA3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				641189D7212EA2C40021EA3D /* TodayViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6444D8D31F9CFDFE005C0F9C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -628,6 +737,7 @@
 				64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */,
 				640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */,
 				64B1D9AB2022D1C50034FE21 /* SelectImageViewController.swift in Sources */,
+				64C2F581212C386000A79E98 /* EventActivityItemProvider.swift in Sources */,
 				641FB2E821187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift in Sources */,
 				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
 				64074C3F2018470600BD6C39 /* TextInputAccessoryView.swift in Sources */,
@@ -635,6 +745,7 @@
 				6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */,
 				64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */,
 				644BBAB22049318400CF0C29 /* GradientMaskView.swift in Sources */,
+				64098334212D3C6800A16898 /* DictionaryExtensions.swift in Sources */,
 				64B1D9AD2022E3160034FE21 /* SelectImageCollectionViewCell.swift in Sources */,
 				64F08BE920FB4242009DE926 /* EventTableViewCellDelegate.swift in Sources */,
 				641FB2EA211897FB006BEDE3 /* DatePickerTableViewCell.swift in Sources */,
@@ -646,8 +757,10 @@
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
 				64FADF3720F1D3BD009C2AE2 /* SettingsTableViewCell.swift in Sources */,
 				64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */,
+				64C2F583212C409B00A79E98 /* UIViewExtensions.swift in Sources */,
 				64004AEF20D0F33E002BF8A7 /* UIImageExtensions.swift in Sources */,
 				64004AED20D0F1F5002BF8A7 /* CellExpandSegue.swift in Sources */,
+				64C2F587212C524D00A79E98 /* CategoryTableViewCell.swift in Sources */,
 				645A8A9F20294FD200E5934D /* AppDataModel.swift in Sources */,
 				64F08BE720FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift in Sources */,
 				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,
@@ -656,12 +769,29 @@
 				6444D8DD1F9CFDFE005C0F9C /* MasterViewController.swift in Sources */,
 				644BBAB6204BC67B00CF0C29 /* CountdownMaskImageView.swift in Sources */,
 				6444D8DB1F9CFDFE005C0F9C /* AppDelegate.swift in Sources */,
+				64C2F585212C4B0900A79E98 /* CategoriesTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		641189DD212EA2C40021EA3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 641189D1212EA2C40021EA3D /* Multiple Event Countdown Widget */;
+			targetProxy = 641189DC212EA2C40021EA3D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		641189D8212EA2C40021EA3D /* MainInterface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				641189D9212EA2C40021EA3D /* Base */,
+			);
+			name = MainInterface.storyboard;
+			sourceTree = "<group>";
+		};
 		6444D8E01F9CFDFF005C0F9C /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -681,6 +811,40 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		641189DF212EA2C50021EA3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2F2W64K6HE;
+				INFOPLIST_FILE = "Multiple Event Countdown Widget/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Ed-Manning.Multiple-Event-Countdown.Multiple-Event-Countdown-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		641189E0212EA2C50021EA3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2F2W64K6HE;
+				INFOPLIST_FILE = "Multiple Event Countdown Widget/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Ed-Manning.Multiple-Event-Countdown.Multiple-Event-Countdown-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		6444D8E91F9CFDFF005C0F9C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -796,6 +960,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9B903F1D196FF2B2980E137F /* Pods-Multiple Event Countdown.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Multiple Event Countdown/Multiple Event Countdown.entitlements";
 				CODE_SIGN_STYLE = Automatic;
@@ -814,6 +979,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CDEC1EEE30EC2817AB9ACDAA /* Pods-Multiple Event Countdown.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Multiple Event Countdown/Multiple Event Countdown.entitlements";
 				CODE_SIGN_STYLE = Automatic;
@@ -831,6 +997,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		641189E1212EA2C50021EA3D /* Build configuration list for PBXNativeTarget "Multiple Event Countdown Widget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				641189DF212EA2C50021EA3D /* Debug */,
+				641189E0212EA2C50021EA3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		6444D8D21F9CFDFE005C0F9C /* Build configuration list for PBXProject "Multiple Event Countdown" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

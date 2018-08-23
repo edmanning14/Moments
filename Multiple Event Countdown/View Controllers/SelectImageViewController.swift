@@ -347,8 +347,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     // MARK: Persistence
     
     fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
-    fileprivate var localPersistentStore: Realm!
-    fileprivate var localImageInfo: Results<EventImageInfo>!
     
     //
     // MARK: Date stuff

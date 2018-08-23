@@ -57,17 +57,16 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     // MARK: Data Model
     var mainRealmSpecialEvents: Results<SpecialEvent>!
-    var defaultNotificationsConfig: Results<DefaultNotificationsConfig>!
+    var defaultNotificationsConfig: DefaultNotificationsConfig!
     var activeCategories = [String]()
     var indexPathMap = [IndexPath]()
-    var allCategories = [String]()
+    var allCategories: [String] {return userDefaults.value(forKey: "Categories") as! [String]}
     var lastIndexPath = IndexPath(row: 0, section: 0)
 
     //
     // MARK: Persistence
     var mainRealm: Realm!
-    var specialEventsOnMainRealmNotificationToken: NotificationToken!
-    let userDefaultsContainer = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")
+    //var specialEventsOnMainRealmNotificationToken: NotificationToken!
     
     //
     // MARK: References and Outlets
@@ -265,6 +264,16 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
         }
         
+        let allnotifConfigs = mainRealm.objects(RealmEventNotificationConfig.self)
+        let allEventNotifs = mainRealm.objects(RealmEventNotification.self)
+        let allNotifComponents = mainRealm.objects(RealmEventNotificationComponents.self)
+        let allEventDates = mainRealm.objects(EventDate.self)
+        
+        print("Notification Configs: \(allnotifConfigs.count)")
+        print("Event Notifications: \(allEventNotifs.count)")
+        print("All Notification Components: \(allNotifComponents.count)")
+        print("All Event Dates: \(allEventDates.count)")
+        
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
     }
@@ -335,7 +344,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     
     deinit {
-        specialEventsOnMainRealmNotificationToken?.invalidate()
+        //specialEventsOnMainRealmNotificationToken?.invalidate()
         eventTimer?.invalidate()
         eventTimer = nil
     }
@@ -376,6 +385,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 dest.specialEvent = event
                 dest.editingEvent = true
             }
+            
+            let newEventController = segue.destination as! NewEventViewController
+            newEventController.masterViewController = self
             
             navigationItem.backBarButtonItem = cancelButton
             
@@ -432,22 +444,17 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+        let event = items(forSection: indexPath.section)[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
         cell.configuration = .cell
         cell.configure()
         
-        let bottomAnchorConstraint = cell.constraints.first {$0.secondAnchor == cell.viewWithMargins.bottomAnchor}
-        bottomAnchorConstraint!.isActive = false
-        if indexPath.row == items(forSection: indexPath.section).count - 1 {
-            cell.bottomAnchor.constraint(equalTo: cell.viewWithMargins.bottomAnchor, constant: 0.0).isActive = true
-        }
-        else {
-            cell.bottomAnchor.constraint(equalTo: cell.viewWithMargins.bottomAnchor, constant: cellSpacing).isActive = true
-        }
+        if indexPath.row == items(forSection: indexPath.section).count - 1 {cell.spacingAdjustmentConstraint.constant = 0.0}
+        else {cell.spacingAdjustmentConstraint.constant = cellSpacing}
         
-        cell.eventTitle = items(forSection: indexPath.section)[indexPath.row].title
-        cell.eventTagline = items(forSection: indexPath.section)[indexPath.row].tagline
-        switch items(forSection: indexPath.section)[indexPath.row].infoDisplayed {
+        cell.eventTitle = event.title
+        cell.eventTagline = event.tagline
+        switch event.infoDisplayed {
         case DisplayInfoOptions.none.displayText: cell.infoDisplayed = DisplayInfoOptions.none
         case DisplayInfoOptions.tagline.displayText: cell.infoDisplayed = DisplayInfoOptions.tagline
         case DisplayInfoOptions.date.displayText: cell.infoDisplayed = DisplayInfoOptions.date
@@ -455,21 +462,21 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             // TODO: Log and set a default info display
             fatalError("Unexpected display info option encoutered, do you need to add a new one?")
         }
-        cell.eventDate = items(forSection: indexPath.section)[indexPath.row].date
-        switch items(forSection: indexPath.section)[indexPath.row].repeats {
+        cell.eventDate = event.date
+        switch event.repeats {
         case RepeatingOptions.never.displayText: cell.repeats = RepeatingOptions.never
         case RepeatingOptions.monthly.displayText: cell.repeats = RepeatingOptions.monthly
         case RepeatingOptions.yearly.displayText: cell.repeats = RepeatingOptions.yearly
         default:
-            // TODO: Log and set a default info display
+            // TODO: Log and set a default repeating option
             fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
         }
-        cell.abridgedDisplayMode = items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
-        cell.creationDate = items(forSection: indexPath.section)[indexPath.row].creationDate
-        cell.useMask = items(forSection: indexPath.section)[indexPath.row].useMask
-        if let imageInfo = items(forSection: indexPath.section)[indexPath.row].image {
+        cell.abridgedDisplayMode = event.abridgedDisplayMode
+        cell.creationDate = event.creationDate
+        cell.useMask =  event.useMask
+        if let imageInfo = event.image {
             var locationForCellView: CGFloat?
-            if let intLocationForCellView = items(forSection: indexPath.section)[indexPath.row].locationForCellView.value {
+            if let intLocationForCellView = event.locationForCellView.value {
                 locationForCellView = CGFloat(intLocationForCellView) / 100.0
             }
             if imageInfo.isAppImage {
@@ -506,24 +513,31 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let editAction = UIContextualAction(style: .normal, title:"Edit") { [weak self] (_, _, completion) in
-            DispatchQueue.main.async {
-                if let cell = self?.tableView.cellForRow(at: indexPath) {
-                    self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
-                    completion(true)
-                }
-                else {completion(false)}
+            if let cell = self?.tableView.cellForRow(at: indexPath) {
+                self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
+                completion(true)
             }
+            else {completion(false)}
         }
         
         let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] (_, _, completion) in
-            DispatchQueue.main.async {
-                // TODO: Add share implementation.
+            if let cell = self?.tableView.cellForRow(at: indexPath) as? EventTableViewCell {
+                let viewWithMargins = cell.viewWithMargins!
+                let currentCornerRadius = viewWithMargins.layer.cornerRadius
+                viewWithMargins.layer.cornerRadius = 0.0
+                let imageToShare = viewWithMargins.asJPEGImage()
+                viewWithMargins.layer.cornerRadius = currentCornerRadius
+                let activityController = UIActivityViewController(activityItems: [imageToShare], applicationActivities: nil)
+                activityController.excludedActivityTypes = [UIActivityType.addToReadingList, UIActivityType.assignToContact, UIActivityType.openInIBooks]
+                self?.present(activityController, animated: true, completion: nil)
+                completion(true)
             }
+            completion(false)
         }
         
         editAction.backgroundColor = GlobalColors.orangeDark
         shareAction.backgroundColor = GlobalColors.shareButtonColor
-        let configuration = UISwipeActionsConfiguration(actions: [editAction, shareAction])
+        let configuration = UISwipeActionsConfiguration(actions: [shareAction, editAction])
         configuration.performsFirstActionWithFullSwipe = true
         return configuration
     }
@@ -531,46 +545,46 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completion) in
-            DispatchQueue.main.async {
-                guard let livingSelf = self else {completion(false); return}
-                let categoryOfDeletedItem = livingSelf.items(forSection: indexPath.section)[indexPath.row].category
-                
-                if let config = livingSelf.items(forSection: indexPath.section)[indexPath.row].notificationsConfig {
-                    var uuidsToDeschedule = [String]()
-                    for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
-                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
-                }
-                
-                let dateToUpdate = livingSelf.items(forSection: indexPath.section)[indexPath.row].date!.date
-                
-                livingSelf.mainRealm.beginWrite()
-                livingSelf.mainRealm.delete(livingSelf.items(forSection: indexPath.section)[indexPath.row])
-                try! livingSelf.mainRealm.commitWrite(withoutNotifying: [livingSelf.specialEventsOnMainRealmNotificationToken])
-                
-                livingSelf.updateActiveCategories()
-                livingSelf.updateIndexPathMap()
-                
-                tableView.beginUpdates()
-                switch livingSelf.currentSort {
-                case .byCategory:
-                    if !livingSelf.activeCategories.contains(categoryOfDeletedItem) {
-                        tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
-                    }
-                    else {tableView.deleteRows(at: [indexPath], with: .fade)}
-                case .chronologically:
-                    tableView.deleteRows(at: [indexPath], with: .fade)
-                }
-                tableView.endUpdates()
-                
-                shouldUpdateDailyNotifications = true
-                updatePendingNotifcationsBadges(forDate: dateToUpdate)
-                
-                completion(true)
+            guard let livingSelf = self else {completion(false); return}
+            
+            let deletedItem = livingSelf.items(forSection: indexPath.section)[indexPath.row]
+            let deletedItemCategory = deletedItem.category
+            let deletedItemDate = deletedItem.date!.date
+            
+            if let config = deletedItem.notificationsConfig {
+                var uuidsToDeschedule = [String]()
+                for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
             }
+            
+            deletedItem.cascadeDelete()
+            livingSelf.mainRealm.beginWrite()
+            livingSelf.mainRealm.delete(deletedItem)
+            try! livingSelf.mainRealm.commitWrite() //withoutNotifying: [livingSelf.specialEventsOnMainRealmNotificationToken]
+            
+            livingSelf.updateActiveCategories()
+            livingSelf.updateIndexPathMap()
+            
+            tableView.beginUpdates()
+            switch livingSelf.currentSort {
+            case .byCategory:
+                if !livingSelf.activeCategories.contains(deletedItemCategory) {
+                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                }
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+            case .chronologically:
+                tableView.deleteRows(at: [indexPath], with: .fade)
+            }
+            tableView.endUpdates()
+            
+            shouldUpdateDailyNotifications = true
+            updatePendingNotifcationsBadges(forDate: deletedItemDate)
+            
+            completion(true)
         }
         
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
-        configuration.performsFirstActionWithFullSwipe = true
+        configuration.performsFirstActionWithFullSwipe = false
         return configuration
     }
     
@@ -643,7 +657,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         cell.abridgedDisplayMode = !cell.abridgedDisplayMode
         mainRealm.beginWrite()
         items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode = !items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
-        try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+        try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
     }
     
     @objc fileprivate func handleChangeInfoDisplayModeTap(_ sender: UITapGestureRecognizer) {
@@ -654,12 +668,12 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             cell.infoDisplayed = .date
             mainRealm.beginWrite()
             items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.date.displayText
-            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+            try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .date:
             cell.infoDisplayed = .tagline
             mainRealm.beginWrite()
             items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.tagline.displayText
-            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+            try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .none: break
         }
     }
@@ -789,7 +803,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         }
     }
     
-    fileprivate func handleActionButtonTap(action: UIContextualAction, view: UIView, completion: (Bool) -> Void) {
+    /*fileprivate func handleActionButtonTap(action: UIContextualAction, view: UIView, completion: (Bool) -> Void) {
         let cell = view as! EventTableViewCell
         let indexPath = tableView.indexPath(for: cell)!
         switch action.title {
@@ -808,7 +822,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             }
             mainRealm.beginWrite()
             mainRealm.delete(items(forSection: indexPath.section)[indexPath.row])
-            try! mainRealm.commitWrite(withoutNotifying: [specialEventsOnMainRealmNotificationToken])
+            try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
             
             updateActiveCategories()
             updateIndexPathMap()
@@ -827,161 +841,140 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         default: break
         }
         completion(true)
-    }
-    
-    // Function to check cloud for updates on startup.
-    fileprivate func syncRealmWithCloud () -> Void {
-        
-    }
+    }*/
     
     // Function to setup data model on startup.
     fileprivate func setupDataModel() -> Void {
-        do {
-            
-            if let temp = userDefaultsContainer?.value(forKey: "Categories") as? [String] {allCategories = temp}
-            else { // Perform initial app load setup
-                firstRun = true
-                if userDefaultsContainer != nil {
-                    allCategories = ["All", "Favorites", "Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Aniversaries", "Wedding", "Family", "Other", "Uncategorized"]
-                    userDefaultsContainer!.set(allCategories, forKey: "Categories")
-                }
-                else {
-                    // TODO: Error Handling
-                    fatalError("Unable to get the categories from the user defaults container.")
-                }
-                
-            }
-            
-            try mainRealm = Realm(configuration: realmConfig)
-            syncRealmWithCloud()
-            
-            mainRealmSpecialEvents = mainRealm!.objects(SpecialEvent.self)
-            defaultNotificationsConfig = mainRealm!.objects(DefaultNotificationsConfig.self)
-            updateActiveCategories()
-            updateIndexPathMap()
-            tableView.reloadData()
-            
-            addOrRemoveNewCellPrompt()
-            
-            // Setup notification token for database changes
-            specialEventsOnMainRealmNotificationToken = mainRealmSpecialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
-                if !weakSelf!.isUserChange {
-                    switch changes {
-                    case .error(let error):
-                        // TODO: Log and break
-                        fatalError("Error with Realm notifications: \(error.localizedDescription)")
-                    case .initial: break
-                    case .update(_, let deletions, let insertions, let modifications):
-                        
-                        let oldActiveCategories = weakSelf!.activeCategories
-                        let oldIndexPathMap = weakSelf!.indexPathMap
-                        var fullDataReload = false
-                        var insertedSections = [Int]()
-                        var sectionsToReload = [Int]()
-                        var deletedSections = [Int]()
-                        var indexPathsToDelete = [IndexPath]()
-                        var indexPathsToInsert = [IndexPath]()
-                        var indexPathsToModify = [IndexPath]()
-                        
-                        weakSelf!.updateActiveCategories()
-                        weakSelf!.updateIndexPathMap()
-                        
-                        if weakSelf!.categoryDidChange {fullDataReload = true;  weakSelf!.categoryDidChange = false}
-                        else if weakSelf!.activeCategories != oldActiveCategories {
-                            let diff = weakSelf!.activeCategories.count - oldActiveCategories.count
-                            if diff > 0 {
-                                var j = 0
-                                for i in 0..<weakSelf!.activeCategories.count {
-                                    if weakSelf!.activeCategories[i] != oldActiveCategories[j] {insertedSections.append(i)}
-                                    else {if j < oldActiveCategories.count - 1 {j += 1}}
-                                }
+        
+        do {try! mainRealm = Realm(configuration: realmConfig)}
+        
+        if userDefaults.value(forKey: "Categories") as? [String] == nil { // Perform initial app load setup
+            firstRun = true
+            let _allCategories = defaultCategories + immutableCategories
+            userDefaults.set(_allCategories, forKey: "Categories")
+        }
+        
+        mainRealmSpecialEvents = mainRealm!.objects(SpecialEvent.self)
+        defaultNotificationsConfig = mainRealm!.objects(DefaultNotificationsConfig.self)[0]
+        
+        updateActiveCategories()
+        updateIndexPathMap()
+        tableView.reloadData()
+        addOrRemoveNewCellPrompt()
+        
+        // Setup notification token for database changes
+        /*specialEventsOnMainRealmNotificationToken = mainRealmSpecialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
+            if !weakSelf!.isUserChange {
+                switch changes {
+                case .error(let error):
+                    // TODO: Log and break
+                    fatalError("Error with Realm notifications: \(error.localizedDescription)")
+                case .initial: break
+                case .update(_, let deletions, let insertions, let modifications):
+                    
+                    let oldActiveCategories = weakSelf!.activeCategories
+                    let oldIndexPathMap = weakSelf!.indexPathMap
+                    var fullDataReload = false
+                    var insertedSections = [Int]()
+                    var sectionsToReload = [Int]()
+                    var deletedSections = [Int]()
+                    var indexPathsToDelete = [IndexPath]()
+                    var indexPathsToInsert = [IndexPath]()
+                    var indexPathsToModify = [IndexPath]()
+                    
+                    weakSelf!.updateActiveCategories()
+                    weakSelf!.updateIndexPathMap()
+                    
+                    if weakSelf!.categoryDidChange {fullDataReload = true;  weakSelf!.categoryDidChange = false}
+                    else if weakSelf!.activeCategories != oldActiveCategories {
+                        let diff = weakSelf!.activeCategories.count - oldActiveCategories.count
+                        if diff > 0 {
+                            var j = 0
+                            for i in 0..<weakSelf!.activeCategories.count {
+                                if weakSelf!.activeCategories[i] != oldActiveCategories[j] {insertedSections.append(i)}
+                                else {if j < oldActiveCategories.count - 1 {j += 1}}
                             }
-                            else if diff < 0 {
-                                var j = 0
-                                for i in 0..<oldActiveCategories.count {
-                                    if oldActiveCategories[i] != weakSelf!.activeCategories[j] {deletedSections.append(i)}
-                                    else {if j < weakSelf!.activeCategories.count - 1 {j += 1}}
-                                }
-                            }
-                            else {fullDataReload = true}
                         }
-                        
-                        if !fullDataReload {
-                            for eventIndex in deletions {
-                                if !deletedSections.contains(oldIndexPathMap[eventIndex].section) {
-                                    indexPathsToDelete.append(oldIndexPathMap[eventIndex])
-                                }
+                        else if diff < 0 {
+                            var j = 0
+                            for i in 0..<oldActiveCategories.count {
+                                if oldActiveCategories[i] != weakSelf!.activeCategories[j] {deletedSections.append(i)}
+                                else {if j < weakSelf!.activeCategories.count - 1 {j += 1}}
                             }
-                            for eventIndex in insertions {
-                                if !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                    indexPathsToInsert.append(weakSelf!.indexPathMap[eventIndex])
-                                    if weakSelf!.indexPathMap[eventIndex].row == weakSelf!.items(forSection: weakSelf!.indexPathMap[eventIndex].section).count - 1 {
-                                        indexPathsToModify.append(IndexPath(row: weakSelf!.indexPathMap[eventIndex].row - 1, section: weakSelf!.indexPathMap[eventIndex].section))
-                                    }
-                                }
+                        }
+                        else {fullDataReload = true}
+                    }
+                    
+                    if !fullDataReload {
+                        for eventIndex in deletions {
+                            if !deletedSections.contains(oldIndexPathMap[eventIndex].section) {
+                                indexPathsToDelete.append(oldIndexPathMap[eventIndex])
                             }
-                            for eventIndex in modifications {
-                                if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                    if weakSelf!.dateDidChange {
-                                        if !sectionsToReload.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                            sectionsToReload.append(weakSelf!.indexPathMap[eventIndex].section)
-                                        }
-                                    }
-                                    else {indexPathsToModify.append(oldIndexPathMap[eventIndex])}
-                                }
-                                else if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                    indexPathsToDelete.append(oldIndexPathMap[eventIndex])
+                        }
+                        for eventIndex in insertions {
+                            if !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                indexPathsToInsert.append(weakSelf!.indexPathMap[eventIndex])
+                                if weakSelf!.indexPathMap[eventIndex].row == weakSelf!.items(forSection: weakSelf!.indexPathMap[eventIndex].section).count - 1 {
+                                    indexPathsToModify.append(IndexPath(row: weakSelf!.indexPathMap[eventIndex].row - 1, section: weakSelf!.indexPathMap[eventIndex].section))
                                 }
                             }
                         }
-                        
-                        shouldUpdateDailyNotifications = true
-                        
-                        DispatchQueue.main.async { [weak weakSelf = self] in
-                            if weakSelf != nil {
-                                
-                                if fullDataReload {weakSelf!.tableView.reloadData()}
-                                else {
-                                    weakSelf!.tableView.beginUpdates()
-                                    if !insertedSections.isEmpty {
-                                        weakSelf!.tableView.insertSections(IndexSet(insertedSections), with: .fade)
+                        for eventIndex in modifications {
+                            if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                if weakSelf!.dateDidChange {
+                                    if !sectionsToReload.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                        sectionsToReload.append(weakSelf!.indexPathMap[eventIndex].section)
                                     }
-                                    if !deletedSections.isEmpty {
-                                        weakSelf!.tableView.deleteSections(IndexSet(deletedSections), with: .fade)
-                                    }
-                                    if !sectionsToReload.isEmpty {
-                                        weakSelf!.tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
-                                    }
-                                    if !indexPathsToDelete.isEmpty {
-                                        weakSelf!.tableView.deleteRows(at: indexPathsToDelete, with: .fade)
-                                    }
-                                    if !indexPathsToInsert.isEmpty {
-                                        weakSelf!.tableView.insertRows(at: indexPathsToInsert, with: .fade)
-                                    }
-                                    if !indexPathsToModify.isEmpty {
-                                        weakSelf!.tableView.reloadRows(at: indexPathsToModify, with: .fade)
-                                    }
-                                    
-                                    weakSelf!.tableView.endUpdates()
                                 }
-                                weakSelf!.addOrRemoveNewCellPrompt()
-                                weakSelf!.dateDidChange = false
+                                else {indexPathsToModify.append(oldIndexPathMap[eventIndex])}
+                            }
+                            else if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
+                                indexPathsToDelete.append(oldIndexPathMap[eventIndex])
                             }
                         }
                     }
+                    
+                    shouldUpdateDailyNotifications = true
+                    
+                    DispatchQueue.main.async { [weak weakSelf = self] in
+                        if weakSelf != nil {
+                            
+                            if fullDataReload {weakSelf!.tableView.reloadData()}
+                            else {
+                                weakSelf!.tableView.beginUpdates()
+                                if !insertedSections.isEmpty {
+                                    weakSelf!.tableView.insertSections(IndexSet(insertedSections), with: .fade)
+                                }
+                                if !deletedSections.isEmpty {
+                                    weakSelf!.tableView.deleteSections(IndexSet(deletedSections), with: .fade)
+                                }
+                                if !sectionsToReload.isEmpty {
+                                    weakSelf!.tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
+                                }
+                                if !indexPathsToDelete.isEmpty {
+                                    weakSelf!.tableView.deleteRows(at: indexPathsToDelete, with: .fade)
+                                }
+                                if !indexPathsToInsert.isEmpty {
+                                    weakSelf!.tableView.insertRows(at: indexPathsToInsert, with: .fade)
+                                }
+                                if !indexPathsToModify.isEmpty {
+                                    weakSelf!.tableView.reloadRows(at: indexPathsToModify, with: .fade)
+                                }
+                                
+                                weakSelf!.tableView.endUpdates()
+                            }
+                            weakSelf!.addOrRemoveNewCellPrompt()
+                            weakSelf!.dateDidChange = false
+                        }
+                    }
                 }
-                else {weakSelf!.isUserChange = false}
             }
-        }
-        catch {
-            // TODO: - Add a popup to user saying an error fetching timer data occured, please help the developer by submitting crash data.
-            let realmCreationError = error as NSError
-            fatalError("Unable to create local persistent store! Error: \(realmCreationError), \(realmCreationError.localizedDescription)")
-        }
+            else {weakSelf!.isUserChange = false}
+        }*/
     }
     
     // Function to update the active categories when changes to the data model occur.
-    fileprivate func updateActiveCategories() {
+    func updateActiveCategories() {
         
         activeCategories.removeAll()
         var filteredEvents = mainRealmSpecialEvents!
@@ -1021,7 +1014,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         }
     }
     
-    fileprivate func updateIndexPathMap() {
+    func updateIndexPathMap() {
         indexPathMap = Array(repeating: IndexPath(), count: mainRealmSpecialEvents.count)
         for section in 0..<activeCategories.count {
             for (row, event) in items(forSection: section).enumerated() {

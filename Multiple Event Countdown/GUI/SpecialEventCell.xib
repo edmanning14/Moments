@@ -404,6 +404,7 @@
                 <outlet property="minutesTextLabel" destination="gCu-Zh-ClW" id="tw2-8F-2nO"/>
                 <outlet property="secondsLabel" destination="bMG-RH-0dk" id="7Bc-9S-sm6"/>
                 <outlet property="secondsTextLabel" destination="zV7-xk-WIU" id="so8-gA-56i"/>
+                <outlet property="spacingAdjustmentConstraint" destination="eJ9-N8-irf" id="JHq-hB-mj8"/>
                 <outlet property="taglineLabel" destination="Yd2-Ze-G9g" id="StJ-6K-9pD"/>
                 <outlet property="timerContainerView" destination="ods-Qx-ZRB" id="dRU-Og-coO"/>
                 <outlet property="timerLabelsStackView" destination="Qkz-v5-ZxG" id="DSt-ar-JvX"/>
