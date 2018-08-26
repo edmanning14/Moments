@@ -16,7 +16,7 @@ class CategoriesTableViewController: UITableViewController, UITextFieldDelegate 
     fileprivate var modifications = [String: String]()
     fileprivate var additions = [String]()
     
-    fileprivate let mainRealm = try! Realm(configuration: realmConfig)
+    fileprivate let mainRealm = try! Realm(configuration: appRealmConfig)
 
     override func viewDidLoad() {
         super.viewDidLoad()

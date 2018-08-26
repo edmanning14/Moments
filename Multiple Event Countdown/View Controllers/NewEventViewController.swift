@@ -681,7 +681,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
         
-        mainRealm = try! Realm(configuration: realmConfig)
+        mainRealm = try! Realm(configuration: appRealmConfig)
         fetchLocalImages()
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
@@ -788,13 +788,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         let backgroundThread = DispatchQueue(label: "background", qos: .background, target: nil)
         backgroundThread.async {
-            let imageCleanupRealm = try! Realm(configuration: realmConfig)
+            let imageCleanupRealm = try! Realm(configuration: appRealmConfig)
             let allImages = imageCleanupRealm.objects(EventImageInfo.self)
             for imageInfo in allImages {
                 if imageInfo.specialEvents.isEmpty && imageInfo.isAppImage == false {
-                    let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                     let fileName = imageInfo.title.convertToFileName()
-                    let saveDest = documentsURL.appendingPathComponent(fileName + ".jpg", isDirectory: false)
+                    let saveDest = sharedImageLocationURL.appendingPathComponent(fileName + ".jpg", isDirectory: false)
                     imageInfo.cascadeDelete()
                     do {
                         try FileManager.default.removeItem(at: saveDest)

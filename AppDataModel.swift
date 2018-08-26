@@ -104,11 +104,8 @@ internal class CountdownImage {
         self.imageType = imageType
         self.fileExtension = fileExtension
         
-        if let path1 = Bundle.main.path(forResource: _fileName, ofType: fileExtension) {filePath = path1; return}
-        
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let path2 = documentsURL.appendingPathComponent(_fileName + fileExtension).relativePath
-        if FileManager.default.fileExists(atPath: path2) {filePath = path2; return}
+        let path = sharedImageLocationURL.appendingPathComponent(_fileName + fileExtension).relativePath
+        if FileManager.default.fileExists(atPath: path) {filePath = path; return}
         
         return nil
     }
@@ -213,9 +210,8 @@ internal class CountdownImage {
             }
             else {return false}
             
-            let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let saveDest = documentsURL.appendingPathComponent(fileName + fileExtension, isDirectory: false)
-            do {try data.write(to: saveDest, options: .atomic); return true}
+            let saveDest = sharedImageLocationURL.appendingPathComponent(fileName + fileExtension, isDirectory: false)
+            do {try data.write(to: saveDest, options: []); return true}
             catch {print(error.localizedDescription); return false}
         }
         return true
@@ -583,7 +579,9 @@ internal class AppEventImage: UserEventImage {
     
     override init?(fromEventImageInfo info: EventImageInfo) {
         
-        guard info.isAppImage else {return nil}
+        let isAppImage = info.isAppImage
+        print(isAppImage)
+        guard isAppImage else {return nil}
         
         category = info.category!
         recordName = info.recordName
@@ -699,7 +697,7 @@ internal class AppEventImage: UserEventImage {
                 }
             }
         }
-        publicCloudDatabase.add(fetchOperation!)
+        CKContainer.default().publicCloudDatabase.add(fetchOperation!)
     }
     
     override func generateMainHomeImage(size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
@@ -757,8 +755,6 @@ internal class AppEventImage: UserEventImage {
     
     //
     // Persistence
-    
-    fileprivate let publicCloudDatabase = CKContainer.default().publicCloudDatabase
     
     //
     // Flags

@@ -152,7 +152,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
         tableView.register(settingsCellNib, forCellReuseIdentifier: CellReuseIdentifiers.settingsCell)
         tableView.register(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: "Header View")
         
-        try! mainRealm = Realm(configuration: realmConfig)
+        try! mainRealm = Realm(configuration: appRealmConfig)
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
         dailyNotificationsScheduledTime.hour = defaultNotificationsConfig[0].dailyNotificationsScheduledTime?.hour.value

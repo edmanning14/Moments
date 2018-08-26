@@ -14,9 +14,9 @@ import RealmSwift
 // MARK: - Realm Configurations
 //
 
-let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ed_Manning.Multiple_Event_Countdown")!.appendingPathComponent("db.realm")
-let realmConfig = Realm.Configuration(
-    fileURL: url,
+let realmDBURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ed_Manning.Multiple_Event_Countdown")!.appendingPathComponent("db.realm")
+let appRealmConfig = Realm.Configuration(
+    fileURL: realmDBURL,
     inMemoryIdentifier: nil,
     syncConfiguration: nil,
     encryptionKey: nil,
@@ -24,7 +24,14 @@ let realmConfig = Realm.Configuration(
     schemaVersion: 0,
     migrationBlock: nil,
     deleteRealmIfMigrationNeeded: false,
-    shouldCompactOnLaunch: nil,
+    shouldCompactOnLaunch: { totalBytes, usedBytes in
+        // totalBytes refers to the size of the file on disk in bytes (data + free space)
+        // usedBytes refers to the number of bytes used by data in the file
+        
+        // Compact if the file is over 100MB in size and less than 50% 'used'
+        let oneHundredMB = 100 * 1024 * 1024
+        return (totalBytes > oneHundredMB) && (Double(usedBytes) / Double(totalBytes)) < 0.5
+    },
     objectTypes: nil
 )
 
@@ -57,7 +64,7 @@ class DefaultNotificationsConfig: Object {
     
     func cascadeDelete() {
         autoreleasepool {
-            let deletionRealm = try! Realm(configuration: realmConfig)
+            let deletionRealm = try! Realm(configuration: appRealmConfig)
             if dailyNotificationsScheduledTime != nil {
                 dailyNotificationsScheduledTime?.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(dailyNotificationsScheduledTime!)}}
@@ -95,7 +102,7 @@ class RealmEventNotificationConfig: Object {
     
     func cascadeDelete() {
         autoreleasepool {
-            let deletionRealm = try! Realm(configuration: realmConfig)
+            let deletionRealm = try! Realm(configuration: appRealmConfig)
             if !eventNotifications.isEmpty {
                 for realmEventNotif in eventNotifications {realmEventNotif.cascadeDelete()}
                 do {try! deletionRealm.write {deletionRealm.delete(eventNotifications)}}
@@ -126,7 +133,7 @@ class RealmEventNotification: Object {
     
     func cascadeDelete() {
         autoreleasepool {
-            let deletionRealm = try! Realm(configuration: realmConfig)
+            let deletionRealm = try! Realm(configuration: appRealmConfig)
             if notificationComponents != nil {
                 notificationComponents!.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(notificationComponents!)}}
@@ -246,7 +253,7 @@ class SpecialEvent: Object {
     
     func cascadeDelete() {
         autoreleasepool {
-            let deletionRealm = try! Realm(configuration: realmConfig)
+            let deletionRealm = try! Realm(configuration: appRealmConfig)
             if date != nil {
                 date!.cascadeDelete()
                 do {try! deletionRealm.write {deletionRealm.delete(date!)}}

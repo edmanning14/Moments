@@ -15,7 +15,7 @@ class EventNotificationConfig {
     var eventNotifications: [EventNotification]
     
     init() {
-        let initRealm = try! Realm(configuration: realmConfig)
+        let initRealm = try! Realm(configuration: appRealmConfig)
         let defaultNotificationsConfig = initRealm.objects(DefaultNotificationsConfig.self)[0]
         
         eventNotifications = [EventNotification]()

@@ -347,7 +347,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let settingsCellNib = UINib(nibName: "SettingsTableViewCell", bundle: nil)
         tableView.register(settingsCellNib, forCellReuseIdentifier: cellReuseIdentifiers.settingsCell)
         
-        try! mainRealm = Realm(configuration: realmConfig)
+        try! mainRealm = Realm(configuration: appRealmConfig)
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
         if defaultNotificationsConfig.count != 1 {
@@ -488,7 +488,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         DispatchQueue.global(qos: .background).async {
                             autoreleasepool {
-                                let resetDefaultsRealm = try! Realm(configuration: realmConfig)
+                                let resetDefaultsRealm = try! Realm(configuration: appRealmConfig)
                                 let resetDefaultsSpecialEvents = resetDefaultsRealm.objects(SpecialEvent.self)
                                 
                                 //

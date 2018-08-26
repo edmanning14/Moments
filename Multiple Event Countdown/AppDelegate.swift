@@ -55,77 +55,6 @@ enum SortMethods {
     }
 }
 
-//
-// MARK: Defaults
-struct Defaults {
-    struct Notifications {
-        static let allOn = true
-        static let dailyNotificationsOn = true
-        static let dailyNotificationsScheduledTime = DateComponents(calendar: nil, timeZone: nil, era: nil, year: nil, month: nil, day: nil, hour: 9, minute: 0, second: nil, nanosecond: nil, weekday: nil, weekdayOrdinal: nil, quarter: nil, weekOfMonth: nil, weekOfYear: nil, yearForWeekOfYear: nil)
-        static let individualEventRemindersOn = true
-        static let eventNotifications = [
-            EventNotification(type: .timeOfEvent, components: nil),
-            EventNotification(type: .beforeEvent, components: DateComponents(calendar: nil, timeZone: nil, era: nil, year: nil, month: nil, day: 1, hour: nil, minute: nil, second: nil, nanosecond: nil, weekday: nil, weekdayOrdinal: nil, quarter: nil, weekOfMonth: nil, weekOfYear: nil, yearForWeekOfYear: nil))
-        ]
-        static let categoriesToNotify = "All"
-    }
-    struct DateDisplayMode {
-        static let short = "Short"
-        static let long = "Long"
-    }
-}
-struct UserDefaultKeys {
-    struct DataManagement {
-        static let currentFilter = "Current Filter"
-        static let currentSort = "Current Sort"
-        static let futureToPast = "Future to Past"
-    }
-    static let dateDisplayMode = "Date Display Mode"
-}
-let defaultCategories = ["Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Anniversaries", "Wedding", "Family", "Other"]
-let immutableCategories = ["Favorites", "Uncategorized", "All"]
-
-//
-// MARK: Colors
-struct GlobalColors {
-    static let orangeRegular = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
-    static let orangeDark = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
-    static let cyanRegular = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
-    //static let cyanLight = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
-    static let lightGrayForFills = UIColor(red: 33/255, green: 33/255, blue: 33/255, alpha: 1.0)
-    static let darkPurpleForFills = UIColor(red: 66/255, green: 23/255, blue: 66/255, alpha: 1.0)
-    static let taskCompleteColor = UIColor.green
-    static let optionalTaskIncompleteColor = UIColor.darkGray
-    static let inactiveColor = UIColor.lightText
-    static let unselectedButtonColor = UIColor.lightGray
-    static let shareButtonColor = UIColor(red: 59/255, green: 89/255, blue: 152/255, alpha: 1.0) //Facebook Blue
-}
-
-// MARK: Fonts
-struct GlobalFontNames {
-    static let ComfortaaLight = "Comfortaa-Light" // Headings
-    static let ralewayLight = "Raleway-Light" // Small Text
-    static let ralewayRegular = "Raleway-Regular" // Text
-    static let ralewayMedium = "Raleway-Medium" // Cell Title
-    static let ralewayMediumItalic = "Raleway-MediumItalic" // Modified category2
-}
-
-
-// MARK: Animation
-struct GlobalAnimations {
-    static let labelTransition: CATransition = {
-        let trans = CATransition()
-        trans.duration = 0.3
-        trans.type = kCATransitionFade
-        return trans
-    }()
-}
-
-// MARK: Geometry
-struct GlobalCornerRadii {
-    static let material: CGFloat = 8.0
-}
-
 // MARK: Shared UI
 func titleOnlyHeaderView(title: String) -> UIView {
     let headerView = UITableViewHeaderFooterView()
@@ -165,7 +94,7 @@ var shouldUpdateDailyNotifications = false
 func scheduleNewEvents  (titled eventTitles: [String]) {
     var notifsThatNeedBadge = [Date: [(String, UNMutableNotificationContent, UNNotificationTrigger)]]()
     autoreleasepool {
-        let scheduleAndUpdateRealm = try! Realm(configuration: realmConfig)
+        let scheduleAndUpdateRealm = try! Realm(configuration: appRealmConfig)
         let defaultNotificationsConfig = scheduleAndUpdateRealm.objects(DefaultNotificationsConfig.self)[0]
         
         print("Notifications stored at start of add event cycle:")
@@ -343,7 +272,7 @@ func scheduleNewEvents  (titled eventTitles: [String]) {
                                     let newIdent = UUID().uuidString
                                     
                                     autoreleasepool {
-                                        let changeUUIDRealm = try! Realm(configuration: realmConfig)
+                                        let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
                                         print("Looking for: \(request.identifier)")
                                         let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
                                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
@@ -445,7 +374,7 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                     let newIdent = UUID().uuidString
                     
                     autoreleasepool {
-                        let changeUUIDRealm = try! Realm(configuration: realmConfig)
+                        let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
                         let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
@@ -517,7 +446,7 @@ func updateDailyNotificationsIfNeeded(async: Bool) {
 func updateDailyNotifications(async: Bool) {
     func performWork() {
         autoreleasepool {
-            let dailyNotifsRealm = try! Realm(configuration: realmConfig)
+            let dailyNotifsRealm = try! Realm(configuration: appRealmConfig)
             let dailyNotifsDefaultNotificationsConfig = dailyNotifsRealm.objects(DefaultNotificationsConfig.self)[0]
             
             if dailyNotifsDefaultNotificationsConfig.allOn && dailyNotifsDefaultNotificationsConfig.dailyNotificationOn {
@@ -528,7 +457,7 @@ func updateDailyNotifications(async: Bool) {
                             if eventDate1.date < eventDate2.date {return true} else {return false}
                         }
                         else {return false}
-                        }.filter { (event) -> Bool in
+                    }.filter { (event) -> Bool in
                             let todaysDate = Date()
                             if event.date!.date.timeIntervalSinceReferenceDate - todaysDate.timeIntervalSinceReferenceDate < 0.0 {
                                 return false
@@ -727,7 +656,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         
         //
         // MARK: Notification config
-        let launchRealm = try! Realm(configuration: realmConfig)
+        let launchRealm = try! Realm(configuration: appRealmConfig)
         let defaultNotificationConfig = launchRealm.objects(DefaultNotificationsConfig.self)
         
         if defaultNotificationConfig.count == 0 {
@@ -759,13 +688,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         
         if eventImages.count == 0 {
             
+            print(sharedImageLocationURL)
+            do {try FileManager.default.createDirectory(at: sharedImageLocationURL, withIntermediateDirectories: false, attributes: nil)}
+            catch {
+                // TODO: Error handling.
+                print(error.localizedDescription)
+                fatalError()
+            }
+            
             // Add image info for images on the disk to the persistent store
             for imageInfo in AppEventImage.bundleMainImageInfo {
                 let fileRootName = imageInfo.title.convertToFileName()
-                if let _ = Bundle.main.path(forResource: fileRootName, ofType: ".jpg") {
+                if let mainImageSourceURL = Bundle.main.url(forResource: fileRootName, withExtension: ".jpg") {
                     if imageInfo.hasMask {
-                        if let _ = Bundle.main.path(forResource: fileRootName + "Mask", ofType: ".png") {
+                        if let maskImageSourceURL = Bundle.main.url(forResource: fileRootName + "Mask", withExtension: ".png") {
                             do {try! launchRealm.write {launchRealm.add(imageInfo)}}
+                            
+                            let maskDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Mask.png", isDirectory: false)
+                            do {try FileManager.default.copyItem(at: maskImageSourceURL, to: maskDestinationURL)}
+                            catch {
+                                // TODO: Error handling.
+                                print(error.localizedDescription)
+                                fatalError()
+                            }
                         }
                         else {
                             let imageInfoToAdd = EventImageInfo(
@@ -780,6 +725,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                         }
                     }
                     else {do {try! launchRealm.write {launchRealm.add(imageInfo)}}}
+                
+                    let mainDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + ".jpg", isDirectory: false)
+                    do {try FileManager.default.copyItem(at: mainImageSourceURL, to: mainDestinationURL)}
+                    catch {
+                        // TODO: Error handling.
+                        print(error.localizedDescription)
+                        fatalError()
+                    }
+                    
+                    if let mainThumbnail1xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@1x", withExtension: ".jpg") {
+                        let mainThumbnail1xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@1x.jpg", isDirectory: false)
+                        do {try FileManager.default.copyItem(at: mainThumbnail1xSourceURL, to: mainThumbnail1xDestinationURL)}
+                        catch {
+                            // TODO: Error handling.
+                            print(error.localizedDescription)
+                            fatalError()
+                        }
+                    }
+                    if let mainThumbnail2xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@2x", withExtension: ".jpg") {
+                        let mainThumbnail2xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@2x.jpg", isDirectory: false)
+                        do {try FileManager.default.copyItem(at: mainThumbnail2xSourceURL, to: mainThumbnail2xDestinationURL)}
+                        catch {
+                            // TODO: Error handling.
+                            print(error.localizedDescription)
+                            fatalError()
+                        }
+                    }
+                    if let mainThumbnail3xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@3x", withExtension: ".jpg") {
+                        let mainThumbnail3xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@3x.jpg", isDirectory: false)
+                        do {try FileManager.default.copyItem(at: mainThumbnail3xSourceURL, to: mainThumbnail3xDestinationURL)}
+                        catch {
+                            // TODO: Error handling.
+                            print(error.localizedDescription)
+                            fatalError()
+                        }
+                    }
                 }
             }
             
@@ -882,7 +863,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     
     func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         let dateNow = Date()
-        let backgroundFetchRealm = try! Realm(configuration: realmConfig)
+        let backgroundFetchRealm = try! Realm(configuration: appRealmConfig)
         let backgroundFetchDefaultNotificationsConfig = backgroundFetchRealm.objects(DefaultNotificationsConfig.self)[0]
         if let notificationTimeAsDate = userDefaults.value(forKey: notificationTimeAsDateKey) as? Date {
             if dateNow > notificationTimeAsDate {

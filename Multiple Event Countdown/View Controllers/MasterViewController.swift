@@ -188,8 +188,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     //
     // MARK: - Design
-    // MARK: Layout
-    fileprivate let cellSpacing: CGFloat = 10.0
     
     //
     // MARK: Flags
@@ -297,7 +295,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                     }
                     
                     autoreleasepool {
-                        let authorizationRealm = try! Realm(configuration: realmConfig)
+                        let authorizationRealm = try! Realm(configuration: appRealmConfig)
                         if granted {
                             updateDailyNotifications(async: false)
                         
@@ -450,7 +448,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         cell.configure()
         
         if indexPath.row == items(forSection: indexPath.section).count - 1 {cell.spacingAdjustmentConstraint.constant = 0.0}
-        else {cell.spacingAdjustmentConstraint.constant = cellSpacing}
+        else {cell.spacingAdjustmentConstraint.constant = globalCellSpacing}
         
         cell.eventTitle = event.title
         cell.eventTagline = event.tagline
@@ -803,50 +801,10 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         }
     }
     
-    /*fileprivate func handleActionButtonTap(action: UIContextualAction, view: UIView, completion: (Bool) -> Void) {
-        let cell = view as! EventTableViewCell
-        let indexPath = tableView.indexPath(for: cell)!
-        switch action.title {
-        case "Edit":
-            performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
-        case "Share":
-        // TODO: Add share implementation
-            break
-        case "Delete":
-            let categoryOfDeletedItem = items(forSection: indexPath.section)[indexPath.row].category
-            
-            if let config = items(forSection: indexPath.section)[indexPath.row].notificationsConfig {
-                var uuidsToDeschedule = [String]()
-                for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
-                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
-            }
-            mainRealm.beginWrite()
-            mainRealm.delete(items(forSection: indexPath.section)[indexPath.row])
-            try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
-            
-            updateActiveCategories()
-            updateIndexPathMap()
-            
-            tableView.beginUpdates()
-            switch currentSort {
-            case .byCategory:
-                if !activeCategories.contains(categoryOfDeletedItem) {
-                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
-                }
-                else {tableView.deleteRows(at: [indexPath], with: .fade)}
-            case .chronologically:
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            }
-            tableView.endUpdates()
-        default: break
-        }
-        completion(true)
-    }*/
-    
     // Function to setup data model on startup.
     fileprivate func setupDataModel() -> Void {
         
-        do {try! mainRealm = Realm(configuration: realmConfig)}
+        do {try! mainRealm = Realm(configuration: appRealmConfig)}
         
         if userDefaults.value(forKey: "Categories") as? [String] == nil { // Perform initial app load setup
             firstRun = true
