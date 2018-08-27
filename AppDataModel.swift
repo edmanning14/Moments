@@ -12,6 +12,14 @@ import QuartzCore
 import CloudKit
 import Photos
 
+internal enum WidgetConfigurations: String {
+    case nextEvent = "Next Event"
+    case lastEvent = "Last Event"
+    case randomUpcoming = "Random Upcoming Event"
+    case randomPast = "Random Past Event"
+    case random = "Random Event"
+}
+
 internal enum RepeatingOptions {
     case never, monthly, yearly
     

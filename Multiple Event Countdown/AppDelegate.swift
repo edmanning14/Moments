@@ -431,7 +431,6 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
 let dailyNotificationsTitle = "Daily Update 🗞"
 let notificationTimeAsDateKey = "Notification Time As Date"
 let currentlyScheduledUUIDKey = "currently Scheduled UUID"
-let userDefaults = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")!
 let currentCalendar = Calendar.current
 let yearToSecondsComponents: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
 
@@ -646,7 +645,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         //
         //
         // MARK: User defaults config
-        let userDefaults = UserDefaults.standard
         if userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter) == nil {
             userDefaults.set(EventFilters.all.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
             userDefaults.set(SortMethods.chronologically.string, forKey: UserDefaultKeys.DataManagement.currentSort)

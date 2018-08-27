@@ -29,8 +29,8 @@
 	</dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Comfortaa-Light.ttf</string>
-		<string>Raleway-Regular.ttf</string>
+		<string>Comfortaa-Regular.ttf</string>
+		<string>Raleway-SemiBold.ttf</string>
 		<string>Raleway-Medium.ttf</string>
 	</array>
 </dict>

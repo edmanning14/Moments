@@ -355,7 +355,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             fatalError("There were multiple notification configs! Should only be one.")
         }
         
-        if UserDefaults.standard.value(forKey: UserDefaultKeys.dateDisplayMode) as! String == Defaults.DateDisplayMode.short {
+        if userDefaults.value(forKey: UserDefaultKeys.dateDisplayMode) as! String == Defaults.DateDisplayMode.short {
             dateDisplayMode = Options.dateDisplayMode.short
         }
         else {dateDisplayMode = Options.dateDisplayMode.long}
@@ -626,10 +626,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             dateDisplayMode = cell.selectedOption!
             switch dateDisplayMode {
             case Options.dateDisplayMode.short:
-                UserDefaults.standard.set(Defaults.DateDisplayMode.short, forKey: UserDefaultKeys.dateDisplayMode)
+                userDefaults.set(Defaults.DateDisplayMode.short, forKey: UserDefaultKeys.dateDisplayMode)
                 masterViewController?.tableView.reloadData()
             case Options.dateDisplayMode.long:
-                UserDefaults.standard.set(Defaults.DateDisplayMode.long, forKey: UserDefaultKeys.dateDisplayMode)
+                userDefaults.set(Defaults.DateDisplayMode.long, forKey: UserDefaultKeys.dateDisplayMode)
                 masterViewController?.tableView.reloadData()
             default:
                 // TODO: Log and break

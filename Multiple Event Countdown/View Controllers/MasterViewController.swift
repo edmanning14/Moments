@@ -21,7 +21,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     // MARK: Data Management
     fileprivate var currentFilter = EventFilters.all {
         didSet {
-            UserDefaults.standard.set(currentFilter.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
+            userDefaults.set(currentFilter.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
             navItemTitle.setTitle(currentFilter.string, for: .normal)
             if isUserChange {
                 updateActiveCategories()
@@ -33,7 +33,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     fileprivate var currentSort = SortMethods.chronologically {
         didSet {
-            UserDefaults.standard.set(currentSort.string, forKey: UserDefaultKeys.DataManagement.currentSort)
+            userDefaults.set(currentSort.string, forKey: UserDefaultKeys.DataManagement.currentSort)
             if isUserChange {
                 updateActiveCategories()
                 updateIndexPathMap()
@@ -44,7 +44,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     fileprivate var futureToPast = true {
         didSet {
-            UserDefaults.standard.set(futureToPast, forKey: UserDefaultKeys.DataManagement.futureToPast)
+            userDefaults.set(futureToPast, forKey: UserDefaultKeys.DataManagement.futureToPast)
             if isUserChange {
                 updateActiveCategories()
                 updateIndexPathMap()
@@ -208,9 +208,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        currentFilter = EventFilters.type(from: UserDefaults.standard.string(forKey: UserDefaultKeys.DataManagement.currentFilter)!)!
-        currentSort = SortMethods.type(from: UserDefaults.standard.string(forKey: UserDefaultKeys.DataManagement.currentSort)!)!
-        futureToPast = UserDefaults.standard.bool(forKey: UserDefaultKeys.DataManagement.futureToPast)
+        currentFilter = EventFilters.type(from: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter)!)!
+        currentSort = SortMethods.type(from: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentSort)!)!
+        futureToPast = userDefaults.bool(forKey: UserDefaultKeys.DataManagement.futureToPast)
         
         setupDataModel()
         

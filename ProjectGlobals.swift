@@ -15,6 +15,9 @@ let sharedImageLocationURL = FileManager.default.containerURL(forSecurityApplica
 
 //
 // MARK: Defaults
+let userDefaults = UserDefaults(suiteName: "group.com.Ed_Manning.Multiple_Event_Countdown")!
+
+
 struct Defaults {
     struct Notifications {
         static let allOn = true
@@ -39,6 +42,7 @@ struct UserDefaultKeys {
         static let futureToPast = "Future to Past"
     }
     static let dateDisplayMode = "Date Display Mode"
+    static let widgetConfiguration = "Widget Configuration"
 }
 let defaultCategories = ["Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Anniversaries", "Wedding", "Family", "Other"]
 let immutableCategories = ["Favorites", "Uncategorized", "All"]
