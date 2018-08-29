@@ -33,16 +33,8 @@ class CategoriesTableViewController: UITableViewController, UITextFieldDelegate 
         tableView.setEditing(true, animated: false)
         tableView.tableFooterView = UIView()
         
-        let confirmButton = UIBarButtonItem()
-        confirmButton.target = self
-        confirmButton.action = #selector(confirmAndExit)
-        confirmButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        confirmButton.setTitleTextAttributes(attributes, for: .normal)
-        confirmButton.setTitleTextAttributes(attributes, for: .disabled)
-        confirmButton.title = "CONFIRM"
-        
-        navigationItem.rightBarButtonItem = confirmButton
+        _ = addBackButton(action: #selector(defaultPop), title: "CANCEL", target: self)
+        _ = addBarButtonItem(side: .right, action: #selector(confirmAndExit), target: self, title: "CONFIRM", image: nil)
     }
 
     override func didReceiveMemoryWarning() {

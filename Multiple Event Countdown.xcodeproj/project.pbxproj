@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		61CD07F4D6D96419ACE6E2D3 /* Pods_Multiple_Event_Countdown_Widget.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5487FBE8867EEE46E7A761E3 /* Pods_Multiple_Event_Countdown_Widget.framework */; };
-		64004AED20D0F1F5002BF8A7 /* CellExpandSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */; };
+		64004AED20D0F1F5002BF8A7 /* MasterDetailSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEC20D0F1F5002BF8A7 /* MasterDetailSegue.swift */; };
 		64004AEF20D0F33E002BF8A7 /* UIImageViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64004AEE20D0F33E002BF8A7 /* UIImageViewExtensions.swift */; };
 		6405C8DE212EC695004B0832 /* ArrayExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6405C8DD212EC695004B0832 /* ArrayExtensions.swift */; };
 		6405C8DF212EC695004B0832 /* ArrayExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6405C8DD212EC695004B0832 /* ArrayExtensions.swift */; };
@@ -25,6 +25,7 @@
 		64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64074C402018473000BD6C39 /* TextInputAccessoryView.xib */; };
 		64098334212D3C6800A16898 /* DictionaryExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64098333212D3C6800A16898 /* DictionaryExtensions.swift */; };
 		640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */; };
+		640FCD0D21357CE700E6052A /* MasterNewEventSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640FCD0C21357CE700E6052A /* MasterNewEventSegue.swift */; };
 		64100B8B2115CB75005E76AA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64100B8A2115CB75005E76AA /* SettingsViewController.swift */; };
 		641189D4212EA2C40021EA3D /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 641189D3212EA2C40021EA3D /* NotificationCenter.framework */; };
 		641189D7212EA2C40021EA3D /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641189D6212EA2C40021EA3D /* TodayViewController.swift */; };
@@ -86,6 +87,7 @@
 		6489FBCA20EE20F800F32B5A /* FiraSans-ThinItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6489FBB820EE20EA00F32B5A /* FiraSans-ThinItalic.ttf */; };
 		6489FBCB20EE20F800F32B5A /* FiraSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6489FBB920EE20EE00F32B5A /* FiraSans-SemiBold.ttf */; };
 		6489FBCC20EE20F800F32B5A /* FiraSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6489FBBA20EE20F500F32B5A /* FiraSans-ExtraLight.ttf */; };
+		64A1F1D02135393000E19451 /* NavigationControllerFunctionality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A1F1CF2135393000E19451 /* NavigationControllerFunctionality.swift */; };
 		64A4855420AABD0400CE4418 /* Comfortaa-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */; };
 		64A4855520AABD0400CE4418 /* Comfortaa-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */; };
 		64B1D9942022B8930034FE21 /* Raleway-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */; };
@@ -152,7 +154,7 @@
 /* Begin PBXFileReference section */
 		450625C3394DAE3ABCEA9138 /* Pods-Multiple Event Countdown Widget.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Multiple Event Countdown Widget.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Multiple Event Countdown Widget/Pods-Multiple Event Countdown Widget.debug.xcconfig"; sourceTree = "<group>"; };
 		5487FBE8867EEE46E7A761E3 /* Pods_Multiple_Event_Countdown_Widget.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Multiple_Event_Countdown_Widget.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellExpandSegue.swift; sourceTree = "<group>"; };
+		64004AEC20D0F1F5002BF8A7 /* MasterDetailSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterDetailSegue.swift; sourceTree = "<group>"; };
 		64004AEE20D0F33E002BF8A7 /* UIImageViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageViewExtensions.swift; sourceTree = "<group>"; };
 		6405C8DD212EC695004B0832 /* ArrayExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensions.swift; sourceTree = "<group>"; };
 		6405C994212EE38B004B0832 /* ProjectGlobals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectGlobals.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 		64074C402018473000BD6C39 /* TextInputAccessoryView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextInputAccessoryView.xib; sourceTree = "<group>"; };
 		64098333212D3C6800A16898 /* DictionaryExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryExtensions.swift; sourceTree = "<group>"; };
 		640F9C902043AA7A005CD69E /* CKAssetExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKAssetExtensions.swift; sourceTree = "<group>"; };
+		640FCD0C21357CE700E6052A /* MasterNewEventSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterNewEventSegue.swift; sourceTree = "<group>"; };
 		64100B8A2115CB75005E76AA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		641189D2212EA2C40021EA3D /* Multiple Event Countdown Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Multiple Event Countdown Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		641189D3212EA2C40021EA3D /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
@@ -216,6 +219,7 @@
 		6489FBB820EE20EA00F32B5A /* FiraSans-ThinItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "FiraSans-ThinItalic.ttf"; sourceTree = "<group>"; };
 		6489FBB920EE20EE00F32B5A /* FiraSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "FiraSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		6489FBBA20EE20F500F32B5A /* FiraSans-ExtraLight.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "FiraSans-ExtraLight.ttf"; sourceTree = "<group>"; };
+		64A1F1CF2135393000E19451 /* NavigationControllerFunctionality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerFunctionality.swift; sourceTree = "<group>"; };
 		64A4855120AABD0200CE4418 /* Comfortaa-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Regular.ttf"; sourceTree = "<group>"; };
 		64A4855220AABD0300CE4418 /* Comfortaa-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Bold.ttf"; sourceTree = "<group>"; };
 		64B1D9822022B88E0034FE21 /* Raleway-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-BoldItalic.ttf"; sourceTree = "<group>"; };
@@ -399,6 +403,7 @@
 		64537F622046643100FDAC5A /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				64A1F1CF2135393000E19451 /* NavigationControllerFunctionality.swift */,
 				64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */,
 				64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */,
 				64F08BE620FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift */,
@@ -432,7 +437,8 @@
 		6477FB102016F89000EDFF50 /* Custom Classes */ = {
 			isa = PBXGroup;
 			children = (
-				64004AEC20D0F1F5002BF8A7 /* CellExpandSegue.swift */,
+				640FCD0C21357CE700E6052A /* MasterNewEventSegue.swift */,
+				64004AEC20D0F1F5002BF8A7 /* MasterDetailSegue.swift */,
 			);
 			path = "Custom Classes";
 			sourceTree = "<group>";
@@ -464,8 +470,8 @@
 		64D5FF751FC41DB60043E064 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */,
 				644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */,
+				644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */,
 				644BBAB12049318400CF0C29 /* GradientMaskView.swift */,
 				64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */,
 				641A38201F9E1D7D00B238A0 /* Cells */,
@@ -828,14 +834,16 @@
 				644BBAAE2047C0AF00CF0C29 /* ImagePreviewViewController.swift in Sources */,
 				644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */,
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
+				64A1F1D02135393000E19451 /* NavigationControllerFunctionality.swift in Sources */,
 				64FADF3720F1D3BD009C2AE2 /* SettingsTableViewCell.swift in Sources */,
 				642E2C0F2132A0EC0059A588 /* UIImageExtensions.swift in Sources */,
 				64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */,
 				64C2F583212C409B00A79E98 /* UIViewExtensions.swift in Sources */,
 				64004AEF20D0F33E002BF8A7 /* UIImageViewExtensions.swift in Sources */,
-				64004AED20D0F1F5002BF8A7 /* CellExpandSegue.swift in Sources */,
+				64004AED20D0F1F5002BF8A7 /* MasterDetailSegue.swift in Sources */,
 				64C2F587212C524D00A79E98 /* CategoryTableViewCell.swift in Sources */,
 				645A8A9F20294FD200E5934D /* AppDataModel.swift in Sources */,
+				640FCD0D21357CE700E6052A /* MasterNewEventSegue.swift in Sources */,
 				6405C995212EE38B004B0832 /* ProjectGlobals.swift in Sources */,
 				64F08BE720FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift in Sources */,
 				64BFC8AA2008644D002DA9EF /* StringExtensions.swift in Sources */,

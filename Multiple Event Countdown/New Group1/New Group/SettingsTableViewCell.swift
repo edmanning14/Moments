@@ -96,7 +96,7 @@ class SettingsTableViewCell: UITableViewCell, UIPickerViewDataSource, UIPickerVi
         else {selectedOptionIndex += 1}
     }
     
-    static var collapsedHeight: CGFloat = 55 // Labelheight + top margin + bottom margin + 8
+    static var collapsedHeight: CGFloat = 47 // switch height + top margin + bottom margin
     static var expandedHeight: CGFloat = SettingsTableViewCell.collapsedHeight + 88 // + PickerView Height + corner radius for some reason.
     
     fileprivate var isUserChange = false

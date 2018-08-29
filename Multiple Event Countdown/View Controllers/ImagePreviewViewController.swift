@@ -175,15 +175,9 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let doneButton = UIBarButtonItem()
-        doneButton.target = self
-        doneButton.action = #selector(handleNavButtonClick(_:))
-        doneButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        doneButton.setTitleTextAttributes(attributes, for: .normal)
-        doneButton.setTitleTextAttributes(attributes, for: .disabled)
-        doneButton.title = "USE IMAGE"
-        navigationItem.rightBarButtonItem = doneButton
+        _ = addBackButton(action: #selector(defaultPop), title: "IMAGES", target: self)
+        let doneButton = addBarButtonItem(side: .right, action: #selector(handleNavButtonClick(_:)), target: self, title: "USE IMAGE", image: nil)
+        
         if locationForCellView == nil {doneButton.isEnabled = false}
         
         previewTypeTabBar.delegate = self
@@ -425,29 +419,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             sideBlurView1 = nil
             sideBlurView2?.removeFromSuperview()
             sideBlurView2 = nil
-            /*UIViewPropertyAnimator.runningPropertyAnimator(
-                withDuration: animationDuration,
-                delay: 0.0,
-                options: .curveEaseIn,
-                animations: {
-                    self.blurView1!.layer.opacity = 0.0
-                    self.blurView2!.layer.opacity = 0.0
-                    self.sideBlurView1?.layer.opacity = 0.0
-                    self.sideBlurView2?.layer.opacity = 0.0
-                },
-                completion: { [weak self] (_) in
-                    self?.cropAreaView?.removeFromSuperview()
-                    self?.cropAreaView = nil
-                    self?.blurView1?.removeFromSuperview()
-                    self?.blurView1 = nil
-                    self?.blurView2?.removeFromSuperview()
-                    self?.blurView2 = nil
-                    self?.sideBlurView1?.removeFromSuperview()
-                    self?.sideBlurView1 = nil
-                    self?.sideBlurView2?.removeFromSuperview()
-                    self?.sideBlurView2 = nil
-                }
-            )*/
         }
         
         if sender.title(for: .normal) == "CANCEL" {

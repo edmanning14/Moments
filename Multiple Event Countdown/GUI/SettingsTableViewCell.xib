@@ -9,8 +9,8 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
-        <array key="Raleway-Light.ttf">
-            <string>Raleway-Light</string>
+        <array key="Raleway-Medium.ttf">
+            <string>Raleway-Medium</string>
         </array>
         <array key="Raleway-Regular.ttf">
             <string>Raleway-Regular</string>
@@ -24,14 +24,14 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lfn-xt-2ys">
-                    <rect key="frame" x="8" y="35.5" width="36.5" height="16.5"/>
-                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="14"/>
+                    <rect key="frame" x="8" y="34.5" width="42" height="19"/>
+                    <fontDescription key="fontDescription" name="Raleway-Medium" family="Raleway" pointSize="16"/>
                     <color key="textColor" red="0.90196078431372551" green="0.31764705882352939" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R10-3Z-Mjd">
-                    <rect key="frame" x="44.5" y="35.5" width="267.5" height="16.5"/>
-                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                    <rect key="frame" x="50" y="34.5" width="262" height="19"/>
+                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
                     <color key="textColor" red="0.39215686274509803" green="1" blue="0.85490196078431369" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>

@@ -83,10 +83,10 @@ class DetailViewController: UIViewController {
                 detailViewCell = cell
                 detailViewCell.translatesAutoresizingMaskIntoConstraints = false
                 view.addSubview(detailViewCell!)
-                view.safeAreaLayoutGuide.topAnchor.constraint(equalTo: detailViewCell!.topAnchor).isActive = true
-                view.safeAreaLayoutGuide.rightAnchor.constraint(equalTo: detailViewCell!.rightAnchor).isActive = true
-                view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: detailViewCell!.bottomAnchor).isActive = true
-                view.safeAreaLayoutGuide.leftAnchor.constraint(equalTo: detailViewCell!.leftAnchor).isActive = true
+                view.topAnchor.constraint(equalTo: detailViewCell!.topAnchor).isActive = true
+                view.rightAnchor.constraint(equalTo: detailViewCell!.rightAnchor).isActive = true
+                view.bottomAnchor.constraint(equalTo: detailViewCell!.bottomAnchor).isActive = true
+                view.leftAnchor.constraint(equalTo: detailViewCell!.leftAnchor).isActive = true
                 detailViewCell.configuration = .detail
                 detailViewCell.useMask = false
                 
@@ -117,14 +117,8 @@ class DetailViewController: UIViewController {
             }
             //detailViewCell.update()
         }
-        configureNavBar()
-    }
-    
-    fileprivate func configureNavBar() {
-        navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
-            .foregroundColor: GlobalColors.orangeRegular
-        ]
+        
+        _ = addBackButton(action: #selector(performUnwind), title: nil, target: self)
     }
     
     
@@ -132,10 +126,8 @@ class DetailViewController: UIViewController {
     // MARK: - Action Methods
     //
     
-    @objc fileprivate func handleNavButtonClick(_ sender: Any?) {
-        /*if let button = sender as? UIBarButtonItem {
-            
-        }*/
+    @objc func performUnwind() {
+        performSegue(withIdentifier: "Unwind to Master", sender: self)
     }
 
 }

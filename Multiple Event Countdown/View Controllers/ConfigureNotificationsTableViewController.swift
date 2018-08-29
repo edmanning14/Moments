@@ -158,16 +158,8 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
         dailyNotificationsScheduledTime.hour = defaultNotificationsConfig[0].dailyNotificationsScheduledTime?.hour.value
         dailyNotificationsScheduledTime.minute = defaultNotificationsConfig[0].dailyNotificationsScheduledTime?.minute.value
         
-        let confirmButton = UIBarButtonItem()
-        confirmButton.target = self
-        confirmButton.action = #selector(confirmAndExit)
-        confirmButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        confirmButton.setTitleTextAttributes(attributes, for: .normal)
-        confirmButton.setTitleTextAttributes(attributes, for: .disabled)
-        confirmButton.title = "CONFIRM"
-        
-        navigationItem.rightBarButtonItem = confirmButton
+        _ = addBackButton(action: #selector(defaultPop), title: "CANCEL", target: self)
+        _ = addBarButtonItem(side: .right, action: #selector(confirmAndExit), target: self, title: "CONFIRM", image: nil)
         
         switch configuring {
         case .dailyReminders: navigationItem.title = "Daily Reminders"

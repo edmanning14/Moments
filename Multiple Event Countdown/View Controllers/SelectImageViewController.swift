@@ -478,18 +478,11 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         imagesTabBar.delegate = self
         catalogImages.delegate = self
         
-        doneButton = UIBarButtonItem()
-        doneButton.target = self
-        doneButton.action = #selector(handleNavButtonClick(_:))
-        doneButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        doneButton.setTitleTextAttributes(attributes, for: .normal)
-        doneButton.setTitleTextAttributes(attributes, for: .disabled)
-        doneButton.title = "USE IMAGE"
+        _ = addBackButton(action: #selector(defaultPop), title: "CANCEL", target: self)
+        doneButton = addBarButtonItem(side: .right, action: #selector(handleNavButtonClick(_:)), target: self, title: "USE IMAGE", image: nil)
+        
         if locationForCellView == nil {doneButton.isEnabled = false}
         else {doneButton.isEnabled = false}
-        
-        navigationItem.rightBarButtonItem = doneButton
         
         dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .none
@@ -539,13 +532,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 destination.selectedImage = selectedImage
                 destination.locationForCellView = locationForCellView
                 destination.selectImageViewController = self
-                
-                let cancelButton = UIBarButtonItem()
-                cancelButton.tintColor = GlobalColors.orangeDark
-                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-                cancelButton.setTitleTextAttributes(attributes, for: .normal)
-                cancelButton.title = "IMAGES"
-                navigationItem.backBarButtonItem = cancelButton
                 
                 if let button = sender as? UIBarButtonItem, button == doneButton, button.title == "CREATE IMAGE" {
                     destination.createImage = true

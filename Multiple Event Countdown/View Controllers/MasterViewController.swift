@@ -21,8 +21,8 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     // MARK: Data Management
     fileprivate var currentFilter = EventFilters.all {
         didSet {
-            userDefaults.set(currentFilter.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
-            navItemTitle.setTitle(currentFilter.string, for: .normal)
+            userDefaults.set(currentFilter.rawValue, forKey: UserDefaultKeys.DataManagement.currentFilter)
+            navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
             if isUserChange {
                 updateActiveCategories()
                 updateIndexPathMap()
@@ -33,7 +33,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     fileprivate var currentSort = SortMethods.chronologically {
         didSet {
-            userDefaults.set(currentSort.string, forKey: UserDefaultKeys.DataManagement.currentSort)
+            userDefaults.set(currentSort.rawValue, forKey: UserDefaultKeys.DataManagement.currentSort)
             if isUserChange {
                 updateActiveCategories()
                 updateIndexPathMap()
@@ -176,8 +176,8 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }()
     var headerIsExpanded = false
     let filterPickerViewData = [
-        [EventFilters.all.string, EventFilters.upcoming.string, EventFilters.past.string],
-        [SortMethods.chronologically.string, SortMethods.byCategory.string],
+        [EventFilters.all.rawValue, EventFilters.upcoming.rawValue, EventFilters.past.rawValue],
+        [SortMethods.chronologically.rawValue, SortMethods.byCategory.rawValue],
         ["Yes", "No"]
     ]
     struct headerColumnTitles {
@@ -208,8 +208,8 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        currentFilter = EventFilters.type(from: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter)!)!
-        currentSort = SortMethods.type(from: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentSort)!)!
+        currentFilter = EventFilters(rawValue: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter)!)!
+        currentSort = SortMethods(rawValue: userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentSort)!)!
         futureToPast = userDefaults.bool(forKey: UserDefaultKeys.DataManagement.futureToPast)
         
         setupDataModel()
@@ -217,10 +217,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         let specialEventNib = UINib(nibName: "SpecialEventCell", bundle: nil)
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
-        navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
-            .foregroundColor: GlobalColors.orangeRegular
-        ]
         tableView.backgroundColor = UIColor.black
         navigationController?.view.backgroundColor = UIColor.black
         if #available(iOS 11, *) {
@@ -232,19 +228,15 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         
         //let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 16.0)! as Any]
         
-        let addEventImage = #imageLiteral(resourceName: "AddEventImage")
-        let addButton = UIBarButtonItem(image: addEventImage, style: .plain, target: self, action: #selector(insertNewObject(_:)))
-        addButton.tintColor = GlobalColors.orangeDark
-        navigationItem.rightBarButtonItem = addButton
-        
-        let settingsImage = #imageLiteral(resourceName: "SettingsButtonImage")
-        let settingsButton = UIBarButtonItem(image: settingsImage, style: .plain, target: self, action: #selector(handleSettingsButtonTap))
-        settingsButton.tintColor = GlobalColors.orangeDark
-        navigationItem.leftBarButtonItem = settingsButton
+        configureBarTitleAttributes()
+        _ = addBarButtonItem(side: .right, action:  #selector(insertNewObject(_:)), target: self, title: nil, image: #imageLiteral(resourceName: "AddEventImage"))
+        _ = addBarButtonItem(side: .left, action: #selector(handleSettingsButtonTap), target: self, title: nil, image: #imageLiteral(resourceName: "SettingsButtonImage"))
         
         navItemTitle = createHeaderDropdownButton()
-        navItemTitle.setTitle(currentFilter.string, for: .normal)
+        navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
         navItemTitle.addTarget(self, action: #selector(handleNavTitleTap(_:)), for: .touchUpInside)
+        navItemTitle.titleLabel?.adjustsFontSizeToFitWidth = true
+        navItemTitle.titleLabel?.minimumScaleFactor = 0.5
         navigationItem.titleView = navItemTitle
         
         NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
@@ -360,22 +352,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.specialEvent = eventToDetail
-                
-                let backButton = UIBarButtonItem()
-                backButton.tintColor = GlobalColors.orangeDark
-                let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-                backButton.setTitleTextAttributes(attributes, for: .normal)
-                backButton.title = "BACK"
-                navigationItem.backBarButtonItem = backButton
             }
             
         case SegueIdentifiers.addNewEventSegue:
-            let cancelButton = UIBarButtonItem()
-            cancelButton.tintColor = GlobalColors.orangeDark
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-            cancelButton.setTitleTextAttributes(attributes, for: .normal)
-            cancelButton.title = "CANCEL"
-            
             if let cell = sender as? EventTableViewCell {
                 let ip = tableView.indexPath(for: cell)!
                 let event = items(forSection: ip.section)[ip.row]
@@ -386,23 +365,19 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             
             let newEventController = segue.destination as! NewEventViewController
             newEventController.masterViewController = self
-            
-            navigationItem.backBarButtonItem = cancelButton
-            
+                        
         case SegueIdentifiers.showSettings:
-            let backButton = UIBarButtonItem()
-            backButton.tintColor = GlobalColors.orangeDark
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-            backButton.setTitleTextAttributes(attributes, for: .normal)
-            backButton.title = "BACK"
-            navigationItem.backBarButtonItem = backButton
-            
             let settingsController = segue.destination as! SettingsViewController
             settingsController.masterViewController = self
         default: break
         }
     }
     
+    @IBAction func unwindFromDetail(segue: UIStoryboardSegue) {}
+    
+    @IBAction func unwindFromNewEventController(segue: UIStoryboardSegue) {
+    
+    }
     
     //
     // MARK: - Table View Functions
@@ -628,13 +603,11 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         isUserChange = true
         let newValue = filterPickerViewData[component][row]
-        if let filterChange = EventFilters.type(from: newValue) {currentFilter = filterChange}
-        else if let sortChange = SortMethods.type(from: newValue) {currentSort = sortChange}
+        if let filterChange = EventFilters(rawValue: newValue) {currentFilter = filterChange}
+        else if let sortChange = SortMethods(rawValue: newValue) {currentSort = sortChange}
         else if newValue == filterPickerViewData[component][0] {futureToPast = true}
         else if newValue == filterPickerViewData[component][1] {futureToPast = false}
     }
-    
-    //func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {return 12.0}
     
     
     //
@@ -747,8 +720,8 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         let pickerViewIndex = expandedHeaderContents.subviews.index(where: {(view) in if let _ = view as? UIPickerView {return true} else {return false}})!
         let pickerView = expandedHeaderContents.subviews[pickerViewIndex] as! UIPickerView
         
-        let filterToSelect = filterPickerViewData[0].index(where: {$0 == currentFilter.string})!
-        let sortToSelect = filterPickerViewData[1].index(where: {$0 == currentSort.string})!
+        let filterToSelect = filterPickerViewData[0].index(where: {$0 == currentFilter.rawValue})!
+        let sortToSelect = filterPickerViewData[1].index(where: {$0 == currentSort.rawValue})!
         var orderToSelect: Int
         if futureToPast {orderToSelect = filterPickerViewData[2].index(where: {$0 == "Yes"})!}
         else {orderToSelect = filterPickerViewData[2].index(where: {$0 == "No"})!}
@@ -819,116 +792,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         updateIndexPathMap()
         tableView.reloadData()
         addOrRemoveNewCellPrompt()
-        
-        // Setup notification token for database changes
-        /*specialEventsOnMainRealmNotificationToken = mainRealmSpecialEvents._observe { [weak weakSelf = self] (changes: RealmCollectionChange) in
-            if !weakSelf!.isUserChange {
-                switch changes {
-                case .error(let error):
-                    // TODO: Log and break
-                    fatalError("Error with Realm notifications: \(error.localizedDescription)")
-                case .initial: break
-                case .update(_, let deletions, let insertions, let modifications):
-                    
-                    let oldActiveCategories = weakSelf!.activeCategories
-                    let oldIndexPathMap = weakSelf!.indexPathMap
-                    var fullDataReload = false
-                    var insertedSections = [Int]()
-                    var sectionsToReload = [Int]()
-                    var deletedSections = [Int]()
-                    var indexPathsToDelete = [IndexPath]()
-                    var indexPathsToInsert = [IndexPath]()
-                    var indexPathsToModify = [IndexPath]()
-                    
-                    weakSelf!.updateActiveCategories()
-                    weakSelf!.updateIndexPathMap()
-                    
-                    if weakSelf!.categoryDidChange {fullDataReload = true;  weakSelf!.categoryDidChange = false}
-                    else if weakSelf!.activeCategories != oldActiveCategories {
-                        let diff = weakSelf!.activeCategories.count - oldActiveCategories.count
-                        if diff > 0 {
-                            var j = 0
-                            for i in 0..<weakSelf!.activeCategories.count {
-                                if weakSelf!.activeCategories[i] != oldActiveCategories[j] {insertedSections.append(i)}
-                                else {if j < oldActiveCategories.count - 1 {j += 1}}
-                            }
-                        }
-                        else if diff < 0 {
-                            var j = 0
-                            for i in 0..<oldActiveCategories.count {
-                                if oldActiveCategories[i] != weakSelf!.activeCategories[j] {deletedSections.append(i)}
-                                else {if j < weakSelf!.activeCategories.count - 1 {j += 1}}
-                            }
-                        }
-                        else {fullDataReload = true}
-                    }
-                    
-                    if !fullDataReload {
-                        for eventIndex in deletions {
-                            if !deletedSections.contains(oldIndexPathMap[eventIndex].section) {
-                                indexPathsToDelete.append(oldIndexPathMap[eventIndex])
-                            }
-                        }
-                        for eventIndex in insertions {
-                            if !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                indexPathsToInsert.append(weakSelf!.indexPathMap[eventIndex])
-                                if weakSelf!.indexPathMap[eventIndex].row == weakSelf!.items(forSection: weakSelf!.indexPathMap[eventIndex].section).count - 1 {
-                                    indexPathsToModify.append(IndexPath(row: weakSelf!.indexPathMap[eventIndex].row - 1, section: weakSelf!.indexPathMap[eventIndex].section))
-                                }
-                            }
-                        }
-                        for eventIndex in modifications {
-                            if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && !insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                if weakSelf!.dateDidChange {
-                                    if !sectionsToReload.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                        sectionsToReload.append(weakSelf!.indexPathMap[eventIndex].section)
-                                    }
-                                }
-                                else {indexPathsToModify.append(oldIndexPathMap[eventIndex])}
-                            }
-                            else if !deletedSections.contains(oldIndexPathMap[eventIndex].section) && insertedSections.contains(weakSelf!.indexPathMap[eventIndex].section) {
-                                indexPathsToDelete.append(oldIndexPathMap[eventIndex])
-                            }
-                        }
-                    }
-                    
-                    shouldUpdateDailyNotifications = true
-                    
-                    DispatchQueue.main.async { [weak weakSelf = self] in
-                        if weakSelf != nil {
-                            
-                            if fullDataReload {weakSelf!.tableView.reloadData()}
-                            else {
-                                weakSelf!.tableView.beginUpdates()
-                                if !insertedSections.isEmpty {
-                                    weakSelf!.tableView.insertSections(IndexSet(insertedSections), with: .fade)
-                                }
-                                if !deletedSections.isEmpty {
-                                    weakSelf!.tableView.deleteSections(IndexSet(deletedSections), with: .fade)
-                                }
-                                if !sectionsToReload.isEmpty {
-                                    weakSelf!.tableView.reloadSections(IndexSet(sectionsToReload), with: .fade)
-                                }
-                                if !indexPathsToDelete.isEmpty {
-                                    weakSelf!.tableView.deleteRows(at: indexPathsToDelete, with: .fade)
-                                }
-                                if !indexPathsToInsert.isEmpty {
-                                    weakSelf!.tableView.insertRows(at: indexPathsToInsert, with: .fade)
-                                }
-                                if !indexPathsToModify.isEmpty {
-                                    weakSelf!.tableView.reloadRows(at: indexPathsToModify, with: .fade)
-                                }
-                                
-                                weakSelf!.tableView.endUpdates()
-                            }
-                            weakSelf!.addOrRemoveNewCellPrompt()
-                            weakSelf!.dateDidChange = false
-                        }
-                    }
-                }
-            }
-            else {weakSelf!.isUserChange = false}
-        }*/
     }
     
     // Function to update the active categories when changes to the data model occur.

@@ -630,17 +630,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         let settingsRowNib = UINib(nibName: "SettingsTableViewCell", bundle: nil)
         optionsTableView.register(settingsRowNib, forCellReuseIdentifier: DataSource.ReuseIdentifiers.section2)
         
-        doneButton = UIBarButtonItem()
-        doneButton.target = self
-        doneButton.action = #selector(finish(_:))
-        doneButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        doneButton.setTitleTextAttributes(attributes, for: .normal)
-        doneButton.setTitleTextAttributes(attributes, for: .disabled)
+        _ = addBackButton(action: #selector(defaultPop), title: "CANCEL", target: self)
+        doneButton = addBarButtonItem(side: .right, action: #selector(finish(_:)), target: self, title: nil, image: nil)
         
         finishButton.layer.cornerRadius = GlobalCornerRadii.material
         
-        navigationItem.rightBarButtonItem = doneButton
         if locationForCellView == nil {doneButton.isEnabled = false}
         else {doneButton.isEnabled = false}
         
@@ -1350,12 +1344,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let ident = segue.identifier {
-            let cancelButton = UIBarButtonItem()
-            cancelButton.tintColor = GlobalColors.orangeDark
-            let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-            cancelButton.setTitleTextAttributes(attributes, for: .normal)
-            cancelButton.title = "CANCEL"
-            navigationItem.backBarButtonItem = cancelButton
             switch ident {
             case "EditImageSegue":
                 let destination = segue.destination as! ImagePreviewViewController
@@ -1504,10 +1492,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     specialEvent!.locationForCellView.value = Int(_locationForCellView * 100.0)
                 }
             }
-            
-            scheduleNewEvents(titled: [eventTitle!])
         }
         
+        scheduleNewEvents(titled: [eventTitle!])
+        updateDailyNotifications(async: true)
         masterViewController?.updateActiveCategories()
         masterViewController?.updateIndexPathMap()
         masterViewController?.tableView.reloadData()
@@ -2277,7 +2265,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 locationForCellView: locationForCellView
             )
             try! mainRealm.write {mainRealm.add(newEvent, update: overwrite)}
-            scheduleNewEvents(titled: [_eventTitle])
         }
         else {
             // TODO: Remove for production, should never hit this if earlier guards work.

@@ -143,9 +143,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     struct Text {
         struct SectionTitles {
-            static let general = "General"
-            static let widgit = "Configure Widget"
-            static let notifications = "Notifications"
+            static let general = "GENERAL"
+            static let widgit = "CONFIGURE WIDGET"
+            static let notifications = "NOTIFICATIONS"
         }
         struct RowTitles {
             static let organizeCategories = "Organize Categories"
@@ -335,6 +335,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        _ = addBackButton(action: #selector(defaultPop), title: "BACK", target: self)
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.tableFooterView = UIView()
@@ -386,25 +388,47 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return tableViewDataSource[section].rows.count
     }
     
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50.0
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if let selectedIP = expandedCellIndexPath, indexPath == selectedIP {return SettingsTableViewCell.expandedHeight}
+        else {return SettingsTableViewCell.collapsedHeight}
     }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {return 30.0}
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return titleOnlyHeaderView(title: tableViewDataSource[section].title!)
+        let headerView = UITableViewHeaderFooterView()
+        let bgView = UIView()
+        bgView.backgroundColor = GlobalColors.lightGrayForFills
+        headerView.backgroundView = bgView
+        
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.text = tableViewDataSource[section].title!
+        titleLabel.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 12.0)
+        titleLabel.textColor = UIColor.lightGray
+        titleLabel.backgroundColor = UIColor.clear
+        titleLabel.textAlignment = .left
+        
+        headerView.contentView.addSubview(titleLabel)
+        headerView.contentView.leftAnchor.constraint(equalTo: titleLabel.leftAnchor, constant: -4.0).isActive = true
+        headerView.contentView.bottomAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4.0).isActive = true
+        headerView.contentView.rightAnchor.constraint(greaterThanOrEqualTo: titleLabel.rightAnchor, constant: 4.0).isActive = true
+        
+        return headerView
     }
     
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    /*func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         if let headerView = view as? UITableViewHeaderFooterView {
-            headerView.textLabel!.font = UIFont(name: GlobalFontNames.ComfortaaLight, size: 20.0)
-            headerView.textLabel!.textColor = GlobalColors.orangeRegular
+            headerView.textLabel!.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
+            headerView.textLabel!.textColor = UIColor.black
         }
-    }
+    }*/
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowData = tableViewDataSource[indexPath.section].rows[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifiers.settingsCell) as! SettingsTableViewCell
         cell.selectionStyle = .none
+        cell.backgroundColor = UIColor.black
         cell.delegate = self
         cell.rowType = rowData.type
         if cell.onOffSwitch.allTargets.isEmpty {
@@ -739,13 +763,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        let cancelButton = UIBarButtonItem()
-        cancelButton.tintColor = GlobalColors.orangeDark
-        let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)! as Any]
-        cancelButton.setTitleTextAttributes(attributes, for: .normal)
-        cancelButton.title = "CANCEL"
-        navigationItem.backBarButtonItem = cancelButton
         
         switch segue.identifier {
         case "Configure Notifications":

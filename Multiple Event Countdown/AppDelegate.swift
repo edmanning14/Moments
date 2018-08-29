@@ -16,43 +16,14 @@ import UserNotifications
 //
 //
 // MARK: Data Management
-enum EventFilters {
-    case all, upcoming, past
-    
-    var string: String {
-        switch self {
-        case .all: return "All Events"
-        case .upcoming: return "Upcoming Events"
-        case .past: return "Past Events"
-        }
-    }
-    
-    static func type(from: String) -> EventFilters? {
-        switch from {
-        case EventFilters.all.string: return EventFilters.all
-        case EventFilters.upcoming.string: return EventFilters.upcoming
-        case EventFilters.past.string: return EventFilters.past
-        default: return nil
-        }
-    }
+enum EventFilters: String {
+    case all = "All Moments"
+    case upcoming = "Upcoming"
+    case past = "Past"
 }
-enum SortMethods {
-    case chronologically, byCategory
-    
-    var string: String {
-        switch self {
-        case .chronologically: return "Chronologically"
-        case .byCategory: return "By Category"
-        }
-    }
-    
-    static func type(from: String) -> SortMethods? {
-        switch from {
-        case SortMethods.chronologically.string: return SortMethods.chronologically
-        case SortMethods.byCategory.string: return SortMethods.byCategory
-        default: return nil
-        }
-    }
+enum SortMethods: String {
+    case chronologically = "Chronologically"
+    case byCategory = "By Category"
 }
 
 // MARK: Shared UI
@@ -444,7 +415,7 @@ func updateDailyNotificationsIfNeeded(async: Bool) {
 
 func updateDailyNotifications(async: Bool) {
     func performWork() {
-        autoreleasepool {
+        //autoreleasepool {
             let dailyNotifsRealm = try! Realm(configuration: appRealmConfig)
             let dailyNotifsDefaultNotificationsConfig = dailyNotifsRealm.objects(DefaultNotificationsConfig.self)[0]
             
@@ -457,24 +428,24 @@ func updateDailyNotifications(async: Bool) {
                         }
                         else {return false}
                     }.filter { (event) -> Bool in
-                            let todaysDate = Date()
-                            if event.date!.date.timeIntervalSinceReferenceDate - todaysDate.timeIntervalSinceReferenceDate < 0.0 {
-                                return false
-                            }
-                            else {return true}
+                        let todaysDate = Date()
+                        if event.date!.date.timeIntervalSinceReferenceDate - todaysDate.timeIntervalSinceReferenceDate < 0.0 {
+                            return false
+                        }
+                        else {return true}
                     }
                     
                     let dateNow = Date()
                     let todaysDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: dateNow)
-                    guard let previousNotificationTimeAsDate = userDefaults.value(forKey: notificationTimeAsDateKey) as? Date else {
-                        userDefaults.set(nil, forKey: notificationTimeAsDateKey);return
-                    }
-                    var notificationTimeDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: previousNotificationTimeAsDate)
-                    guard let day = notificationTimeDateComponents.day else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
+                    guard var day = todaysDateComponents.day else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
+                    guard let currentHour = todaysDateComponents.hour else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
                     guard let hour = components.hour.value else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
                     guard let minute = components.minute.value else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
                     
-                    notificationTimeDateComponents.day = day + 1
+                    if currentHour > hour {day += 1}
+                    
+                    var notificationTimeDateComponents = todaysDateComponents
+                    notificationTimeDateComponents.day = day
                     notificationTimeDateComponents.hour = hour
                     notificationTimeDateComponents.minute = minute
                     notificationTimeDateComponents.second = 0
@@ -485,111 +456,113 @@ func updateDailyNotifications(async: Bool) {
                     defaultEventNotification.title = dailyNotificationsTitle
                     
                     let newNotificationDate = currentCalendar.date(from: notificationTimeDateComponents)!
-                    notificationTimeDateComponents.day! += 1
-                    let nextDayNewNotificationDate = currentCalendar.date(from: notificationTimeDateComponents)!
-                    if currentCalendar.isDate(chronologicalUpcomingSpecialEvents[0].date!.date, inSameDayAs: newNotificationDate) { // First notif format
-                        
-                        var eventTitlesToday = [String]()
-                        for event in chronologicalUpcomingSpecialEvents {
-                            if let eventDate = event.date {
-                                if currentCalendar.isDateInToday(eventDate.date) {eventTitlesToday.append(event.title)}
-                                else {break}
-                            }
-                        }
-                        
-                        defaultEventNotification.badge = NSNumber(integerLiteral: eventTitlesToday.count)
-                        switch eventTitlesToday.count {
-                        case 1: defaultEventNotification.body = "Get excited! \"\(eventTitlesToday[0])\" is today!"
-                        case 2: defaultEventNotification.body = "Get excited! \"\(eventTitlesToday[0])\" and 1 other event are today!"
-                        default: defaultEventNotification.body = "Get excited! \"\(eventTitlesToday[0])\" and \(eventTitlesToday.count - 1) other events are today!"
-                        }
-                    }
-                        
-                    else if currentCalendar.isDate(chronologicalUpcomingSpecialEvents[0].date!.date, inSameDayAs: nextDayNewNotificationDate) { // Second notif format
-                        
-                        var eventTitlesTomorrow = [String]()
-                        for event in chronologicalUpcomingSpecialEvents {
-                            if let eventDate = event.date {
-                                if currentCalendar.isDateInTomorrow(eventDate.date) {eventTitlesTomorrow.append(event.title)}
-                                else {break}
-                            }
-                        }
-                        
-                        switch eventTitlesTomorrow.count {
-                        case 1: defaultEventNotification.body = "Almost there! \"\(eventTitlesTomorrow[0])\" is tomorrow."
-                        case 2: defaultEventNotification.body = "Almost there! \"\(eventTitlesTomorrow[0])\" and 1 other event are tomorrow."
-                        default: defaultEventNotification.body = "Almost there! \"\(eventTitlesTomorrow[0])\" and \(eventTitlesTomorrow.count - 1) other events are tomorrow"
-                        }
-                    }
-                        
-                    else { // Third notif format                        
-                        let date = chronologicalUpcomingSpecialEvents[0].date!.date
-                        let eventDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: date)
-                        
-                        var days = Double(eventDateComponents.day! - todaysDateComponents.day!)
-                        var months = 0.0
-                        var years = 0.0
-                        
-                        if days < 0.0 {
-                            months -= 1.0
-                            let eventDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: date)!
-                            let daysInEventDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: eventDatePreviousMonth)!.count
-                            let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - todaysDateComponents.day!
-                            days = Double(daysLeftInEventDatePreviousMonth + eventDateComponents.day!)
-                        }
-                        
-                        months += Double(eventDateComponents.month! - todaysDateComponents.month!)
-                        if months < 0.0 {
-                            years -= 1.0
-                            months = 12 + months
-                        }
-                        
-                        years += Double(eventDateComponents.year! - todaysDateComponents.year!)
-                        
-                        defaultEventNotification.body = "Your next event \"\(chronologicalUpcomingSpecialEvents[0].title)\" is in "
-                        
-                        if years != 0 {
-                            if years == 1.0 {defaultEventNotification.body += "1 year"}
-                            else {defaultEventNotification.body += "\(Int(years)) years"}
-                            
-                            if months != 0 {
-                                if months == 1.0 {defaultEventNotification.body += ", 1 month"}
-                                else {defaultEventNotification.body += ", \(Int(months)) months"}
-                            }
-                            
-                            if days != 0 {
-                                if days == 1.0 {defaultEventNotification.body += ", 1 day"}
-                                else {defaultEventNotification.body += ", \(Int(days)) days"}
-                            }
-                            
-                            defaultEventNotification.body += "."
-                        }
-                            
-                        else if months != 0 {
-                            if months == 1.0 {defaultEventNotification.body += "1 month"}
-                            else {defaultEventNotification.body += "\(Int(months)) months"}
-                            
-                            if days != 0 {
-                                if days == 1.0 {defaultEventNotification.body += ", 1 day"}
-                                else {defaultEventNotification.body += ", \(Int(days)) days"}
-                            }
-                            
-                            defaultEventNotification.body += "."
-                        }
-                            
-                        else { // Days must not be equal to 0.
-                            if days == 1.0 {defaultEventNotification.body += "1 day."}
-                            else {defaultEventNotification.body += "\(Int(days)) days."}
-                        }
-                    }
                     
-                    if let notificationTimeDate = currentCalendar.date(from: notificationTimeDateComponents) {
-                        userDefaults.set(notificationTimeDate, forKey: notificationTimeAsDateKey)
+                    if !chronologicalUpcomingSpecialEvents.isEmpty {
+                        notificationTimeDateComponents.day! += 1
+                        let nextDayNewNotificationDate = currentCalendar.date(from: notificationTimeDateComponents)!
+                        if currentCalendar.isDate(chronologicalUpcomingSpecialEvents[0].date!.date, inSameDayAs: newNotificationDate) { // First notif format
+                            
+                            var eventTitlesSameDay = [String]()
+                            for event in chronologicalUpcomingSpecialEvents {
+                                if let eventDate = event.date {
+                                    if currentCalendar.isDate(eventDate.date, inSameDayAs: newNotificationDate) {eventTitlesSameDay.append(event.title)}
+                                    else {break}
+                                }
+                            }
+                            
+                            defaultEventNotification.badge = NSNumber(integerLiteral: eventTitlesSameDay.count)
+                            switch eventTitlesSameDay.count {
+                            case 1: defaultEventNotification.body = "Get excited! \"\(eventTitlesSameDay[0])\" is today!"
+                            case 2: defaultEventNotification.body = "Get excited! \"\(eventTitlesSameDay[0])\" and 1 other event are today!"
+                            default: defaultEventNotification.body = "Get excited! \"\(eventTitlesSameDay[0])\" and \(eventTitlesSameDay.count - 1) other events are today!"
+                            }
+                        }
+                            
+                        else if currentCalendar.isDate(chronologicalUpcomingSpecialEvents[0].date!.date, inSameDayAs: nextDayNewNotificationDate) { // Second notif format
+                            
+                            var eventTitlesNextDay = [String]()
+                            for event in chronologicalUpcomingSpecialEvents {
+                                if let eventDate = event.date {
+                                    if currentCalendar.isDate(eventDate.date, inSameDayAs: nextDayNewNotificationDate) {eventTitlesNextDay.append(event.title)}
+                                    else {break}
+                                }
+                            }
+                            
+                            switch eventTitlesNextDay.count {
+                            case 1: defaultEventNotification.body = "Almost there! \"\(eventTitlesNextDay[0])\" is tomorrow."
+                            case 2: defaultEventNotification.body = "Almost there! \"\(eventTitlesNextDay[0])\" and 1 other event are tomorrow."
+                            default: defaultEventNotification.body = "Almost there! \"\(eventTitlesNextDay[0])\" and \(eventTitlesNextDay.count - 1) other events are tomorrow"
+                            }
+                        }
+                            
+                        else { // Third notif format
+                            let date = chronologicalUpcomingSpecialEvents[0].date!.date
+                            let eventDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: date)
+                            
+                            var days = Double(eventDateComponents.day! - todaysDateComponents.day!)
+                            var months = 0.0
+                            var years = 0.0
+                            
+                            if days < 0.0 {
+                                months -= 1.0
+                                let eventDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: date)!
+                                let daysInEventDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: eventDatePreviousMonth)!.count
+                                let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - todaysDateComponents.day!
+                                days = Double(daysLeftInEventDatePreviousMonth + eventDateComponents.day!)
+                            }
+                            
+                            months += Double(eventDateComponents.month! - todaysDateComponents.month!)
+                            if months < 0.0 {
+                                years -= 1.0
+                                months = 12 + months
+                            }
+                            
+                            years += Double(eventDateComponents.year! - todaysDateComponents.year!)
+                            
+                            defaultEventNotification.body = "Your next event \"\(chronologicalUpcomingSpecialEvents[0].title)\" is in "
+                            
+                            if years != 0 {
+                                if years == 1.0 {defaultEventNotification.body += "1 year"}
+                                else {defaultEventNotification.body += "\(Int(years)) years"}
+                                
+                                if months != 0 {
+                                    if months == 1.0 {defaultEventNotification.body += ", 1 month"}
+                                    else {defaultEventNotification.body += ", \(Int(months)) months"}
+                                }
+                                
+                                if days != 0 {
+                                    if days == 1.0 {defaultEventNotification.body += ", 1 day"}
+                                    else {defaultEventNotification.body += ", \(Int(days)) days"}
+                                }
+                                
+                                defaultEventNotification.body += "."
+                            }
+                                
+                            else if months != 0 {
+                                if months == 1.0 {defaultEventNotification.body += "1 month"}
+                                else {defaultEventNotification.body += "\(Int(months)) months"}
+                                
+                                if days != 0 {
+                                    if days == 1.0 {defaultEventNotification.body += ", 1 day"}
+                                    else {defaultEventNotification.body += ", \(Int(days)) days"}
+                                }
+                                
+                                defaultEventNotification.body += "."
+                            }
+                                
+                            else { // Days must not be equal to 0.
+                                if days == 1.0 {defaultEventNotification.body += "1 day."}
+                                else {defaultEventNotification.body += "\(Int(days)) days."}
+                            }
+                        }
+                        
+                        
                     }
                     else {
-                        // TODO: Log and return false
-                        fatalError("Date couldn't be created!")
+                        defaultEventNotification.body = "You have no upcoming events. Open the app to create one!"
                     }
+                    
+                    userDefaults.set(newNotificationDate, forKey: notificationTimeAsDateKey)
                     
                     if let currentlyScheduledUUID = userDefaults.value(forKey: currentlyScheduledUUIDKey) as? String {
                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [currentlyScheduledUUID])
@@ -609,6 +582,7 @@ func updateDailyNotifications(async: Bool) {
                     userDefaults.set(ident, forKey: currentlyScheduledUUIDKey)
                 }
                 else {userDefaults.set(nil, forKey: notificationTimeAsDateKey)}
+                    
             }
             else {
                 if let currentlyScheduledUUID = userDefaults.value(forKey: currentlyScheduledUUIDKey) as? String {
@@ -616,7 +590,8 @@ func updateDailyNotifications(async: Bool) {
                 }
                 userDefaults.set(nil, forKey: notificationTimeAsDateKey)
             }
-        }
+                
+        //}
     }
     
     if async {DispatchQueue.global(qos: .background).async {performWork()}}
@@ -646,8 +621,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         //
         // MARK: User defaults config
         if userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter) == nil {
-            userDefaults.set(EventFilters.all.string, forKey: UserDefaultKeys.DataManagement.currentFilter)
-            userDefaults.set(SortMethods.chronologically.string, forKey: UserDefaultKeys.DataManagement.currentSort)
+            userDefaults.set(EventFilters.all.rawValue, forKey: UserDefaultKeys.DataManagement.currentFilter)
+            userDefaults.set(SortMethods.chronologically.rawValue, forKey: UserDefaultKeys.DataManagement.currentSort)
             userDefaults.set(true, forKey: UserDefaultKeys.DataManagement.futureToPast)
             userDefaults.set(Defaults.DateDisplayMode.short, forKey: UserDefaultKeys.dateDisplayMode)
         }

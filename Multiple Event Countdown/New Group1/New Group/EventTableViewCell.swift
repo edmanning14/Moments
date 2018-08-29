@@ -161,7 +161,7 @@ class EventTableViewCell: UITableViewCell {
     
     fileprivate var infoDateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        let dateDisplayMode = UserDefaults.standard.value(forKey: UserDefaultKeys.dateDisplayMode) as! String
+        let dateDisplayMode = userDefaults.value(forKey: UserDefaultKeys.dateDisplayMode) as! String
         switch dateDisplayMode {
         case Defaults.DateDisplayMode.short:
             formatter.dateStyle = .short
