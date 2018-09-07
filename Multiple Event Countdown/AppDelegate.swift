@@ -332,11 +332,13 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
     // Get pending notifs that trigger on the date.
     UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
         
+        var updateBadgesToZero = false
         var notificationDataToReschedule = [(String, UNMutableNotificationContent, UNNotificationTrigger)]()
         for request in requests {
-            guard request.content.title != dailyNotificationsTitle else {continue}
             if let calendarTrigger = request.trigger as? UNCalendarNotificationTrigger, let triggerDate = calendarTrigger.nextTriggerDate() {
                 if currentCalendar.isDate(triggerDate, inSameDayAs: date) {
+                    
+                    if request.content.title == dailyNotificationsTitle {updateBadgesToZero = true; continue}
                     
                     let content = UNMutableNotificationContent()
                     content.title = request.content.title
@@ -368,26 +370,19 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
         
         guard !notificationDataToReschedule.isEmpty else {return}
         
-        //
-        // Order requests
-        notificationDataToReschedule.sort { (request1, request2) -> Bool in
-            let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
-            let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
-            let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
-            let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
+        if updateBadgesToZero {for data in notificationDataToReschedule {data.1.badge = NSNumber(integerLiteral: 0)}}
+        else {
+            notificationDataToReschedule.sort { (request1, request2) -> Bool in
+                let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
+                let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
+                let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
+                let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
+                
+                if request1TriggerDate < request2TriggerDate {return true} else {return false}
+            }
             
-            if request1TriggerDate < request2TriggerDate {return true} else {return false}
+            for (i, data) in notificationDataToReschedule.enumerated() {data.1.badge = NSNumber(integerLiteral: i + 1)}
         }
-        
-        /*for request in notificationDataToReschedule {
-            let trigger = request.2 as! UNCalendarNotificationTrigger
-            let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
-            print("\(request.1.body) triggers \(triggerDate)")
-        }*/
-        
-        for (i, data) in notificationDataToReschedule.enumerated() {data.1.badge = NSNumber(integerLiteral: i + 1)}
-        
-        //for request in notificationDataToReschedule {print("\(request.1.body) Badge num: \(Int(truncating: request.1.badge ?? 0))")}
         
         //
         // Reschedule requests
@@ -580,6 +575,7 @@ func updateDailyNotifications(async: Bool) {
                     }
                     
                     userDefaults.set(ident, forKey: currentlyScheduledUUIDKey)
+                    updatePendingNotifcationsBadges(forDate: newNotificationDate)
                 }
                 else {userDefaults.set(nil, forKey: notificationTimeAsDateKey)}
                     
@@ -740,8 +736,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             // Create the default event.
             struct DefaultEvent {
                 static let category = "Holidays"
-                static let title = "New Years!"
-                static let tagline = "Party like it's 1989"
+                static let title = "New Years Day!"
+                static let tagline = "Party like it's 1999 🎉"
                 static var date: EventDate = {
                     let calender = Calendar.current
                     var dateComponents = DateComponents()

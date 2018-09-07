@@ -24,10 +24,37 @@ extension NavigationControllerFunctionality {
     var standardColor: UIColor {return GlobalColors.orangeDark}
     
     func configureBarTitleAttributes() {
-        navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
-            .foregroundColor: GlobalColors.orangeRegular
-        ]
+        if let navBar = navigationController?.navigationBar {
+
+            navBar.titleTextAttributes = [
+                .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 18.0) as Any,
+                .foregroundColor: GlobalColors.orangeRegular
+            ]
+            
+            if #available(iOS 11, *) {
+                navigationController?.navigationBar.largeTitleTextAttributes = [
+                    .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0) as Any,
+                    .foregroundColor: GlobalColors.orangeRegular
+                ]
+                navBar.isTranslucent = false
+            }
+            
+            /*let size = CGSize(width: navBar.bounds.width, height: navBar.bounds.height + UIApplication.shared.statusBarFrame.height)
+            let renderer = UIGraphicsImageRenderer(size: size)
+            let gradientColors: [CGFloat] = [ // Custom
+                118/255, 75/255, 162/255, 1.0,
+                79/255, 27/255, 79/255, 1.0
+            ]
+            let gradientLocations: [CGFloat] = [0.0, 1.0]
+            let startPoint = CGPoint(x: navBar.bounds.width / 2, y: 0.0)
+            let endPoint = CGPoint(x: navBar.bounds.width / 2, y: navBar.bounds.height + UIApplication.shared.statusBarFrame.height)
+            let gradientImage = renderer.image { (ctx) in
+                let gradient = CGGradient(colorSpace: CGColorSpaceCreateDeviceRGB(), colorComponents: gradientColors, locations: gradientLocations, count: gradientLocations.count)!
+        
+                ctx.cgContext.drawLinearGradient(gradient, start: startPoint, end: endPoint, options: CGGradientDrawingOptions())
+            }
+            navBar.setBackgroundImage(gradientImage, for: .any, barMetrics: .default)*/
+        }
     }
     
     func addBackButton(action: Selector, title: String?, target: Any?) -> UIBarButtonItem {

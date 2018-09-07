@@ -16,6 +16,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
     enum NotificationTypes {case dailyReminders, eventReminders}
     
     var segueFrom: DepartureSegues = .settings
+    var dateOnly = false
     var configuring: NotificationTypes = .dailyReminders
     var globalToggleOn = true
     var useCustomNotifications = false
@@ -28,7 +29,12 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 var newNotifs = [EventNotification]()
                 for realmNotif in defaultNotificationsConfig[0].eventNotifications {
                     if let newNotif = EventNotification(fromRealmEventNotification: realmNotif) {
-                        newNotifs.append(newNotif)
+                        if dateOnly && newNotif.type == .timeOfEvent {
+                            let components = DateComponents(calendar: nil, timeZone: nil, era: nil, year: nil, month: nil, day: nil, hour: 9, minute: 0, second: 0, nanosecond: nil, weekday: nil, weekdayOrdinal: nil, quarter: nil, weekOfMonth: nil, weekOfYear: nil, yearForWeekOfYear: nil)
+                            let newNewNotif = EventNotification(type: .dayOfEvent, components: components)
+                            newNotifs.append(newNewNotif)
+                        }
+                        else {newNotifs.append(newNotif)}
                     }
                 }
                 _modifiedEventNotifications = newNotifs
@@ -50,10 +56,9 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
     
     fileprivate var selectedCellIndexPath: IndexPath? {
         didSet {
-            if selectedCellIndexPath != oldValue {
-                tableView.beginUpdates(); tableView.endUpdates()
-            }
-            if selectedCellIndexPath == nil {currentlyEditing = nil}
+            if selectedCellIndexPath != oldValue {tableView.beginUpdates(); tableView.endUpdates()}
+            if let ip = selectedCellIndexPath {tableView.selectRow(at: ip, animated: true, scrollPosition: .bottom)}
+            else {currentlyEditing = nil}
         }
     }
     fileprivate enum Editables {case digit, precision, type}
@@ -391,7 +396,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             switch editing {
             case .digit: return digitOptions?.count ?? 0
             case .precision: return precisionOptionsTitles.count
-            case .type: return typeOptions.count
+            case .type: return dateOnly ? typeOptions.count - 1 : typeOptions.count
             }
         }
         else {return 0}
@@ -719,6 +724,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 tableView.beginUpdates()
                 tableView.insertRows(at: [ipToInsertAt], with: .fade)
                 tableView.endUpdates()
+                tableView.selectRow(at: ipToInsertAt, animated: true, scrollPosition: .bottom)
             case "EDIT":
                 tableView.setEditing(true, animated: true)
                 sender.setTitle("DONE", for: .normal)

@@ -5,6 +5,7 @@
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -43,10 +44,10 @@
                     <color key="thumbTintColor" red="0.90196078431372551" green="0.31764705882352939" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                 </switch>
                 <pickerView hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k8C-ps-8uk">
-                    <rect key="frame" x="0.0" y="67" width="320" height="80"/>
+                    <rect key="frame" x="48" y="67" width="224" height="100"/>
                     <color key="backgroundColor" red="0.12941176470588234" green="0.12941176470588234" blue="0.12941176470588234" alpha="0.0" colorSpace="calibratedRGB"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="80" id="TvB-ac-tDm"/>
+                        <constraint firstAttribute="height" constant="100" id="TvB-ac-tDm"/>
                     </constraints>
                 </pickerView>
             </subviews>
@@ -54,6 +55,7 @@
             <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstItem="TIq-nn-Yau" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="8" id="6j7-VM-M60"/>
+                <constraint firstItem="k8C-ps-8uk" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" multiplier="0.7" id="Ao5-fb-UVh"/>
                 <constraint firstItem="k8C-ps-8uk" firstAttribute="top" secondItem="TIq-nn-Yau" secondAttribute="bottom" constant="8" id="Frr-IY-sd1"/>
                 <constraint firstItem="k8C-ps-8uk" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="ITj-Kx-T2q"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="TIq-nn-Yau" secondAttribute="trailing" constant="8" id="NY1-FZ-DP1"/>

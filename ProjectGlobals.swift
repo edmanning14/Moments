@@ -49,7 +49,8 @@ let immutableCategories = ["Favorites", "Uncategorized", "All"]
 
 //
 // MARK: Layout
-let globalCellSpacing: CGFloat = 10.0
+let globalCellSpacing: CGFloat = 15.0
+let globalCellHeight: CGFloat = 160.0
 
 //
 // MARK: Colors
@@ -57,8 +58,9 @@ struct GlobalColors {
     static let orangeRegular = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
     static let orangeDark = UIColor(red: 230/255, green: 81/255, blue: 0.0, alpha: 1.0)
     static let cyanRegular = UIColor(red: 100/255, green: 1.0, blue: 218/255, alpha: 1.0)
-    //static let cyanLight = UIColor(red: 167/255, green: 1.0, blue: 235/255, alpha: 1.0)
     static let lightGrayForFills = UIColor(red: 33/255, green: 33/255, blue: 33/255, alpha: 1.0)
+    static let gray = UIColor(red: 112/255, green: 112/255, blue: 112/255, alpha: 1.0)
+    static let purplePrimary = UIColor(red: 118/255, green: 75/255, blue: 162/255, alpha: 1.0)
     static let darkPurpleForFills = UIColor(red: 66/255, green: 23/255, blue: 66/255, alpha: 1.0)
     static let taskCompleteColor = UIColor.green
     static let optionalTaskIncompleteColor = UIColor.darkGray
@@ -74,6 +76,7 @@ struct GlobalFontNames {
     static let ralewayRegular = "Raleway-Regular" // Text
     static let ralewayMedium = "Raleway-Medium" // Cell Title
     static let ralewayMediumItalic = "Raleway-MediumItalic" // Modified category2
+    static let ralewaySemiBold = "Raleway-SemiBold"
 }
 
 
@@ -89,5 +92,10 @@ struct GlobalAnimations {
 
 // MARK: Geometry
 struct GlobalCornerRadii {
-    static let material: CGFloat = 8.0
+    static let material: CGFloat = 15.0
 }
+let standardDirectionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: 18, bottom: 12, trailing: 18)
+
+// MARK: User photos defaults
+let userPhotosCellSpacing: CGFloat = 1.0
+let numberOfUserPhotoCellsPerColumn: CGFloat = 4.0

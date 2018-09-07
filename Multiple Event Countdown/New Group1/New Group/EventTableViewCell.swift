@@ -100,10 +100,7 @@ class EventTableViewCell: UITableViewCell {
                 case .tagline, .date:
                     if infoDisplayed == .tagline {taglineLabel.text = eventTagline}
                     else {
-                        if let _eventDate = eventDate {
-                            if _eventDate.dateOnly {infoDateFormatter.timeStyle = .none}
-                            else {infoDateFormatter.timeStyle = .short}
-                            taglineLabel.text = infoDateFormatter.string(from: _eventDate.date)}
+                        if let _eventDate = eventDate {taglineLabel.text = infoDateFormatter.string(from: _eventDate.date)}
                         else {taglineLabel.text = "Set a date"}
                     }
                     if taglineLabel.isHidden {
@@ -165,10 +162,12 @@ class EventTableViewCell: UITableViewCell {
         switch dateDisplayMode {
         case Defaults.DateDisplayMode.short:
             formatter.dateStyle = .short
-            formatter.timeStyle = .short
+            if eventDate?.dateOnly ?? true {formatter.timeStyle = .none}
+            else {formatter.timeStyle = .short}
         case Defaults.DateDisplayMode.long:
             formatter.dateStyle = .long
-            formatter.timeStyle = .short
+            if eventDate?.dateOnly ?? true {formatter.timeStyle = .none}
+            else {formatter.timeStyle = .short}
         default:
             // TODO: log and break
             fatalError("Need to add a case??")
@@ -308,15 +307,12 @@ class EventTableViewCell: UITableViewCell {
     @IBOutlet weak var abridgedAgoLabel: UILabel!
     @IBOutlet weak var abridgedYearsStackView: UIStackView!
     @IBOutlet weak var abridgedMonthsStackView: UIStackView!
-    @IBOutlet weak var abridgedWeeksStackView: UIStackView!
     @IBOutlet weak var abridgedDaysStackView: UIStackView!
     @IBOutlet weak var abridgedYearsLabel: UILabel!
     @IBOutlet weak var abridgedMonthsLabel: UILabel!
-    @IBOutlet weak var abridgedWeeksLabel: UILabel!
     @IBOutlet weak var abridgedDaysLabel: UILabel!
     @IBOutlet weak var abridgedYearsTextLabel: UILabel!
     @IBOutlet weak var abridgedMonthsTextLabel: UILabel!
-    @IBOutlet weak var abridgedWeeksTextLabel: UILabel!
     @IBOutlet weak var abridgedDaysTextLabel: UILabel!
     
     fileprivate var gradientView: GradientMaskView?
@@ -932,8 +928,8 @@ class EventTableViewCell: UITableViewCell {
         var mediumLabels: [UILabel]
         var lowLabels: [UILabel]
         highLabels = [tomorrowLabel, titleLabel]
-        mediumLabels = [taglineLabel, abridgedWeeksLabel, abridgedDaysLabel, weeksLabel, daysLabel, hoursLabel, minutesLabel, secondsLabel]
-        lowLabels = [abridgedInLabel, abridgedWeeksTextLabel, abridgedDaysTextLabel, inLabel, weeksColon, daysColon, hoursColon, minutesColon, agoLabel, weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
+        mediumLabels = [taglineLabel, abridgedMonthsLabel, abridgedDaysLabel, weeksLabel, daysLabel, hoursLabel, minutesLabel, secondsLabel]
+        lowLabels = [abridgedInLabel, abridgedMonthsTextLabel, abridgedDaysTextLabel, inLabel, weeksColon, daysColon, hoursColon, minutesColon, agoLabel, weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
         initializeShadows(for: highLabels, withShadowRadius: 3.0)
         initializeShadows(for: mediumLabels, withShadowRadius: 2.0)
         initializeShadows(for: lowLabels, withShadowRadius: 1.0)

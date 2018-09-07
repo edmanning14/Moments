@@ -219,21 +219,17 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         
         tableView.backgroundColor = UIColor.black
         navigationController?.view.backgroundColor = UIColor.black
-        if #available(iOS 11, *) {
-            navigationController?.navigationBar.largeTitleTextAttributes = [
-                .font: UIFont(name: GlobalFontNames.ComfortaaLight, size: 30.0) as Any,
-                .foregroundColor: GlobalColors.orangeRegular
-            ]
-        }
+        
+        configureBarTitleAttributes()
         
         //let attributes: [NSAttributedStringKey: Any] = [.font: UIFont(name: Fonts.contentSecondaryFontName, size: 16.0)! as Any]
         
-        configureBarTitleAttributes()
+        
         _ = addBarButtonItem(side: .right, action:  #selector(insertNewObject(_:)), target: self, title: nil, image: #imageLiteral(resourceName: "AddEventImage"))
         _ = addBarButtonItem(side: .left, action: #selector(handleSettingsButtonTap), target: self, title: nil, image: #imageLiteral(resourceName: "SettingsButtonImage"))
         
         navItemTitle = createHeaderDropdownButton()
-        navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
+        navItemTitle.setTitle(EventFilters.all.rawValue, for: .normal)
         navItemTitle.addTarget(self, action: #selector(handleNavTitleTap(_:)), for: .touchUpInside)
         navItemTitle.titleLabel?.adjustsFontSizeToFitWidth = true
         navItemTitle.titleLabel?.minimumScaleFactor = 0.5
@@ -254,15 +250,15 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
         }
         
-        let allnotifConfigs = mainRealm.objects(RealmEventNotificationConfig.self)
-        let allEventNotifs = mainRealm.objects(RealmEventNotification.self)
-        let allNotifComponents = mainRealm.objects(RealmEventNotificationComponents.self)
-        let allEventDates = mainRealm.objects(EventDate.self)
-        
-        print("Notification Configs: \(allnotifConfigs.count)")
-        print("Event Notifications: \(allEventNotifs.count)")
-        print("All Notification Components: \(allNotifComponents.count)")
-        print("All Event Dates: \(allEventDates.count)")
+//        let allnotifConfigs = mainRealm.objects(RealmEventNotificationConfig.self)
+//        let allEventNotifs = mainRealm.objects(RealmEventNotification.self)
+//        let allNotifComponents = mainRealm.objects(RealmEventNotificationComponents.self)
+//        let allEventDates = mainRealm.objects(EventDate.self)
+//
+//        print("Notification Configs: \(allnotifConfigs.count)")
+//        print("Event Notifications: \(allEventNotifs.count)")
+//        print("All Notification Components: \(allNotifComponents.count)")
+//        print("All Event Dates: \(allEventDates.count)")
         
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
@@ -271,10 +267,12 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
+        
         // Setup notifications
         if firstRun {
             firstRun = false
-            let notifcationPermissionsPopUp = UIAlertController(title: "Enable Notifications", message: "Moments would like to send you notifications to remind you when your special moments will or have occured. Click enable on the next prompt to allow these kinds of notifications. When you have time, click the gear in the upper left of the main screen to see how you can customize these notifications.", preferredStyle: .alert)
+            let notifcationPermissionsPopUp = UIAlertController(title: "Notifications", message: "Moments would like to send you notifications to remind you when your special moments will or have occurred. Tap 'Allow' in the next prompt to allow these kinds of notifications. When you have a free moment, click the gear in the upper left of the main screen to see how you can customize these notifications.", preferredStyle: .alert)
             let okayButton = UIAlertAction(title: "Okay!", style: .default) { (action) in
                 self.dismiss(animated: true, completion: nil)
                 let center = UNUserNotificationCenter.current()
@@ -302,6 +300,13 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                             authorizationDefaultNotificationsConfig[0].allOn = false
                         }
                     }
+                    
+                    let gettingStartedPopUp = UIAlertController(title: "Welcome!", message: "Thanks for using Moments! Just a few things to get you started here:\n\n1. Don't appreciate the lame humor in the default event? Swipe from right to left on any event to bring up the option to delete it!\n\n2. Sharing and editing events is just as easy; swipe from left to right on the desired event to bring up those actions!\n\n3. Along the top navigation bar you have options that will take you to the settings page, filter and sort your events, and create a new event.\n\nIf you have any questions or feedback, head over to the settings page to drop me a line. Enjoy each moment!", preferredStyle: .alert)
+                    
+                    let gotItButton = UIAlertAction(title: "Thanks!", style: .default) { (action) in self.dismiss(animated: true, completion: nil)}
+                    
+                    gettingStartedPopUp.addAction(gotItButton)
+                    self.present(gettingStartedPopUp, animated: true, completion: nil)
                 }
             }
             notifcationPermissionsPopUp.addAction(okayButton)
@@ -345,6 +350,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if headerIsExpanded {collapseHeader(animated: false)}
+        
         switch segue.identifier! {
             
         case SegueIdentifiers.showDetail:
@@ -383,7 +391,15 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     // MARK: - Table View Functions
     //
     
-    override func numberOfSections(in tableView: UITableView) -> Int {return activeCategories.count}
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        if activeCategories.count == 0 {
+            if mainRealmSpecialEvents.count == 0 {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEvents)}
+            else {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEventsInThisFilter)}
+        }
+        else {removeTableViewBackground()}
+        return activeCategories.count
+        
+    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items(forSection: section).count
@@ -412,7 +428,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.row == items(forSection: indexPath.section).count - 1 {return 160}
-        return 170
+        return 160 + globalCellSpacing
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -428,18 +444,18 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         cell.eventTitle = event.title
         cell.eventTagline = event.tagline
         switch event.infoDisplayed {
-        case DisplayInfoOptions.none.displayText: cell.infoDisplayed = DisplayInfoOptions.none
-        case DisplayInfoOptions.tagline.displayText: cell.infoDisplayed = DisplayInfoOptions.tagline
-        case DisplayInfoOptions.date.displayText: cell.infoDisplayed = DisplayInfoOptions.date
+        case DisplayInfoOptions.none.rawValue: cell.infoDisplayed = DisplayInfoOptions.none
+        case DisplayInfoOptions.tagline.rawValue: cell.infoDisplayed = DisplayInfoOptions.tagline
+        case DisplayInfoOptions.date.rawValue: cell.infoDisplayed = DisplayInfoOptions.date
         default:
             // TODO: Log and set a default info display
             fatalError("Unexpected display info option encoutered, do you need to add a new one?")
         }
         cell.eventDate = event.date
         switch event.repeats {
-        case RepeatingOptions.never.displayText: cell.repeats = RepeatingOptions.never
-        case RepeatingOptions.monthly.displayText: cell.repeats = RepeatingOptions.monthly
-        case RepeatingOptions.yearly.displayText: cell.repeats = RepeatingOptions.yearly
+        case RepeatingOptions.never.rawValue: cell.repeats = RepeatingOptions.never
+        case RepeatingOptions.monthly.rawValue: cell.repeats = RepeatingOptions.monthly
+        case RepeatingOptions.yearly.rawValue: cell.repeats = RepeatingOptions.yearly
         default:
             // TODO: Log and set a default repeating option
             fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
@@ -546,7 +562,10 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 }
                 else {tableView.deleteRows(at: [indexPath], with: .fade)}
             case .chronologically:
-                tableView.deleteRows(at: [indexPath], with: .fade)
+                if !livingSelf.activeCategories.contains(deletedItemCategory) {
+                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                }
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
             }
             tableView.endUpdates()
             
@@ -638,12 +657,12 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         case .tagline:
             cell.infoDisplayed = .date
             mainRealm.beginWrite()
-            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.date.displayText
+            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.date.rawValue
             try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .date:
             cell.infoDisplayed = .tagline
             mainRealm.beginWrite()
-            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.tagline.displayText
+            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.tagline.rawValue
             try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .none: break
         }
@@ -895,6 +914,75 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         }
         return indexPathsToReturn
     }
+    
+    fileprivate var tableViewBackgroundView: UIView?
+    fileprivate var tableViewBackgroundViewTitleMessageLabel: UILabel?
+    fileprivate var tableViewBackgroundViewDetailMessageLabel: UILabel?
+    
+    fileprivate enum TableViewBackgroundViewMessages {
+        case noEvents, noEventsInThisFilter
+        
+        var titleText: String {
+            switch self {
+            case .noEvents: return "So much empty."
+            case .noEventsInThisFilter: return "Nothing to see here."
+            }
+        }
+        
+        var detailText: String {
+            switch self {
+            case .noEvents: return "Looks like you have no events! Tap the '+' in the upper right corner to create a new one!"
+            case .noEventsInThisFilter: return "Try changing the filter by tapping the drop down menu at the top of the screen."
+            }
+        }
+    }
+    
+    fileprivate func addTableViewBackground(withMessage message: TableViewBackgroundViewMessages) {
+        if tableViewBackgroundView == nil {
+            tableViewBackgroundView = UIView()
+            tableViewBackgroundView?.backgroundColor = UIColor.black
+            
+            let containerView = UIView()
+            containerView.translatesAutoresizingMaskIntoConstraints = false
+            tableViewBackgroundView?.addSubview(containerView)
+            
+            containerView.centerYAnchor.constraint(equalTo: tableViewBackgroundView!.centerYAnchor).isActive = true
+            containerView.leftAnchor.constraint(equalTo: tableViewBackgroundView!.leftAnchor, constant: 12.0).isActive = true
+            containerView.rightAnchor.constraint(equalTo: tableViewBackgroundView!.rightAnchor, constant: -12.0).isActive = true
+            
+            tableViewBackgroundViewTitleMessageLabel = UILabel()
+            tableViewBackgroundViewTitleMessageLabel?.translatesAutoresizingMaskIntoConstraints = false
+            tableViewBackgroundViewTitleMessageLabel?.font = UIFont(name: GlobalFontNames.ralewaySemiBold, size: 20.0)
+            tableViewBackgroundViewTitleMessageLabel?.textColor = GlobalColors.gray
+            tableViewBackgroundViewTitleMessageLabel?.textAlignment = .center
+            tableViewBackgroundViewTitleMessageLabel?.numberOfLines = 0
+            
+            tableViewBackgroundViewDetailMessageLabel = UILabel()
+            tableViewBackgroundViewDetailMessageLabel?.translatesAutoresizingMaskIntoConstraints = false
+            tableViewBackgroundViewDetailMessageLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 16.0)
+            tableViewBackgroundViewDetailMessageLabel?.textColor = GlobalColors.gray
+            tableViewBackgroundViewDetailMessageLabel?.textAlignment = .center
+            tableViewBackgroundViewDetailMessageLabel?.numberOfLines = 0
+            
+            containerView.addSubview(tableViewBackgroundViewTitleMessageLabel!)
+            containerView.addSubview(tableViewBackgroundViewDetailMessageLabel!)
+            
+            tableViewBackgroundViewTitleMessageLabel?.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
+            tableViewBackgroundViewTitleMessageLabel?.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
+            tableViewBackgroundViewTitleMessageLabel?.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
+            tableViewBackgroundViewTitleMessageLabel?.bottomAnchor.constraint(equalTo: tableViewBackgroundViewDetailMessageLabel!.topAnchor, constant: -15.0).isActive = true
+            
+            tableViewBackgroundViewDetailMessageLabel?.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
+            tableViewBackgroundViewDetailMessageLabel?.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
+            tableViewBackgroundViewTitleMessageLabel?.bottomAnchor.constraint(equalTo: containerView.bottomAnchor).isActive = true
+        }
+        
+        tableViewBackgroundViewTitleMessageLabel?.text = message.titleText
+        tableViewBackgroundViewDetailMessageLabel?.text = message.detailText
+        tableView.backgroundView = tableViewBackgroundView
+    }
+    
+    fileprivate func removeTableViewBackground() {tableView.backgroundView = nil}
 }
 
 

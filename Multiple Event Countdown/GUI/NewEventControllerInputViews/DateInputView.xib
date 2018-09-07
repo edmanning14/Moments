@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Raleway-Italic.ttf">
+            <string>Raleway-Italic</string>
+        </array>
+        <array key="Raleway-SemiBold.ttf">
+            <string>Raleway-SemiBold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="DateInputViewClass" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <datePicker contentMode="scaleToFill" horizontalHuggingPriority="254" verticalHuggingPriority="254" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="5Ge-y9-CkX">
+                    <rect key="frame" x="0.0" y="352" width="320" height="216"/>
+                    <date key="date" timeIntervalSinceReferenceDate="536646962.737333">
+                        <!--2018-01-03 04:36:02 +0000-->
+                    </date>
+                </datePicker>
+                <button hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="254" verticalHuggingPriority="253" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xX1-hI-hP7">
+                    <rect key="frame" x="231" y="309" width="77" height="35"/>
+                    <fontDescription key="fontDescription" name="Raleway-SemiBold" family="Raleway" pointSize="16"/>
+                    <inset key="contentEdgeInsets" minX="12" minY="8" maxX="12" maxY="8"/>
+                    <state key="normal" title="All Day">
+                        <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="253" verticalHuggingPriority="254" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kd5-K7-WIa">
+                    <rect key="frame" x="108" y="309" width="104" height="35"/>
+                    <fontDescription key="fontDescription" name="Raleway-Italic" family="Raleway" pointSize="16"/>
+                    <inset key="contentEdgeInsets" minX="12" minY="8" maxX="12" maxY="8"/>
+                    <state key="normal" title="Time Label">
+                        <color key="titleColor" red="0.3921568627" green="1" blue="0.85490196080000003" alpha="1" colorSpace="calibratedRGB"/>
+                    </state>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="253" verticalHuggingPriority="253" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="en0-70-F31">
+                    <rect key="frame" x="8" y="28" width="304" height="273"/>
+                    <fontDescription key="fontDescription" name="Raleway-Italic" family="Raleway" pointSize="16"/>
+                    <inset key="contentEdgeInsets" minX="12" minY="8" maxX="12" maxY="8"/>
+                    <state key="normal" title="Date Label">
+                        <color key="titleColor" red="0.3921568627" green="1" blue="0.85490196080000003" alpha="1" colorSpace="calibratedRGB"/>
+                    </state>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="Kd5-K7-WIa" firstAttribute="top" secondItem="en0-70-F31" secondAttribute="bottom" constant="8" id="0DI-lw-ECG"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="5Ge-y9-CkX" secondAttribute="bottom" id="2kj-XE-Llj"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="5Ge-y9-CkX" secondAttribute="trailing" id="8DZ-Xe-etQ"/>
+                <constraint firstItem="Kd5-K7-WIa" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="D6x-ye-kIE"/>
+                <constraint firstItem="xX1-hI-hP7" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Kd5-K7-WIa" secondAttribute="trailing" constant="8" id="FTt-h9-Wtb"/>
+                <constraint firstItem="en0-70-F31" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="8" id="Fiv-lL-Rta"/>
+                <constraint firstItem="5Ge-y9-CkX" firstAttribute="top" secondItem="Kd5-K7-WIa" secondAttribute="bottom" constant="8" id="KPg-MV-4f3"/>
+                <constraint firstItem="en0-70-F31" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="Ysd-Lc-jZR"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="en0-70-F31" secondAttribute="trailing" constant="8" id="nwB-g8-R0u"/>
+                <constraint firstItem="xX1-hI-hP7" firstAttribute="centerY" secondItem="Kd5-K7-WIa" secondAttribute="centerY" id="r2Y-Re-imK"/>
+                <constraint firstItem="5Ge-y9-CkX" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="tgV-N0-riU"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="xX1-hI-hP7" secondAttribute="trailing" constant="12" id="xAP-Og-yey"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="allDayButton" destination="xX1-hI-hP7" id="QbQ-9n-TSE"/>
+                <outlet property="dateButton" destination="en0-70-F31" id="Cbf-9P-pZ7"/>
+                <outlet property="datePicker" destination="5Ge-y9-CkX" id="gc5-wL-bWf"/>
+                <outlet property="timeButton" destination="Kd5-K7-WIa" id="xT3-Mp-xjs"/>
+            </connections>
+        </view>
+    </objects>
+</document>

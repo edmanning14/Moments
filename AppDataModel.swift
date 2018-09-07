@@ -20,40 +20,27 @@ internal enum WidgetConfigurations: String {
     case random = "Random Event"
 }
 
-internal enum RepeatingOptions {
-    case never, monthly, yearly
-    
-    var displayText: String {
-        switch self {
-        case .never: return "Never"
-        case .monthly: return "Monthly"
-        case .yearly: return "Yearly"
-        }
-    }
+internal enum RepeatingOptions: String {
+    case never = "Never"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
 }
 
-internal enum DisplayInfoOptions {
-    case none, tagline, date
-    
-    var displayText: String {
-        switch self {
-        case .none: return "None"
-        case .tagline: return "Tagline"
-        case .date: return "Date"
-        }
-    }
+internal enum DisplayInfoOptions: String {
+    case none = "None"
+    case tagline = "Tagline"
+    case date = "Date"
 }
 
-internal enum NotificationsOptions {
-    case custom, _default, off
-    
-    var displayText: String {
-        switch self {
-        case ._default: return "Default"
-        case .custom: return "Custom"
-        case .off: return "Off"
-        }
-    }
+internal enum ToggleMaskOptions: String {
+    case on = "On"
+    case off = "Off"
+}
+
+internal enum NotificationsOptions: String {
+    case custom = "Custom"
+    case _default = "Default"
+    case off = "Off"
 }
 
 internal class CountdownImage {

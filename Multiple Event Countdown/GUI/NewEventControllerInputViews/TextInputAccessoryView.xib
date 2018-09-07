@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Raleway-Italic.ttf">
+            <string>Raleway-Italic</string>
+        </array>
+        <array key="Raleway-Light.ttf">
+            <string>Raleway-Light</string>
+        </array>
+        <array key="Raleway-Regular.ttf">
+            <string>Raleway-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="TextInputAccessoryView" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="85"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uTe-XA-QbU">
+                    <rect key="frame" x="5" y="5" width="365" height="75"/>
+                    <subviews>
+                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" text="Hey!" borderStyle="roundedRect" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="16" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="r26-v6-Sis">
+                            <rect key="frame" x="8" y="43" width="349" height="24"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="24" id="0ai-gZ-GOy"/>
+                            </constraints>
+                            <color key="textColor" red="0.3921568627" green="1" blue="0.85490196080000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <fontDescription key="fontDescription" name="Raleway-Italic" family="Raleway" pointSize="16"/>
+                            <textInputTraits key="textInputTraits" autocapitalizationType="words" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                        </textField>
+                        <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oNc-8n-0po">
+                            <rect key="frame" x="8" y="8" width="349" height="27"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0ui-sa-80a">
+                                    <rect key="frame" x="299" y="-6.5" width="50" height="40"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                                    <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <inset key="contentEdgeInsets" minX="15" minY="10" maxX="15" maxY="10"/>
+                                    <state key="normal" image="NextInputButtonImage">
+                                        <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </state>
+                                </button>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select Option" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kzz-r1-3d4">
+                                    <rect key="frame" x="124" y="0.0" width="101" height="27"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
+                                    <color key="textColor" red="1" green="0.59607843140000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CGm-4u-kjU">
+                                    <rect key="frame" x="0.0" y="-6.5" width="40" height="40"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                                    <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
+                                    <state key="normal" image="CloseImage">
+                                        <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </state>
+                                </button>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="CGm-4u-kjU" firstAttribute="leading" secondItem="oNc-8n-0po" secondAttribute="leading" id="BQz-LI-AMP"/>
+                                <constraint firstItem="kzz-r1-3d4" firstAttribute="top" secondItem="oNc-8n-0po" secondAttribute="top" id="OdL-wR-4Bm"/>
+                                <constraint firstItem="CGm-4u-kjU" firstAttribute="centerY" secondItem="oNc-8n-0po" secondAttribute="centerY" id="WHu-qa-AdN"/>
+                                <constraint firstItem="kzz-r1-3d4" firstAttribute="centerX" secondItem="oNc-8n-0po" secondAttribute="centerX" id="dLL-XU-f3X"/>
+                                <constraint firstAttribute="bottom" secondItem="kzz-r1-3d4" secondAttribute="bottom" id="tDQ-Tv-2h2"/>
+                                <constraint firstAttribute="trailing" secondItem="0ui-sa-80a" secondAttribute="trailing" id="xi8-3O-e4W"/>
+                                <constraint firstItem="0ui-sa-80a" firstAttribute="centerY" secondItem="oNc-8n-0po" secondAttribute="centerY" id="yfw-Dk-CSs"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="r26-v6-Sis" firstAttribute="top" secondItem="oNc-8n-0po" secondAttribute="bottom" constant="8" id="LL1-wb-EtC"/>
+                        <constraint firstItem="r26-v6-Sis" firstAttribute="leading" secondItem="uTe-XA-QbU" secondAttribute="leading" constant="8" id="LXS-ET-UaU"/>
+                        <constraint firstAttribute="bottom" secondItem="r26-v6-Sis" secondAttribute="bottom" constant="8" id="PGy-eh-wdN"/>
+                        <constraint firstAttribute="trailing" secondItem="r26-v6-Sis" secondAttribute="trailing" constant="8" id="VTK-ux-mXO"/>
+                        <constraint firstItem="oNc-8n-0po" firstAttribute="top" secondItem="uTe-XA-QbU" secondAttribute="top" constant="8" id="Voo-gp-gdr"/>
+                        <constraint firstAttribute="trailing" secondItem="oNc-8n-0po" secondAttribute="trailing" constant="8" id="W5d-W7-ei9"/>
+                        <constraint firstItem="oNc-8n-0po" firstAttribute="leading" secondItem="uTe-XA-QbU" secondAttribute="leading" constant="8" id="cNx-BY-7UJ"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="uTe-XA-QbU" secondAttribute="trailing" constant="5" id="5ag-nX-FUO"/>
+                <constraint firstItem="uTe-XA-QbU" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="5" id="HN7-7k-4at"/>
+                <constraint firstItem="uTe-XA-QbU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="5" id="Lj7-nV-n2x"/>
+                <constraint firstAttribute="bottom" secondItem="uTe-XA-QbU" secondAttribute="bottom" constant="5" id="weW-dV-8cp"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="borderView" destination="uTe-XA-QbU" id="8SP-3h-RNu"/>
+                <outlet property="cancelInputButton" destination="CGm-4u-kjU" id="tvr-kD-H78"/>
+                <outlet property="currentInputTitleLabel" destination="kzz-r1-3d4" id="ca2-rM-ZfK"/>
+                <outlet property="nextInputButton" destination="0ui-sa-80a" id="pdt-7k-pJX"/>
+                <outlet property="textInputField" destination="r26-v6-Sis" id="QKZ-YP-Zcw"/>
+            </connections>
+            <point key="canvasLocation" x="34.5" y="34"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="CloseImage" width="20" height="20"/>
+        <image name="NextInputButtonImage" width="20" height="20"/>
+    </resources>
+</document>

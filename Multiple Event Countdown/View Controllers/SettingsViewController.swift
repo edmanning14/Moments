@@ -32,7 +32,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     // MARK: Table View Static Data Source
     
     struct Options {
-        static let resetAllThemes = SettingsTypeDataSource.Option(text: nil) {}
+        //static let resetAllThemes = SettingsTypeDataSource.Option(text: nil) {}
         static let resetNotifsToDefaults = SettingsTypeDataSource.Option(text: nil) {}
         struct dateDisplayMode {
             static let short = SettingsTypeDataSource.Option(text: "Short") {}
@@ -64,19 +64,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         let s1r1 = dataSource[s1].addRow(type: .segue, title: Text.RowTitles.organizeCategories)
         
-        let s1r2 = dataSource[s1].addRow(type: .action, title: Text.RowTitles.resetAllThemes)
-        dataSource[s1].rows[s1r2].options.append(Options.resetAllThemes)
+        /*let s1r2 = dataSource[s1].addRow(type: .action, title: Text.RowTitles.resetAllThemes)
+        dataSource[s1].rows[s1r2].options.append(Options.resetAllThemes)*/
         
         let s1r3 = dataSource[s1].addRow(type: .selectOption, title: Text.RowTitles.dateDisplayMode)
         dataSource[s1].rows[s1r3].options.append(Options.dateDisplayMode.short)
         dataSource[s1].rows[s1r3].options.append(Options.dateDisplayMode.long)
-        
-        // Section 2
-        let s2 = dataSource.addSection(title: Text.SectionTitles.widgit)
-        
-        let s2r1 = dataSource[s2].addRow(type: .selectOption, title: Text.RowTitles.widgetSort)
-        dataSource[s2].rows[s2r1].options.append(Options.widgetSort.random)
-        dataSource[s2].rows[s2r1].options.append(Options.widgetSort.upcoming)
         
         // Section 3
         let s3 = dataSource.addSection(title: Text.SectionTitles.notifications)
@@ -435,7 +428,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             cell.onOffSwitch.addTarget(self, action: #selector(cellSwitchFlipped(_:)), for: .valueChanged)
         }
         cell.title = rowData.title
-        cell.options = tableViewDataSource[indexPath.section].rows[indexPath.row].options
+        cell.options = rowData.options
         
         switch rowData.type {
         case .action: break
@@ -608,9 +601,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     //
-    // MARK: Scroll view delegate
+    // MARK: Scroll view delegate collapsing header functionality!
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    /*func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView == tableView {
             let scrollDiff = scrollView.contentOffset.y - previousScrollOffset
             let absoluteTop: CGFloat = 0;
@@ -636,7 +629,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             if newHeight != headerViewTopAnchor.constant {headerViewTopAnchor.constant = newHeight}
             previousScrollOffset = scrollView.contentOffset.y
         }
-    }
+    }*/
     
     //
     // MARK: SettingsTableViewCellDelegate

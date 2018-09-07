@@ -97,7 +97,7 @@ class SettingsTableViewCell: UITableViewCell, UIPickerViewDataSource, UIPickerVi
     }
     
     static var collapsedHeight: CGFloat = 47 // switch height + top margin + bottom margin
-    static var expandedHeight: CGFloat = SettingsTableViewCell.collapsedHeight + 88 // + PickerView Height + corner radius for some reason.
+    static var expandedHeight: CGFloat = SettingsTableViewCell.collapsedHeight + 118 // + PickerView Height + 10 spacing + corner radius for some reason.
     
     fileprivate var isUserChange = false
     

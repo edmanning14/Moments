@@ -241,8 +241,8 @@ class SpecialEvent: Object {
         self.tagline = tagline
         self.date = date
         self.abridgedDisplayMode = abridgedDisplayMode
-        self.infoDisplayed = infoDisplayed.displayText
-        self.repeats = repeats.displayText
+        self.infoDisplayed = infoDisplayed.rawValue
+        self.repeats = repeats.rawValue
         self.notificationsConfig = notificationsConfig
         if let _locationForCellView = locationForCellView {self.locationForCellView.value = Int(_locationForCellView * 100.0)}
         self.useMask = useMask
