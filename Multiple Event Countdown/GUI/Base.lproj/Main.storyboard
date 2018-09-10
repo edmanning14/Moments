@@ -5,6 +5,7 @@
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -29,6 +30,9 @@
         </array>
         <array key="Raleway-Regular.ttf">
             <string>Raleway-Regular</string>
+        </array>
+        <array key="Raleway-SemiBold.ttf">
+            <string>Raleway-SemiBold</string>
         </array>
     </customFonts>
     <scenes>
@@ -881,18 +885,160 @@
                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <color key="separatorColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Review Prompt" rowHeight="170" id="WCw-Qf-5nD" customClass="EventTableViewCell" customModule="Multiple_Event_Countdown" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="320" height="170"/>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Tip Cell" rowHeight="500" id="WCw-Qf-5nD">
+                                <rect key="frame" x="0.0" y="28" width="320" height="500"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="WCw-Qf-5nD" id="37f-cq-3Eg">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="170"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="500"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tip" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WY1-8b-ejE">
+                                            <rect key="frame" x="62" y="35.5" width="234" height="29"/>
+                                            <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="24"/>
+                                            <color key="textColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PWN-yq-JL8">
+                                            <rect key="frame" x="24" y="80" width="288" height="307"/>
+                                            <string key="text">For any event, you can change between displaying an abridged or a detailed countdown format by tapping on the countdown. 
+
+Similarly, you can change between displaying your event tagline or the event date by tapping on the text below the event title.</string>
+                                            <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
+                                            <color key="textColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Lightbulb" translatesAutoresizingMaskIntoConstraints="NO" id="jly-86-1MV">
+                                            <rect key="frame" x="24" y="35" width="30" height="30"/>
+                                            <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="jly-86-1MV" secondAttribute="height" multiplier="1:1" id="zWq-Ti-1YM"/>
+                                            </constraints>
+                                        </imageView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Swipe from right to left to delete this tip." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mT3-mW-sIb">
+                                            <rect key="frame" x="24" y="427" width="272" height="38"/>
+                                            <fontDescription key="fontDescription" name="Raleway-SemiBold" family="Raleway" pointSize="16"/>
+                                            <color key="textColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <view alpha="0.14999999999999999" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1NP-mU-8bs">
+                                            <rect key="frame" x="8" y="484.5" width="304" height="0.5"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="Khq-lK-Oo8"/>
+                                            </constraints>
+                                        </view>
+                                        <view alpha="0.15000000596046448" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LQF-fe-A5k">
+                                            <rect key="frame" x="8" y="15" width="304" height="0.5"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="023-D1-nwd"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="LQF-fe-A5k" firstAttribute="leading" secondItem="37f-cq-3Eg" secondAttribute="leading" constant="8" id="1Hx-c1-4lq"/>
+                                        <constraint firstItem="jly-86-1MV" firstAttribute="leading" secondItem="37f-cq-3Eg" secondAttribute="leadingMargin" constant="8" id="3SH-Ex-gnW"/>
+                                        <constraint firstItem="1NP-mU-8bs" firstAttribute="leading" secondItem="37f-cq-3Eg" secondAttribute="leading" constant="8" id="83d-uZ-pb8"/>
+                                        <constraint firstItem="mT3-mW-sIb" firstAttribute="leading" secondItem="37f-cq-3Eg" secondAttribute="leadingMargin" constant="8" id="EIc-1i-2NA"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="mT3-mW-sIb" secondAttribute="trailing" constant="8" id="LhZ-MH-oG7"/>
+                                        <constraint firstItem="WY1-8b-ejE" firstAttribute="leading" secondItem="jly-86-1MV" secondAttribute="trailing" constant="8" id="R2b-2p-aOC"/>
+                                        <constraint firstItem="PWN-yq-JL8" firstAttribute="top" secondItem="jly-86-1MV" secondAttribute="bottom" constant="15" id="R3p-xq-t7e"/>
+                                        <constraint firstAttribute="trailing" secondItem="1NP-mU-8bs" secondAttribute="trailing" constant="8" id="dcA-eh-OGE"/>
+                                        <constraint firstItem="WY1-8b-ejE" firstAttribute="centerY" secondItem="jly-86-1MV" secondAttribute="centerY" id="euA-2t-nUp"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="WY1-8b-ejE" secondAttribute="trailing" constant="8" id="fXj-hd-hal"/>
+                                        <constraint firstItem="1NP-mU-8bs" firstAttribute="bottomMargin" secondItem="mT3-mW-sIb" secondAttribute="bottom" constant="12" id="lFm-dX-GaH"/>
+                                        <constraint firstAttribute="trailing" secondItem="PWN-yq-JL8" secondAttribute="trailing" constant="8" id="lX2-bs-OTy"/>
+                                        <constraint firstAttribute="trailing" secondItem="LQF-fe-A5k" secondAttribute="trailing" constant="8" id="m6l-6a-rsh"/>
+                                        <constraint firstItem="PWN-yq-JL8" firstAttribute="leading" secondItem="37f-cq-3Eg" secondAttribute="leadingMargin" constant="8" id="n9y-u0-hFG"/>
+                                        <constraint firstItem="LQF-fe-A5k" firstAttribute="top" secondItem="37f-cq-3Eg" secondAttribute="top" constant="15" id="oCP-hc-Inf"/>
+                                        <constraint firstAttribute="bottom" secondItem="1NP-mU-8bs" secondAttribute="bottom" constant="15" id="van-UX-NWH"/>
+                                        <constraint firstItem="jly-86-1MV" firstAttribute="top" secondItem="LQF-fe-A5k" secondAttribute="topMargin" constant="12" id="xKE-XQ-DQZ"/>
+                                        <constraint firstItem="mT3-mW-sIb" firstAttribute="top" secondItem="PWN-yq-JL8" secondAttribute="bottom" constant="40" id="xXN-8i-8hV"/>
+                                    </constraints>
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <segue destination="vC3-pB-5Vb" kind="showDetail" identifier="showDetail" customClass="MasterDetailSegue" customModule="Multiple_Event_Countdown" customModuleProvider="target" id="6S0-TO-JiA"/>
                                 </connections>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Welcome Cell" rowHeight="700" id="tKB-vk-t9r">
+                                <rect key="frame" x="0.0" y="528" width="320" height="700"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tKB-vk-t9r" id="Ruj-Id-C1c">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="700"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Welcome!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6cL-rA-OPE">
+                                            <rect key="frame" x="54" y="35.5" width="250" height="29"/>
+                                            <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="24"/>
+                                            <color key="textColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9YQ-8f-ZWy">
+                                            <rect key="frame" x="16" y="80" width="296" height="506.5"/>
+                                            <mutableString key="text">Thanks for downloading Moments! Just a few things to get you started here:  1. Swipe from right to left on any event to bring up the option to delete it. (You can do the same for this message too!)
+
+2. Sharing and editing events is just as easy; swipe from left to right on the desired event to bring up those actions!
+
+3. Along the top navigation bar you have options that will take you to the settings page, filter and sort your events, and create a new event.
+
+If you have any questions or feedback, head over to the settings page to drop me a line. Enjoy each moment!</mutableString>
+                                            <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
+                                            <color key="textColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SmileFace" translatesAutoresizingMaskIntoConstraints="NO" id="gzo-UF-ykD">
+                                            <rect key="frame" x="16" y="35" width="30" height="30"/>
+                                            <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="gzo-UF-ykD" secondAttribute="height" multiplier="1:1" id="hGH-Fc-hed"/>
+                                            </constraints>
+                                        </imageView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Swipe from right to left to delete this message." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iZa-jW-qVz">
+                                            <rect key="frame" x="16" y="626.5" width="288" height="38"/>
+                                            <fontDescription key="fontDescription" name="Raleway-SemiBold" family="Raleway" pointSize="16"/>
+                                            <color key="textColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <view alpha="0.15000000596046448" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vmG-1z-h4H">
+                                            <rect key="frame" x="8" y="684" width="304" height="0.5"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="T5u-Hj-YDZ"/>
+                                            </constraints>
+                                        </view>
+                                        <view alpha="0.15000000596046448" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6e4-ZR-X8Z">
+                                            <rect key="frame" x="8" y="15" width="304" height="0.5"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="XHD-fU-VOc"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="gzo-UF-ykD" firstAttribute="leading" secondItem="Ruj-Id-C1c" secondAttribute="leadingMargin" constant="8" id="9sV-kX-LLl"/>
+                                        <constraint firstItem="9YQ-8f-ZWy" firstAttribute="top" secondItem="gzo-UF-ykD" secondAttribute="bottom" constant="15" id="Fji-LO-3fi"/>
+                                        <constraint firstItem="vmG-1z-h4H" firstAttribute="leading" secondItem="Ruj-Id-C1c" secondAttribute="leading" constant="8" id="Gof-mY-37k"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="6cL-rA-OPE" secondAttribute="trailing" constant="8" id="L6c-lz-93i"/>
+                                        <constraint firstAttribute="bottom" secondItem="vmG-1z-h4H" secondAttribute="bottom" constant="15" id="NQC-Te-aVR"/>
+                                        <constraint firstItem="6cL-rA-OPE" firstAttribute="leading" secondItem="gzo-UF-ykD" secondAttribute="trailing" constant="8" id="O9f-ow-0dl"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="iZa-jW-qVz" secondAttribute="trailing" constant="8" id="Q24-u6-Bea"/>
+                                        <constraint firstItem="6e4-ZR-X8Z" firstAttribute="top" secondItem="Ruj-Id-C1c" secondAttribute="top" constant="15" id="dJk-a5-40z"/>
+                                        <constraint firstItem="9YQ-8f-ZWy" firstAttribute="leading" secondItem="Ruj-Id-C1c" secondAttribute="leadingMargin" constant="8" id="eUi-Ta-0NE"/>
+                                        <constraint firstItem="vmG-1z-h4H" firstAttribute="bottomMargin" secondItem="iZa-jW-qVz" secondAttribute="bottom" constant="12" id="gi0-JT-tfV"/>
+                                        <constraint firstItem="iZa-jW-qVz" firstAttribute="top" secondItem="9YQ-8f-ZWy" secondAttribute="bottom" constant="40" id="gkE-DZ-HVe"/>
+                                        <constraint firstItem="gzo-UF-ykD" firstAttribute="top" secondItem="6e4-ZR-X8Z" secondAttribute="topMargin" constant="12" id="hGa-f6-KKG"/>
+                                        <constraint firstAttribute="trailing" secondItem="9YQ-8f-ZWy" secondAttribute="trailing" constant="8" id="hLy-LN-40k"/>
+                                        <constraint firstItem="6e4-ZR-X8Z" firstAttribute="leading" secondItem="Ruj-Id-C1c" secondAttribute="leading" constant="8" id="nui-X7-z4f"/>
+                                        <constraint firstItem="6cL-rA-OPE" firstAttribute="centerY" secondItem="gzo-UF-ykD" secondAttribute="centerY" id="o6R-JK-us2"/>
+                                        <constraint firstAttribute="trailing" secondItem="6e4-ZR-X8Z" secondAttribute="trailing" constant="8" id="suJ-ed-aDx"/>
+                                        <constraint firstAttribute="trailing" secondItem="vmG-1z-h4H" secondAttribute="trailing" constant="8" id="t6m-60-hBB"/>
+                                        <constraint firstItem="iZa-jW-qVz" firstAttribute="leading" secondItem="Ruj-Id-C1c" secondAttribute="leadingMargin" constant="8" id="zY4-7L-bbN"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableViewCell>
                         </prototypes>
                         <sections/>
@@ -936,11 +1082,13 @@
         <image name="HomeButtonImage" width="16" height="16"/>
         <image name="ImageButtonImage" width="16" height="16"/>
         <image name="InstagramIcon" width="256" height="256"/>
+        <image name="Lightbulb" width="30" height="30"/>
         <image name="MailIcon" width="256" height="256"/>
         <image name="Me" width="737" height="737"/>
         <image name="RateApp" width="24" height="24"/>
         <image name="RequestsButton" width="24" height="24"/>
         <image name="ShoppingCart" width="15" height="15"/>
+        <image name="SmileFace" width="30" height="30"/>
         <image name="TwitterIcon" width="256" height="256"/>
         <image name="Undo.png" width="16" height="16"/>
         <image name="UserAlbumsButtonImage" width="16" height="16"/>
@@ -948,7 +1096,7 @@
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="6S0-TO-JiA"/>
-        <segue reference="Cuf-eb-5cU"/>
-        <segue reference="FcL-Fa-uEx"/>
+        <segue reference="aby-vh-xle"/>
+        <segue reference="AkY-5u-OXj"/>
     </inferredMetricsTieBreakers>
 </document>

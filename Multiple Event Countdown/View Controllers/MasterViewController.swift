@@ -69,7 +69,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //var specialEventsOnMainRealmNotificationToken: NotificationToken!
     
     //
-    // MARK: References and Outlets
+    // MARK: GUI
     var detailViewController: DetailViewController? = nil
     var navItemTitle = UIButton()
     
@@ -187,11 +187,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     
     //
-    // MARK: - Design
-    
-    //
     // MARK: Flags
-    var firstRun = false
     var isUserChange = false
     var dateDidChange = false
     var categoryDidChange = false
@@ -199,6 +195,11 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     // MARK: Timers
     var eventTimer: Timer?
+    
+    //
+    // MARK: Other
+    var tipCellIndexPath: IndexPath?
+    var welcomeCellIndexPath: IndexPath?
     
     
     //
@@ -218,6 +219,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         tableView.register(specialEventNib, forCellReuseIdentifier: "Event")
         
         tableView.backgroundColor = UIColor.black
+        tableView.estimatedRowHeight = 300.0
         navigationController?.view.backgroundColor = UIColor.black
         
         configureBarTitleAttributes()
@@ -264,14 +266,44 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         super.viewWillAppear(animated)
     }
     
+    var numTimesViewDidAppear = 0
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
+        func displayTipCell() {
+            var section = 0
+            var row = 0
+            var cellCounter = 0
+            for _section in 0..<activeCategories.count {
+                let count = items(forSection: section).count
+                if count >= 3 - cellCounter {row = 2 - cellCounter; section = _section; break}
+                else {cellCounter += count; row = count; section = _section}
+            }
+            
+            if section != 0 || row != 0 {
+                tipCellIndexPath = IndexPath(row: row, section: section)
+                if welcomeCellIndexPath == nil {
+                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (timer) in
+                        DispatchQueue.main.async { [weak self] in
+                            self?.tableView.beginUpdates()
+                            self?.tableView.insertRows(at: [self!.tipCellIndexPath!], with: .fade)
+                            self?.tableView.endUpdates()
+                            userDefaults.set(true, forKey: UserDefaultKeys.tipShown)
+                        }
+                    }
+                }
+            }
+        }
+        
+        numTimesViewDidAppear += 1
+        let numLaunches = userDefaults.integer(forKey: UserDefaultKeys.numberOfLaunches)
+        if numLaunches == 1 {if !userDefaults.bool(forKey: UserDefaultKeys.tipShown) && numTimesViewDidAppear > 1 {displayTipCell()}}
+        else if !userDefaults.bool(forKey: UserDefaultKeys.tipShown) {displayTipCell()}
         
         navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
         
         // Setup notifications
-        if firstRun {
-            firstRun = false
+        if numLaunches == 1 && numTimesViewDidAppear == 1 {
             let notifcationPermissionsPopUp = UIAlertController(title: "Notifications", message: "Moments would like to send you notifications to remind you when your special moments will or have occurred. Tap 'Allow' in the next prompt to allow these kinds of notifications. When you have a free moment, click the gear in the upper left of the main screen to see how you can customize these notifications.", preferredStyle: .alert)
             let okayButton = UIAlertAction(title: "Okay!", style: .default) { (action) in
                 self.dismiss(animated: true, completion: nil)
@@ -301,12 +333,16 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                         }
                     }
                     
-                    let gettingStartedPopUp = UIAlertController(title: "Welcome!", message: "Thanks for using Moments! Just a few things to get you started here:\n\n1. Don't appreciate the lame humor in the default event? Swipe from right to left on any event to bring up the option to delete it!\n\n2. Sharing and editing events is just as easy; swipe from left to right on the desired event to bring up those actions!\n\n3. Along the top navigation bar you have options that will take you to the settings page, filter and sort your events, and create a new event.\n\nIf you have any questions or feedback, head over to the settings page to drop me a line. Enjoy each moment!", preferredStyle: .alert)
-                    
-                    let gotItButton = UIAlertAction(title: "Thanks!", style: .default) { (action) in self.dismiss(animated: true, completion: nil)}
-                    
-                    gettingStartedPopUp.addAction(gotItButton)
-                    self.present(gettingStartedPopUp, animated: true, completion: nil)
+                    DispatchQueue.main.async {
+                        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (timer) in
+                            DispatchQueue.main.async { [weak self] in
+                                self?.welcomeCellIndexPath = IndexPath(row: 0, section: 0)
+                                self?.tableView.beginUpdates()
+                                self?.tableView.insertRows(at: [self!.welcomeCellIndexPath!], with: .fade)
+                                self?.tableView.endUpdates()
+                            }
+                        }
+                    }
                 }
             }
             notifcationPermissionsPopUp.addAction(okayButton)
@@ -392,16 +428,18 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        if activeCategories.count == 0 {
+        if activeCategories.count > 0 {removeTableViewBackground(); return activeCategories.count}
+        else if welcomeCellIndexPath != nil || tipCellIndexPath != nil {removeTableViewBackground(); return 1}
+        else {
             if mainRealmSpecialEvents.count == 0 {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEvents)}
             else {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEventsInThisFilter)}
+            return 0
         }
-        else {removeTableViewBackground()}
-        return activeCategories.count
-        
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let ipForWelcomCell = welcomeCellIndexPath, ipForWelcomCell.section == section {return items(forSection: section).count + 1}
+        if let ipForTipCell = tipCellIndexPath, ipForTipCell.section == section {return items(forSection: section).count + 1}
         return items(forSection: section).count
     }
     
@@ -427,108 +465,123 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath == welcomeCellIndexPath || indexPath == tipCellIndexPath {return UITableViewAutomaticDimension}
         if indexPath.row == items(forSection: indexPath.section).count - 1 {return 160}
         return 160 + globalCellSpacing
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let event = items(forSection: indexPath.section)[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
-        cell.configuration = .cell
-        cell.configure()
-        
-        if indexPath.row == items(forSection: indexPath.section).count - 1 {cell.spacingAdjustmentConstraint.constant = 0.0}
-        else {cell.spacingAdjustmentConstraint.constant = globalCellSpacing}
-        
-        cell.eventTitle = event.title
-        cell.eventTagline = event.tagline
-        switch event.infoDisplayed {
-        case DisplayInfoOptions.none.rawValue: cell.infoDisplayed = DisplayInfoOptions.none
-        case DisplayInfoOptions.tagline.rawValue: cell.infoDisplayed = DisplayInfoOptions.tagline
-        case DisplayInfoOptions.date.rawValue: cell.infoDisplayed = DisplayInfoOptions.date
-        default:
-            // TODO: Log and set a default info display
-            fatalError("Unexpected display info option encoutered, do you need to add a new one?")
+        if indexPath == welcomeCellIndexPath {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Welcome Cell", for: indexPath)
+            return cell
         }
-        cell.eventDate = event.date
-        switch event.repeats {
-        case RepeatingOptions.never.rawValue: cell.repeats = RepeatingOptions.never
-        case RepeatingOptions.monthly.rawValue: cell.repeats = RepeatingOptions.monthly
-        case RepeatingOptions.yearly.rawValue: cell.repeats = RepeatingOptions.yearly
-        default:
-            // TODO: Log and set a default repeating option
-            fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
+        else if indexPath == tipCellIndexPath {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Tip Cell", for: indexPath)
+            return cell
         }
-        cell.abridgedDisplayMode = event.abridgedDisplayMode
-        cell.creationDate = event.creationDate
-        cell.useMask =  event.useMask
-        if let imageInfo = event.image {
-            var locationForCellView: CGFloat?
-            if let intLocationForCellView = event.locationForCellView.value {
-                locationForCellView = CGFloat(intLocationForCellView) / 100.0
+        else {
+            let event = items(forSection: indexPath.section)[indexPath.row]
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
+            cell.configuration = .cell
+            cell.configure()
+            
+            if indexPath.row == items(forSection: indexPath.section).count - 1 {cell.spacingAdjustmentConstraint.constant = 0.0}
+            else {cell.spacingAdjustmentConstraint.constant = globalCellSpacing}
+            
+            print(event.title)
+            cell.eventTitle = event.title
+            cell.eventTagline = event.tagline
+            switch event.infoDisplayed {
+            case DisplayInfoOptions.none.rawValue: cell.infoDisplayed = DisplayInfoOptions.none
+            case DisplayInfoOptions.tagline.rawValue: cell.infoDisplayed = DisplayInfoOptions.tagline
+            case DisplayInfoOptions.date.rawValue: cell.infoDisplayed = DisplayInfoOptions.date
+            default:
+                // TODO: Log and set a default info display
+                fatalError("Unexpected display info option encoutered, do you need to add a new one?")
             }
-            if imageInfo.isAppImage {
-                if let appImage = AppEventImage(fromEventImageInfo: imageInfo) {
-                    cell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
+            cell.eventDate = event.date
+            switch event.repeats {
+            case RepeatingOptions.never.rawValue: cell.repeats = RepeatingOptions.never
+            case RepeatingOptions.monthly.rawValue: cell.repeats = RepeatingOptions.monthly
+            case RepeatingOptions.yearly.rawValue: cell.repeats = RepeatingOptions.yearly
+            default:
+                // TODO: Log and set a default repeating option
+                fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
+            }
+            cell.abridgedDisplayMode = event.abridgedDisplayMode
+            cell.creationDate = event.creationDate
+            cell.useMask =  event.useMask
+            if let imageInfo = event.image {
+                var locationForCellView: CGFloat?
+                if let intLocationForCellView = event.locationForCellView.value {
+                    locationForCellView = CGFloat(intLocationForCellView) / 100.0
+                }
+                if imageInfo.isAppImage {
+                    if let appImage = AppEventImage(fromEventImageInfo: imageInfo) {
+                        cell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
+                    }
+                }
+                else {
+                    if let userImage = UserEventImage(fromEventImageInfo: imageInfo) {
+                        cell.setSelectedImage(image: userImage, locationForCellView: locationForCellView)
+                    }
                 }
             }
-            else {
-                if let userImage = UserEventImage(fromEventImageInfo: imageInfo) {
-                    cell.setSelectedImage(image: userImage, locationForCellView: locationForCellView)
-                }
+            
+            func addGestures() {
+                let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+                let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
+                let changeInfoDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeInfoDisplayModeTap(_:)))
+                cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
+                cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
+                cell.taglineLabel.addGestureRecognizer(changeInfoDisplayModeTapGestureRecognizer)
             }
+            
+            if cell.timerContainerView.gestureRecognizers == nil {addGestures()}
+            else if let gestures = cell.timerContainerView.gestureRecognizers, gestures.isEmpty {addGestures()}
+            
+            if indexPath == lastIndexPath, eventTimer == nil {
+                eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
+            }
+            
+            return cell
         }
-        
-        func addGestures() {
-            let changeDateDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
-            let changeDateDisplayModeTapGestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(handleChangeDisplayModeTap(_:)))
-            let changeInfoDisplayModeTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleChangeInfoDisplayModeTap(_:)))
-            cell.timerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer)
-            cell.abridgedTimerContainerView.addGestureRecognizer(changeDateDisplayModeTapGestureRecognizer2)
-            cell.taglineLabel.addGestureRecognizer(changeInfoDisplayModeTapGestureRecognizer)
-        }
-        
-        if cell.timerContainerView.gestureRecognizers == nil {addGestures()}
-        else if let gestures = cell.timerContainerView.gestureRecognizers, gestures.isEmpty {addGestures()}
-        
-        if indexPath == lastIndexPath, eventTimer == nil {
-            eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
-        }
-        
-        return cell
     }
     
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let editAction = UIContextualAction(style: .normal, title:"Edit") { [weak self] (_, _, completion) in
-            if let cell = self?.tableView.cellForRow(at: indexPath) {
-                self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
-                completion(true)
+        if indexPath != welcomeCellIndexPath || indexPath != tipCellIndexPath {
+            let editAction = UIContextualAction(style: .normal, title:"Edit") { [weak self] (_, _, completion) in
+                if let cell = self?.tableView.cellForRow(at: indexPath) {
+                    self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
+                    completion(true)
+                }
+                else {completion(false)}
             }
-            else {completion(false)}
-        }
-        
-        let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] (_, _, completion) in
-            if let cell = self?.tableView.cellForRow(at: indexPath) as? EventTableViewCell {
-                let viewWithMargins = cell.viewWithMargins!
-                let currentCornerRadius = viewWithMargins.layer.cornerRadius
-                viewWithMargins.layer.cornerRadius = 0.0
-                let imageToShare = viewWithMargins.asJPEGImage()
-                viewWithMargins.layer.cornerRadius = currentCornerRadius
-                let activityController = UIActivityViewController(activityItems: [imageToShare], applicationActivities: nil)
-                activityController.excludedActivityTypes = [UIActivityType.addToReadingList, UIActivityType.assignToContact, UIActivityType.openInIBooks]
-                self?.present(activityController, animated: true, completion: nil)
-                completion(true)
+            
+            let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] (_, _, completion) in
+                if let cell = self?.tableView.cellForRow(at: indexPath) as? EventTableViewCell {
+                    let viewWithMargins = cell.viewWithMargins!
+                    let currentCornerRadius = viewWithMargins.layer.cornerRadius
+                    viewWithMargins.layer.cornerRadius = 0.0
+                    let imageToShare = viewWithMargins.asJPEGImage()
+                    viewWithMargins.layer.cornerRadius = currentCornerRadius
+                    let activityController = UIActivityViewController(activityItems: [imageToShare], applicationActivities: nil)
+                    activityController.excludedActivityTypes = [UIActivityType.addToReadingList, UIActivityType.assignToContact, UIActivityType.openInIBooks]
+                    self?.present(activityController, animated: true, completion: nil)
+                    completion(true)
+                }
+                completion(false)
             }
-            completion(false)
+            
+            editAction.backgroundColor = GlobalColors.orangeDark
+            shareAction.backgroundColor = GlobalColors.shareButtonColor
+            let configuration = UISwipeActionsConfiguration(actions: [shareAction, editAction])
+            configuration.performsFirstActionWithFullSwipe = true
+            return configuration
         }
-        
-        editAction.backgroundColor = GlobalColors.orangeDark
-        shareAction.backgroundColor = GlobalColors.shareButtonColor
-        let configuration = UISwipeActionsConfiguration(actions: [shareAction, editAction])
-        configuration.performsFirstActionWithFullSwipe = true
-        return configuration
+        return nil
     }
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -536,41 +589,73 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completion) in
             guard let livingSelf = self else {completion(false); return}
             
-            let deletedItem = livingSelf.items(forSection: indexPath.section)[indexPath.row]
-            let deletedItemCategory = deletedItem.category
-            let deletedItemDate = deletedItem.date!.date
-            
-            if let config = deletedItem.notificationsConfig {
-                var uuidsToDeschedule = [String]()
-                for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
-                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
+            if self?.welcomeCellIndexPath != nil, self!.welcomeCellIndexPath! == indexPath {
+                self?.welcomeCellIndexPath = nil
+                tableView.beginUpdates()
+                if livingSelf.activeCategories.count == 0 {tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)}
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                tableView.endUpdates()
+            }
+            else if self?.tipCellIndexPath != nil, self!.tipCellIndexPath! == indexPath {
+                self?.tipCellIndexPath = nil
+                tableView.beginUpdates()
+                if livingSelf.activeCategories.count == 0 {tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)}
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                tableView.endUpdates()
+            }
+            else {
+                let deletedItem: SpecialEvent = {
+                    var row = indexPath.row
+                    if let welcome = livingSelf.welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+                    if let tip = livingSelf.tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                    return livingSelf.items(forSection: indexPath.section)[row]
+                }()
+                let deletedItemCategory = deletedItem.category
+                let deletedItemDate = deletedItem.date!.date
+                
+                if let config = deletedItem.notificationsConfig {
+                    var uuidsToDeschedule = [String]()
+                    for notif in config.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
+                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: uuidsToDeschedule)
+                }
+                
+                deletedItem.cascadeDelete()
+                livingSelf.mainRealm.beginWrite()
+                livingSelf.mainRealm.delete(deletedItem)
+                try! livingSelf.mainRealm.commitWrite() //withoutNotifying: [livingSelf.specialEventsOnMainRealmNotificationToken]
+                
+                livingSelf.updateActiveCategories()
+                livingSelf.updateIndexPathMap()
+                
+                if livingSelf.tipCellIndexPath != nil && livingSelf.tipCellIndexPath!.section == indexPath.section && livingSelf.tipCellIndexPath!.row > indexPath.row {
+                    livingSelf.tipCellIndexPath = IndexPath(row: livingSelf.tipCellIndexPath!.row - 1, section: livingSelf.tipCellIndexPath!.section)
+                }
+                
+                tableView.beginUpdates()
+                switch livingSelf.currentSort {
+                case .byCategory:
+                    if !livingSelf.activeCategories.contains(deletedItemCategory) && livingSelf.welcomeCellIndexPath == nil {
+                        tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                    }
+                    else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                case .chronologically:
+                    if livingSelf.items(forSection: 0).count == 0 && livingSelf.welcomeCellIndexPath == nil && livingSelf.tipCellIndexPath == nil {
+                        tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+                    }
+                    else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                }
+                tableView.endUpdates()
+                
+                shouldUpdateDailyNotifications = true
+                updatePendingNotifcationsBadges(forDate: deletedItemDate)
             }
             
-            deletedItem.cascadeDelete()
-            livingSelf.mainRealm.beginWrite()
-            livingSelf.mainRealm.delete(deletedItem)
-            try! livingSelf.mainRealm.commitWrite() //withoutNotifying: [livingSelf.specialEventsOnMainRealmNotificationToken]
             
-            livingSelf.updateActiveCategories()
-            livingSelf.updateIndexPathMap()
-            
-            tableView.beginUpdates()
-            switch livingSelf.currentSort {
-            case .byCategory:
-                if !livingSelf.activeCategories.contains(deletedItemCategory) {
-                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
+            if let cell = tableView.cellForRow(at: IndexPath(row: indexPath.row - 1, section: indexPath.section)) as? EventTableViewCell {
+                if indexPath.row == livingSelf.items(forSection: indexPath.section).count {
+                    cell.spacingAdjustmentConstraint.constant = 0.0
                 }
-                else {tableView.deleteRows(at: [indexPath], with: .fade)}
-            case .chronologically:
-                if !livingSelf.activeCategories.contains(deletedItemCategory) {
-                    tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
-                }
-                else {tableView.deleteRows(at: [indexPath], with: .fade)}
             }
-            tableView.endUpdates()
-            
-            shouldUpdateDailyNotifications = true
-            updatePendingNotifcationsBadges(forDate: deletedItemDate)
             
             completion(true)
         }
@@ -582,7 +667,8 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)!
-        performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)
+        let cellsNotToSelect = ["Welcome Cell", "Tip Cell"]
+        if !cellsNotToSelect.contains(cell.reuseIdentifier!) {performSegue(withIdentifier: SegueIdentifiers.showDetail, sender: cell)}
     }
     
     override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
@@ -799,7 +885,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         do {try! mainRealm = Realm(configuration: appRealmConfig)}
         
         if userDefaults.value(forKey: "Categories") as? [String] == nil { // Perform initial app load setup
-            firstRun = true
             let _allCategories = defaultCategories + immutableCategories
             userDefaults.set(_allCategories, forKey: "Categories")
         }

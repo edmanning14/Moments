@@ -43,6 +43,8 @@ struct UserDefaultKeys {
     }
     static let dateDisplayMode = "Date Display Mode"
     static let widgetConfiguration = "Widget Configuration"
+    static let numberOfLaunches = "Number of Launches"
+    static let tipShown = "Tip Shown"
 }
 let defaultCategories = ["Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Anniversaries", "Wedding", "Family", "Other"]
 let immutableCategories = ["Favorites", "Uncategorized", "All"]

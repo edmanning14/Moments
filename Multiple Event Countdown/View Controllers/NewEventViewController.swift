@@ -2060,6 +2060,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         
         scheduleNewEvents(titled: [eventTitle!])
         updateDailyNotifications(async: true)
+        masterViewController?.welcomeCellIndexPath = nil
         masterViewController?.updateActiveCategories()
         masterViewController?.updateIndexPathMap()
         masterViewController?.tableView.reloadData()
@@ -2784,6 +2785,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 locationForCellView: locationForCellView
             )
             try! mainRealm.write {mainRealm.add(newEvent, update: overwrite)}
+            let specialEvents = mainRealm.objects(SpecialEvent.self)
+            for event in specialEvents {print(event.title)}
         }
         else {
             // TODO: Remove for production, should never hit this if earlier guards work.

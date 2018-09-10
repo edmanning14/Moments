@@ -10,6 +10,7 @@ import UIKit
 import RealmSwift
 import Foundation
 import UserNotifications
+import os
 
 //
 // MARK: Global Constants
@@ -62,7 +63,7 @@ func createHeaderDropdownButton() -> UIButton {
 // MARK: Notifications
 var shouldUpdateDailyNotifications = false
 
-func scheduleNewEvents  (titled eventTitles: [String]) {
+func scheduleNewEvents (titled eventTitles: [String]) {
     var notifsThatNeedBadge = [Date: [(String, UNMutableNotificationContent, UNNotificationTrigger)]]()
     autoreleasepool {
         let scheduleAndUpdateRealm = try! Realm(configuration: appRealmConfig)
@@ -348,7 +349,18 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                     
                     autoreleasepool {
                         let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
-                        let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
+                        let notifOfInterestResult = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)
+                        guard notifOfInterestResult.count == 1 else {
+                            // Realm data corrupted somehow, remove all pending requests and do a full reschedule.
+                            os_log("Found a scheduled UUID that was not found in Realm during getPendingNotificationRequests run, performing full reschedule", log: .default, type: .error)
+                            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: requests.map({$0.identifier}))
+                            
+                            let changeUUIDSpecialEvents = changeUUIDRealm.objects(SpecialEvent.self)
+                            updateDailyNotifications(async: false)
+                            scheduleNewEvents(titled: changeUUIDSpecialEvents.map({$0.title}))
+                            return
+                        }
+                        let notifOfInterest = notifOfInterestResult[0]
                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
                         
@@ -616,12 +628,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         //
         //
         // MARK: User defaults config
-        if userDefaults.string(forKey: UserDefaultKeys.DataManagement.currentFilter) == nil {
+        
+        let numLaunches = userDefaults.integer(forKey: UserDefaultKeys.numberOfLaunches)
+        if numLaunches == 0 {
             userDefaults.set(EventFilters.all.rawValue, forKey: UserDefaultKeys.DataManagement.currentFilter)
             userDefaults.set(SortMethods.chronologically.rawValue, forKey: UserDefaultKeys.DataManagement.currentSort)
             userDefaults.set(true, forKey: UserDefaultKeys.DataManagement.futureToPast)
             userDefaults.set(Defaults.DateDisplayMode.short, forKey: UserDefaultKeys.dateDisplayMode)
         }
+        userDefaults.set(numLaunches + 1, forKey: UserDefaultKeys.numberOfLaunches)
         
         //
         // MARK: Notification config

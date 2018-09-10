@@ -143,7 +143,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.251213"
+            timestampString = "558204445.741274"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1482"
@@ -159,11 +159,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.2516249"
+            timestampString = "558204445.741672"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2275"
-            endingLineNumber = "2275"
+            startingLineNumber = "2276"
+            endingLineNumber = "2276"
             landmarkName = "viewTransition(from:to:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -271,11 +271,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.251953"
+            timestampString = "558204445.741998"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2429"
-            endingLineNumber = "2429"
+            startingLineNumber = "2430"
+            endingLineNumber = "2430"
             landmarkName = "openNext()"
             landmarkType = "9">
          </BreakpointContent>
@@ -287,7 +287,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.252201"
+            timestampString = "558204445.742252"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1850"
@@ -319,7 +319,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.2524641"
+            timestampString = "558204445.742509"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "910"
@@ -431,7 +431,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.252785"
+            timestampString = "558204445.7428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1718"
@@ -447,7 +447,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.253046"
+            timestampString = "558204445.743054"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1703"
@@ -463,7 +463,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.253293"
+            timestampString = "558204445.743301"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1707"
@@ -511,7 +511,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.253523"
+            timestampString = "558204445.743535"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1766"
@@ -527,7 +527,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.253755"
+            timestampString = "558204445.743773"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1767"
@@ -543,11 +543,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.254004"
+            timestampString = "558204445.74401"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2410"
-            endingLineNumber = "2410"
+            startingLineNumber = "2411"
+            endingLineNumber = "2411"
             landmarkName = "closeLast()"
             landmarkType = "9">
          </BreakpointContent>
@@ -559,11 +559,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.254247"
+            timestampString = "558204445.744257"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2742"
-            endingLineNumber = "2742"
+            startingLineNumber = "2743"
+            endingLineNumber = "2743"
             landmarkName = "NewEventViewController"
             landmarkType = "3">
          </BreakpointContent>
@@ -575,11 +575,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.2544889"
+            timestampString = "558204445.7445101"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2743"
-            endingLineNumber = "2743"
+            startingLineNumber = "2744"
+            endingLineNumber = "2744"
             landmarkName = "getEventImageInfo()"
             landmarkType = "7">
          </BreakpointContent>
@@ -591,11 +591,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.254729"
+            timestampString = "558204445.744761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2749"
-            endingLineNumber = "2749"
+            startingLineNumber = "2750"
+            endingLineNumber = "2750"
             landmarkName = "getEventImageInfo()"
             landmarkType = "7">
          </BreakpointContent>
@@ -607,11 +607,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.254967"
+            timestampString = "558204445.745008"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2367"
-            endingLineNumber = "2367"
+            startingLineNumber = "2368"
+            endingLineNumber = "2368"
             landmarkName = "textToMaterial()"
             landmarkType = "9">
          </BreakpointContent>
@@ -623,7 +623,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
-            timestampString = "558020191.2552021"
+            timestampString = "558204445.7452511"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "32"
@@ -639,7 +639,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"
-            timestampString = "558020191.25539"
+            timestampString = "558029290.55493"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "312"
@@ -655,7 +655,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"
-            timestampString = "558020191.255613"
+            timestampString = "558029290.5549639"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "637"
@@ -671,7 +671,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"
-            timestampString = "558020191.2558089"
+            timestampString = "558029290.5549949"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "622"
@@ -687,7 +687,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.256031"
+            timestampString = "558029290.555029"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "749"
@@ -703,11 +703,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
-            timestampString = "558020191.256103"
+            timestampString = "558204445.745499"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "437"
-            endingLineNumber = "437"
+            startingLineNumber = "486"
+            endingLineNumber = "486"
             landmarkName = "tableView(_:cellForRowAt:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -719,7 +719,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ConfigureNotificationsTableViewController.swift"
-            timestampString = "558020191.256196"
+            timestampString = "558029290.555441"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "29"
@@ -735,7 +735,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.25624"
+            timestampString = "558029290.555486"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "95"
@@ -751,7 +751,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.256285"
+            timestampString = "558029290.555535"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "98"
@@ -767,7 +767,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.256328"
+            timestampString = "558029290.5555789"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "100"
@@ -783,7 +783,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.256372"
+            timestampString = "558029290.555624"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "115"
@@ -799,7 +799,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.2564141"
+            timestampString = "558029290.555667"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "118"
@@ -815,13 +815,189 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Multiple Event Countdown/View Controllers/ImagePreviewViewController.swift"
-            timestampString = "558020191.256457"
+            timestampString = "558029290.555712"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "99"
             endingLineNumber = "99"
             landmarkName = "tabBarState"
             landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.745883"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "494"
+            endingLineNumber = "494"
+            landmarkName = "tableView(_:cellForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.746128"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "493"
+            endingLineNumber = "493"
+            landmarkName = "tableView(_:cellForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.746372"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "973"
+            endingLineNumber = "973"
+            landmarkName = "items(forSection:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/NewEventViewController.swift"
+            timestampString = "558204445.746613"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2790"
+            endingLineNumber = "2790"
+            landmarkName = "createNewObject(overwrite:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.746857"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "475"
+            endingLineNumber = "475"
+            landmarkName = "tableView(_:cellForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.747071"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "643"
+            endingLineNumber = "643"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.7472841"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "640"
+            endingLineNumber = "640"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.747493"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "645"
+            endingLineNumber = "645"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.747701"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "640"
+            endingLineNumber = "640"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.747926"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "655"
+            endingLineNumber = "655"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Multiple Event Countdown/View Controllers/MasterViewController.swift"
+            timestampString = "558204445.7481641"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "656"
+            endingLineNumber = "656"
+            landmarkName = "tableView(_:trailingSwipeActionsConfigurationForRowAt:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
