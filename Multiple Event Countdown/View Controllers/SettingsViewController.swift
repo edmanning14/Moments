@@ -731,7 +731,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             do {try! mainRealm.write {defaultNotificationsConfig[0].allOn = sender.isOn}}
             if sender.isOn {
                 allNotifications = Options.allNotifications.on
-                updateDailyNotifications(async: true)
+                updateDailyNotifications(async: true, updatePending: false)
                 let allEvents = mainRealm.objects(SpecialEvent.self)
                 var eventsToSchedule = [String]()
                 for event in allEvents {eventsToSchedule.append(event.title)}

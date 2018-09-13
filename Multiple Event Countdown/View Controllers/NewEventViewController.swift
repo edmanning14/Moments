@@ -16,7 +16,7 @@ import StoreKit
 import UserNotifications
 import Photos
 
-class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate, SKProductsRequestDelegate, CAAnimationDelegate, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate, EventTableViewCellDelegate, EMContentExpandableMaterialManagerDelegate {
+class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate, CAAnimationDelegate, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate, EventTableViewCellDelegate, EMContentExpandableMaterialManagerDelegate {
     
     //
     // MARK: - Parameters
@@ -377,7 +377,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //fileprivate var resizableEventContainer: UIView!
     fileprivate var eventAndCategoryLabelHuggingView: UIView!
     fileprivate var topToCenterSpacerEqualHeightConstraint: NSLayoutConstraint!
-    fileprivate var topSpacerHeightConstraint: NSLayoutConstraint!
+    fileprivate var topSpacerHeightConstraint: NSLayoutConstraint?
     var specialEventView: EventTableViewCell!
     
     var categoryLabel: UILabel!
@@ -431,14 +431,14 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // Other
     
     var masterViewController: MasterViewController?
-    fileprivate var productRequest: SKProductsRequest?
-    fileprivate var imagesForPurchace = [CKRecordID]() {
+    //fileprivate var productRequest: SKProductsRequest?
+    /*fileprivate var imagesForPurchace = [CKRecordID]() {
         didSet {
             if let _ = presentedViewController as? SelectImageViewController {
-                fetchCloudImages(records: imagesForPurchace, imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
+                fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
             }
         }
-    }
+    }*/
     
     //
     // MARK: Notifications
@@ -971,7 +971,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             
             confirmButton!.leftAnchor.constraint(equalTo: mainScrollViewContentView.leftAnchor, constant: 20.0).isActive = true
             confirmButton!.rightAnchor.constraint(equalTo: mainScrollViewContentView.rightAnchor, constant: -20.0).isActive = true
-            bottomContentViewConstraint = confirmButton!.bottomAnchor.constraint(equalTo: mainScrollViewContentView.bottomAnchor, constant: -globalCellSpacing)
+            bottomContentViewConstraint = confirmButton!.bottomAnchor.constraint(equalTo: mainScrollViewContentView.bottomAnchor, constant: -2 * globalCellSpacing)
             bottomContentViewConstraint?.isActive = true
             
             withDataViewIsVisible = true
@@ -1037,7 +1037,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         mainRealm = try! Realm(configuration: appRealmConfig)
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         fetchLocalImages()
-        fetchProductIDs(fetchFailHandler: networkErrorHandler)
+        fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
         fetchUserPhotos()
         
         if let event = specialEvent{
@@ -1191,10 +1191,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             let specialEventViewDistanceFromBottom = mainScrollView.frame.height - (eventAndCategoryLabelHuggingView.frame.origin.y + eventAndCategoryLabelHuggingView.frame.height)
             
             if totalKeyboardHeight > specialEventViewDistanceFromBottom {
-                let height = mainScrollView.frame.height - totalKeyboardHeight - eventAndCategoryLabelHuggingView.frame.height
+                let height = max(mainScrollView.frame.height - totalKeyboardHeight - eventAndCategoryLabelHuggingView.frame.height, 1.0)
                 topToCenterSpacerEqualHeightConstraint.isActive = false
                 topSpacerHeightConstraint = topSpacerView.heightAnchor.constraint(equalToConstant: height)
-                topSpacerHeightConstraint.isActive = true
+                topSpacerHeightConstraint?.priority = .defaultHigh
+                topSpacerHeightConstraint?.isActive = true
                 mainScrollViewContentView.setNeedsLayout()
                 let moveViewAnim = UIViewPropertyAnimator(duration: animDuration ?? 0.35, curve: UIViewAnimationCurve(rawValue: animCurveRawValue ?? 0)!) {
                     self.mainScrollViewContentView.layoutIfNeeded()
@@ -1203,7 +1204,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
             else {
                 if topToCenterSpacerEqualHeightConstraint == nil || !topToCenterSpacerEqualHeightConstraint!.isActive {
-                    topSpacerHeightConstraint.isActive = false
+                    topSpacerHeightConstraint?.isActive = false
                     topToCenterSpacerEqualHeightConstraint = topSpacerView.heightAnchor.constraint(equalTo: centerSpacerView.heightAnchor)
                     topToCenterSpacerEqualHeightConstraint.isActive = true
                     mainScrollViewContentView.setNeedsLayout()
@@ -1219,8 +1220,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     deinit {
         eventTimer?.invalidate()
         eventTimer = nil
-        productRequest?.cancel()
-        productRequest?.delegate = nil
         
         let backgroundThread = DispatchQueue(label: "background", qos: .background, target: nil)
         backgroundThread.async {
@@ -1253,7 +1252,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // MARK: Store Kit Delegate
     
-    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+    /*func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         if request == productRequest! {
             for id in response.invalidProductIdentifiers {
                 for productID in productIDs {
@@ -1269,9 +1268,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             for (i, record) in recordsToFetch.enumerated() {
                 if cachedImages.contains(where: {$0.recordName == record.recordName}) {recordsToFetch.remove(at: i)}
             }
-            fetchCloudImages(records: recordsToFetch, imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
+            fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
         }
-    }
+    }*/
     
     //
     // Date Picker
@@ -1506,7 +1505,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     func shouldColapseMaterial(_ material: EMContentExpandableMaterial) -> Bool {
         currentInputViewState = .none
-        return false
+        return true
     }
     
     
@@ -1846,6 +1845,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 destination.globalToggleOn = eventNotificationsConfig.eventNotificationsOn
                 destination.useCustomNotifications = eventNotificationsConfig.isCustom
                 destination.dateOnly = eventDate!.dateOnly
+            case "Unwind To Master": break
             default:
                 // TODO: Error Handling
                 print("Unhandled Segue: \(ident)")
@@ -1874,7 +1874,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     }
                     let row = tableViewDataSource[0].rows.index(where: {$0.title == StaticData.Text.RowTitles.infoDiplayed})!
                     configureCellInputViewTableView.beginUpdates()
-                    configureCellInputViewTableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                    configureCellInputViewTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
                     configureCellInputViewTableView.endUpdates()
                 }
                 else {currentInputViewState = .tagline}
@@ -1884,7 +1884,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     abridgedDisplayMode = !abridgedDisplayMode
                     let row = tableViewDataSource[0].rows.index(where: {$0.title == StaticData.Text.RowTitles.timerDisplayMode})!
                     configureCellInputViewTableView.beginUpdates()
-                    configureCellInputViewTableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                    configureCellInputViewTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
                     configureCellInputViewTableView.endUpdates()
                 }
                 else {currentInputViewState = .date}
@@ -1990,7 +1990,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             return
         }
         
-        
         if let config = specialEvent?.notificationsConfig {
             var uuidsToDeschedule = [String]()
             for oldNotif in config.eventNotifications {uuidsToDeschedule.append(oldNotif.uuid)}
@@ -2059,83 +2058,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
         
         scheduleNewEvents(titled: [eventTitle!])
-        updateDailyNotifications(async: true)
-        masterViewController?.welcomeCellIndexPath = nil
-        masterViewController?.updateActiveCategories()
-        masterViewController?.updateIndexPathMap()
-        masterViewController?.tableView.reloadData()
-        navigationController!.popViewController(animated: true)
+        updateDailyNotifications(async: true, updatePending: false)
+        performSegue(withIdentifier: "Unwind To Master", sender: self)
     }
     
     @objc fileprivate func selectNextInput() {if currentInputViewState != nextInput {currentInputViewState = nextInput}}
     @objc fileprivate func colapseKeyboard() {currentInputViewState = .none}
-    
-    /*@objc fileprivate func handleDatePickerSingleTap(_ sender: UIGestureRecognizer) {
-        if let tapGesture = sender as? UITapGestureRecognizer {
-            switch tapGesture.state {
-            case .ended:
-                let timeIntervalSinceSystemStart = ProcessInfo.processInfo.systemUptime
-                if timeIntervalSinceSystemStart - touchBegan < 0.3 {
-                    switch dateInputViewDatePicker.datePickerMode {
-                    case .date:
-                        UIViewPropertyAnimator.runningPropertyAnimator(
-                            withDuration: 0.15,
-                            delay: 0.0,
-                            options: .curveLinear,
-                            animations: {[weak self] in self!.dateInputViewDatePicker.layer.opacity = 0.0},
-                            completion: { [weak self] (position) in
-                                self!.dateInputViewDatePicker.datePickerMode = .time
-                                if self!.eventDate!.dateOnly {
-                                    var components = DateComponents()
-                                    components.year = self!.currentCalendar.component(.year, from: self!.eventDate!.date)
-                                    components.month = self!.currentCalendar.component(.month, from: self!.eventDate!.date)
-                                    components.day = self!.currentCalendar.component(.day, from: self!.eventDate!.date)
-                                    components.hour = 12
-                                    components.minute = 0
-                                    components.second = 0
-                                    self!.eventDate = EventDate(date: self!.currentCalendar.date(from: components)!, dateOnly: false)
-                                    self!.dateInputViewDatePicker.date = self!.eventDate!.date
-                                    self!.abridgedDisplayMode = false
-                                }
-                                else {self!.dateInputViewDatePicker.date = self!.eventDate!.date}
-                                UIViewPropertyAnimator.runningPropertyAnimator(
-                                    withDuration: 0.15,
-                                    delay: 0.0,
-                                    options: .curveLinear,
-                                    animations: {[weak self] in self!.dateInputViewDatePicker.layer.opacity = 1.0},
-                                    completion: nil
-                                )
-                            }
-                        )
-                    case .time:
-                        UIViewPropertyAnimator.runningPropertyAnimator(
-                            withDuration: 0.15,
-                            delay: 0.0,
-                            options: .curveLinear,
-                            animations: {[weak self] in self!.dateInputViewDatePicker.layer.opacity = 0.0},
-                            completion: { [weak self] (position) in
-                                self!.dateInputViewDatePicker.datePickerMode = .date
-                                self!.dateInputViewDatePicker.date = self!.eventDate!.date
-                                UIViewPropertyAnimator.runningPropertyAnimator(
-                                    withDuration: 0.15,
-                                    delay: 0.0,
-                                    options: .curveLinear,
-                                    animations: {[weak self] in self!.dateInputViewDatePicker.layer.opacity = 1.0},
-                                    completion: nil
-                                )
-                            }
-                        )
-                    default: // Should never happen
-                        os_log("WARNING: Date picker somehow got into an undefined state, noted during handleDatePickerButtonTap", log: .default, type: .error)
-                        dateInputViewDatePicker.datePickerMode = .date
-                        dateInputViewDatePicker.date = eventDate!.date
-                    }
-                    if eventDate!.dateOnly == true {eventDate = EventDate(date: eventDate!.date, dateOnly: false)}
-                }
-            default: break
-            }
-        }
-    }*/
 
     @objc fileprivate func dismissKeyboard() {
         textInputAccessoryView?.textInputField.resignFirstResponder()
@@ -2143,64 +2071,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         textInputAccessoryView?.textInputField.text = nil
     }
     
-    /*@objc fileprivate func handleDatePan(_ sender: UIGestureRecognizer) {
-        if let panGesture = sender as? UIPanGestureRecognizer {
-            switch panGesture.state {
-            case .began: panGestureLastXLocation = panGesture.location(in: nil).x
-            case .changed:
-                if !panComplete {
-                    if let lastDirection = panGestureLastDirection {
-                        panGestureLastDirection = panGestureLastXLocation - panGesture.location(in: nil).x
-                        if panGestureLastDirection! * lastDirection < 0 {
-                            panComplete = true
-                            panGestureLastXLocation = 0.0
-                            panGestureLastDirection = nil
-                        }
-                        if panGestureLastDirection == 0.0 {panGestureLastDirection = lastDirection}
-                    }
-                    else {panGestureLastDirection = panGestureLastXLocation - panGesture.location(in: nil).x}
-                    panGestureLastXLocation = panGesture.location(in: nil).x
-                }
-            case .ended:
-                if panComplete {
-                    isUserChange = true
-                    var components = currentCalendar.dateComponents(calendarComponentsOfInterest, from: eventDate!.date)
-                    components.hour = 0; components.minute = 0; components.second = 0
-                    eventDate = EventDate(date: currentCalendar.date(from: components)!, dateOnly: true)
-                    abridgedDisplayMode = true
-                    if dateInputViewDatePicker.datePickerMode != .date {dateInputViewDatePicker.datePickerMode = .date}
-                    panComplete = false
-                }
-                panGestureLastXLocation = 0.0
-                panGestureLastDirection = nil
-            default: break
-            }
-        }
-    }*/
-    
     @objc fileprivate func cancel() {self.dismiss(animated: true, completion: nil)}
 
     
     //
     // MARK: - Helper Functions
     //
-    
-    /*@objc fileprivate func handleImageOptionsButtonsTap(_ sender: UIButton) {
-        switch sender.titleLabel!.text! {
-        case "CHOOSE IMAGE":
-            performSegue(withIdentifier: "Choose Image", sender: self)
-        case "PREVIEW/EDIT IMAGES":
-            performSegue(withIdentifier: "EditImageSegue", sender: self)
-        case "TOGGLE IMAGE":
-            isUserChange = true
-            if let image = selectedImage {previousSelectedImage = image; selectedImage = nil; sender.tintColor = GlobalColors.inactiveColor}
-            else {selectedImage = previousSelectedImage; sender.tintColor = UIColor.green}
-        case "TOGGLE MASK": useMask = !useMask
-        default:
-            // TODO: Error Handling, should never happen.
-            fatalError("Fatal Error: Encountered and unknown image options button title")
-        }
-    }*/
     
     fileprivate func showImageNilLabel(animated: Bool = true) {
         
@@ -2530,7 +2406,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         cachedImages.append(contentsOf: imagesToReturn)
     }
     
-    fileprivate func fetchProductIDs(_ previousNetworkFetchAtempts: Int = 0, fetchFailHandler completion: @escaping (_ error: NSError) -> Void) {
+    /*fileprivate func fetchProductIDs(_ previousNetworkFetchAtempts: Int = 0, fetchFailHandler completion: @escaping (_ error: NSError) -> Void) {
         
         // Get productIdentifiers from cloud
         let getAllPredicate = NSPredicate(value: true)
@@ -2586,15 +2462,15 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         productRequest = SKProductsRequest(productIdentifiers: setToQuerry)
         productRequest!.delegate = self
         productRequest!.start()
-    }
+    }*/
     
-    func reFetchCloudImages() {fetchProductIDs(fetchFailHandler: networkErrorHandler)}
+    func reFetchCloudImages() {fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))}
     
-    fileprivate func fetchCloudImages(records ids: [CKRecordID], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: CloudErrors?) -> Void) {
+    fileprivate func fetchCloudImages(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: CloudErrors?) -> Void) {
         
-        guard !ids.isEmpty else {completion(nil, .noRecords); return}
-        
-        let fetchOperation = CKFetchRecordsOperation(recordIDs: ids)
+        let getAllPredicate = NSPredicate(value: true)
+        let eventImageQuerry = CKQuery(recordType: "EventImage", predicate: getAllPredicate)
+        let queryOperation = CKQueryOperation(query: eventImageQuerry)
         
         var desiredKeys = [
             AppEventImage.CloudKitKeys.EventImageKeys.title,
@@ -2605,43 +2481,68 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         for imageType in imageTypes {
             desiredKeys.append(contentsOf: [imageType.recordKey, imageType.extensionRecordKey])
         }
-        fetchOperation.desiredKeys = desiredKeys
+        queryOperation.desiredKeys = desiredKeys
         
-        fetchOperation.fetchRecordsCompletionBlock = { (_records, error) in
-            if let records = _records {
-                if records.isEmpty {completion(nil, .noRecords)}
-                for record in records {
-                    let recordID = record.key
-                    let title = record.value[AppEventImage.CloudKitKeys.EventImageKeys.title] as! String
-                    let fileRootName = record.value[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
-                    let category = record.value[AppEventImage.CloudKitKeys.EventImageKeys.category] as! String
-                    let intLocationForCellView = record.value[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as! Int
-                    let locationForCellView = CGFloat(intLocationForCellView) / 100.0
-                    
-                    var images = [CountdownImage]()
-                    var cloudError: CloudErrors?
-                    for imageType in imageTypes {
-                        let imageAsset = record.value[imageType.recordKey] as! CKAsset
-                        let imageFileExtension = record.value[imageType.extensionRecordKey] as! String
-                        
-                        do {
-                            let imageData = try Data(contentsOf: imageAsset.fileURL)
-                            let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
-                            images.append(newImage)
-                        }
-                        catch {cloudError = .imageCreationFailure; break}
-                    }
-                    
-                    if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images), cloudError == nil {
-                        completion(newEventImage, nil)
-                    }
-                    else {completion(nil, cloudError)}
+        queryOperation.queryCompletionBlock = { [weak self] (_cursor, error) in
+            // TODO: Add error handling, retry network errors gracefully.
+            if let nsError = error as NSError? {
+                os_log("There was an error fetching products from CloudKit", log: OSLog.default, type: .error)
+                print("Error Code: \(nsError.code)")
+                print("Error Description: \(nsError.debugDescription)")
+                print("Error Domain: \(nsError.domain)")
+                print("Error Recovery Suggestions: \(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")")
+                
+                switch nsError.code {
+                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+                    // Error code 3: Network Unavailable.
+                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+                // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
+                case 1, 4, 4097:
+                    if previousNetworkFetchAtempts <= 1 {self?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
+                    else {self?.networkErrorHandler(nsError); return}
+                case 3: self?.networkErrorHandler(nsError); return
+                default: return
                 }
             }
-            else {completion(nil, .noRecords)}
             
+            if let cursor = _cursor {
+                let newQuerryOperation = CKQueryOperation(cursor: cursor)
+                self?.publicCloudDatabase.add(newQuerryOperation)
+            }
         }
-        publicCloudDatabase.add(fetchOperation)
+        
+        queryOperation.recordFetchedBlock = { (record) in
+            let recordID = record.recordID
+            let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as! String
+            let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
+            let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as! String
+            let intLocationForCellView = record[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as? Int
+            var locationForCellView: CGFloat?
+            if let intLoc = intLocationForCellView {locationForCellView = CGFloat(intLoc) / 100.0}
+            
+            var images = [CountdownImage]()
+            var cloudError: CloudErrors?
+            for imageType in imageTypes {
+                if let imageAsset = record[imageType.recordKey] as? CKAsset {
+                    let imageFileExtension = record[imageType.extensionRecordKey] as! String
+                    
+                    do {
+                        let imageData = try Data(contentsOf: imageAsset.fileURL)
+                        let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                        images.append(newImage)
+                    }
+                    catch {cloudError = .imageCreationFailure; break}
+                }
+                else {cloudError = .noRecords}
+            }
+            
+            if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images), cloudError == nil {
+                completion(newEventImage, nil)
+            }
+            else {completion(nil, cloudError)}
+        }
+
+        publicCloudDatabase.add(queryOperation)
     }
     
     fileprivate func networkErrorHandler(_ error: NSError) {

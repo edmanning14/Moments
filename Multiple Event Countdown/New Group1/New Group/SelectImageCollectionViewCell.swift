@@ -12,7 +12,7 @@ class SelectImageCollectionViewCell: UICollectionViewCell {
     
     var image: UIImage? {didSet {cellImageView.image = image}}
     var imageTitle: String? {didSet {cellLabel.text = imageTitle}}
-    var imageIsAvailable = false {
+    /*var imageIsAvailable = false {
         didSet {
             glyphImageView.tintColor = UIColor.lightGray
             cellLabel.textColor = primaryTextRegularColor
@@ -32,23 +32,19 @@ class SelectImageCollectionViewCell: UICollectionViewCell {
                 }
             }
         }
-    }
+    }*/
 
     @IBOutlet weak var cellImageView: UIImageView!
     @IBOutlet weak var cellLabel: UILabel!
-    @IBOutlet weak var glyphImageView: UIImageView!
     
-    let primaryTextRegularColor = UIColor(red: 1.0, green: 152/255, blue: 0.0, alpha: 1.0)
-    let contentSecondaryFontName = "Raleway-Regular"
-    
-    override var isSelected: Bool {
+    /*override var isSelected: Bool {
         didSet {
             if isSelected != oldValue && !imageIsAvailable {
                 if isSelected {glyphImageView.isHidden = true; cellLabel.isHidden = false}
                 else {glyphImageView.isHidden = false; cellLabel.isHidden = true}
             }
         }
-    }
+    }*/
     
     //fileprivate func labelSelected() {cellLabel.textColor = UIColor.white}
     //fileprivate func labelNotSelected() {cellLabel.textColor = primaryTextRegularColor}

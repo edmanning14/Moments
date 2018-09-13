@@ -412,7 +412,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         static let userAlbums = "Your Albums"
     }
     
-    fileprivate let marginForCellImage: CGFloat = 10.0
+    fileprivate let cellMargins: CGFloat = 8.0
     fileprivate let collectionViewMargin: CGFloat = 15.0
     fileprivate let cellGlyphHeight: CGFloat = 20.0
     fileprivate let cellImageToGlyphSpacing: CGFloat = 10.0
@@ -824,12 +824,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReuseIdentifiers.image, for: indexPath) as! SelectImageCollectionViewCell
                 cell.image = catalogImages[indexPath.section][indexPath.row].thumbnail?.uiImage
                 cell.imageTitle = catalogImages[indexPath.section][indexPath.row].title
-                cell.imageIsAvailable = true
-                /*if cell.gestureRecognizers?.count == 0 || cell.gestureRecognizers == nil {
-                    let cellDoubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleCellDoubleTap(_:)))
-                    cellDoubleTapGestureRecognizer.numberOfTapsRequired = 2
-                    cell.addGestureRecognizer(cellDoubleTapGestureRecognizer)
-                }*/
                 configure(cell)
                 return cell
             }
@@ -1046,8 +1040,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == catalogImagesCollectionView {
             if indexPath.row < catalogImages[indexPath.section].count {
-                let width = catalogImages[indexPath.section][indexPath.row].thumbnail!.uiImage!.size.width + (2 * marginForCellImage)
-                let height = catalogImages[indexPath.section][indexPath.row].thumbnail!.uiImage!.size.height + (2 * marginForCellImage) + cellGlyphHeight + cellImageToGlyphSpacing
+                let width: CGFloat = 80.0 + (2 * cellMargins)
+                let height: CGFloat = 80.0 + (2 * cellMargins) + 12.0 + 30.0
                 return CGSize(width: width, height: height)
             }
             else {return CGSize(width: 100.0, height: 100.0)}

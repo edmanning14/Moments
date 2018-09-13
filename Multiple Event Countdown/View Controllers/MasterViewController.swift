@@ -319,7 +319,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                     autoreleasepool {
                         let authorizationRealm = try! Realm(configuration: appRealmConfig)
                         if granted {
-                            updateDailyNotifications(async: false)
+                            updateDailyNotifications(async: false, updatePending: false)
                         
                             let authorizationSpecialEvents = authorizationRealm.objects(SpecialEvent.self)
                             var titles = [String]()
@@ -420,7 +420,10 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     @IBAction func unwindFromDetail(segue: UIStoryboardSegue) {}
     
     @IBAction func unwindFromNewEventController(segue: UIStoryboardSegue) {
-    
+        welcomeCellIndexPath = nil
+        updateActiveCategories()
+        updateIndexPathMap()
+        tableView.reloadData()
     }
     
     //
@@ -481,7 +484,13 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             return cell
         }
         else {
-            let event = items(forSection: indexPath.section)[indexPath.row]
+            let event: SpecialEvent = {
+                var row = indexPath.row
+                if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+                if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                return items(forSection: indexPath.section)[row]
+            }()
+            
             let cell = tableView.dequeueReusableCell(withIdentifier: "Event", for: indexPath) as! EventTableViewCell
             cell.configuration = .cell
             cell.configure()
@@ -489,29 +498,28 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             if indexPath.row == items(forSection: indexPath.section).count - 1 {cell.spacingAdjustmentConstraint.constant = 0.0}
             else {cell.spacingAdjustmentConstraint.constant = globalCellSpacing}
             
-            print(event.title)
-            cell.eventTitle = event.title
-            cell.eventTagline = event.tagline
-            switch event.infoDisplayed {
-            case DisplayInfoOptions.none.rawValue: cell.infoDisplayed = DisplayInfoOptions.none
-            case DisplayInfoOptions.tagline.rawValue: cell.infoDisplayed = DisplayInfoOptions.tagline
-            case DisplayInfoOptions.date.rawValue: cell.infoDisplayed = DisplayInfoOptions.date
-            default:
-                // TODO: Log and set a default info display
-                fatalError("Unexpected display info option encoutered, do you need to add a new one?")
-            }
-            cell.eventDate = event.date
-            switch event.repeats {
-            case RepeatingOptions.never.rawValue: cell.repeats = RepeatingOptions.never
-            case RepeatingOptions.monthly.rawValue: cell.repeats = RepeatingOptions.monthly
-            case RepeatingOptions.yearly.rawValue: cell.repeats = RepeatingOptions.yearly
-            default:
-                // TODO: Log and set a default repeating option
-                fatalError("Unexpected repeating option encoutered, do you need to add a new one?")
-            }
-            cell.abridgedDisplayMode = event.abridgedDisplayMode
-            cell.creationDate = event.creationDate
-            cell.useMask =  event.useMask
+            let title = event.title
+            cell.eventTitle = title
+            
+            if let tagline = event.tagline {cell.eventTagline = tagline} else {cell.eventTagline = nil}
+            
+            let infoDisplayed = event.infoDisplayed
+            cell.infoDisplayed = DisplayInfoOptions(rawValue: infoDisplayed)!
+            
+            if let eventDate = event.date {cell.eventDate = event.date} else {cell.eventDate = nil}
+            
+            let repeats = event.repeats
+            cell.repeats = RepeatingOptions(rawValue: repeats)!
+            
+            let abridgedDisplayMode = event.abridgedDisplayMode
+            cell.abridgedDisplayMode = abridgedDisplayMode
+            
+            let creationDate = event.creationDate
+            cell.creationDate = creationDate
+            
+            let useMask = event.useMask
+            cell.useMask =  useMask
+            
             if let imageInfo = event.image {
                 var locationForCellView: CGFloat?
                 if let intLocationForCellView = event.locationForCellView.value {

@@ -494,9 +494,11 @@
                         <segue destination="aI7-Xi-bis" kind="show" identifier="EditImageSegue" id="aby-vh-xle"/>
                         <segue destination="WtT-HO-9gX" kind="show" identifier="Configure Notifications" id="FcL-Fa-uEx"/>
                         <segue destination="PSj-4s-kEb" kind="show" identifier="Choose Image" id="5M1-JR-X1B"/>
+                        <segue destination="f9e-T3-Rm3" kind="unwind" identifier="Unwind To Master" unwindAction="unwindFromNewEventControllerWithSegue:" id="9ki-44-aig"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0Hp-9L-pS0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="f9e-T3-Rm3" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="1455" y="-631.69014084507046"/>
         </scene>
@@ -541,38 +543,31 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fpP-Dq-y1c">
-                                                    <rect key="frame" x="8" y="8" width="134" height="134"/>
-                                                </imageView>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ShoppingCart" translatesAutoresizingMaskIntoConstraints="NO" id="EZV-tb-1aj">
-                                                    <rect key="frame" x="65" y="152" width="20" height="20"/>
-                                                    <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <rect key="frame" x="35" y="8" width="80" height="80"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="height" constant="20" id="wpQ-SP-VRy"/>
-                                                        <constraint firstAttribute="width" constant="20" id="zUI-xd-Tlg"/>
+                                                        <constraint firstAttribute="height" constant="80" id="2Lj-nz-acl"/>
+                                                        <constraint firstAttribute="width" constant="80" id="Jr0-OO-b7h"/>
                                                     </constraints>
                                                 </imageView>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Desert Dunes" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NXh-Fs-U4J">
-                                                    <rect key="frame" x="8" y="155.5" width="134" height="14"/>
-                                                    <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="12"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" text="Desert Dunes yoooooooooo" textAlignment="center" lineBreakMode="clip" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NXh-Fs-U4J">
+                                                    <rect key="frame" x="35" y="143.5" width="80" height="28.5"/>
+                                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="12"/>
+                                                    <color key="textColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                         </view>
                                         <constraints>
-                                            <constraint firstItem="EZV-tb-1aj" firstAttribute="top" secondItem="fpP-Dq-y1c" secondAttribute="bottom" constant="10" id="EBB-WW-XEF"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="NXh-Fs-U4J" secondAttribute="trailing" id="ZVl-z6-mT3"/>
-                                            <constraint firstItem="EZV-tb-1aj" firstAttribute="centerX" secondItem="KxO-e8-mtY" secondAttribute="centerX" id="axp-Jl-5YV"/>
-                                            <constraint firstAttribute="bottomMargin" secondItem="EZV-tb-1aj" secondAttribute="bottom" id="eOc-TV-OrE"/>
-                                            <constraint firstItem="NXh-Fs-U4J" firstAttribute="centerY" secondItem="EZV-tb-1aj" secondAttribute="centerY" id="hQY-3I-dZa"/>
-                                            <constraint firstItem="NXh-Fs-U4J" firstAttribute="leading" secondItem="KxO-e8-mtY" secondAttribute="leadingMargin" id="lrD-lR-aGA"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="fpP-Dq-y1c" secondAttribute="trailing" id="uw1-Gz-Vyx"/>
+                                            <constraint firstItem="NXh-Fs-U4J" firstAttribute="leading" secondItem="fpP-Dq-y1c" secondAttribute="leading" id="0Hi-1y-rNH"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="NXh-Fs-U4J" secondAttribute="bottom" id="6WM-Yg-5BK"/>
+                                            <constraint firstItem="fpP-Dq-y1c" firstAttribute="centerX" secondItem="KxO-e8-mtY" secondAttribute="centerX" id="MF5-Cs-Yk0"/>
+                                            <constraint firstItem="NXh-Fs-U4J" firstAttribute="trailing" secondItem="fpP-Dq-y1c" secondAttribute="trailing" id="SLA-12-Lec"/>
                                             <constraint firstItem="fpP-Dq-y1c" firstAttribute="top" secondItem="KxO-e8-mtY" secondAttribute="topMargin" id="vev-cr-hCD"/>
-                                            <constraint firstItem="fpP-Dq-y1c" firstAttribute="leading" secondItem="KxO-e8-mtY" secondAttribute="leadingMargin" id="wAK-po-3gS"/>
                                         </constraints>
+                                        <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
                                         <connections>
                                             <outlet property="cellImageView" destination="fpP-Dq-y1c" id="JoV-eJ-Kgd"/>
                                             <outlet property="cellLabel" destination="NXh-Fs-U4J" id="fSD-Tf-cy2"/>
-                                            <outlet property="glyphImageView" destination="EZV-tb-1aj" id="O4D-HR-za4"/>
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Loading" id="Knc-So-fyr" customClass="LoadingCollectionViewCell" customModule="Multiple_Event_Countdown" customModuleProvider="target">
@@ -643,7 +638,7 @@
                                 <rect key="frame" x="0.0" y="403" width="240" height="49"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <items>
-                                    <tabBarItem title="Catalog" image="AppIconVectorSmall" selectedImage="AppIconVectorSmall" id="S5A-2l-9rd"/>
+                                    <tabBarItem title="Catalog" image="AppIconVector" selectedImage="AppIconVector" id="S5A-2l-9rd"/>
                                     <tabBarItem title="Your Moments" image="UserMomentsButtonImage" selectedImage="UserMomentsButtonImage" id="L7F-br-OlF"/>
                                     <tabBarItem title="Your Albums" image="UserAlbumsButtonImage" selectedImage="UserAlbumsButtonImage" id="fr3-QN-Dbu"/>
                                 </items>
@@ -823,7 +818,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <items>
                                     <tabBarItem enabled="NO" title="Home" image="HomeButtonImage" selectedImage="HomeButtonImage" id="vAe-Fr-vKN"/>
-                                    <tabBarItem enabled="NO" title="Original" image="ImageButtonImage" selectedImage="ImageButtonImage" id="LDC-cG-3mm"/>
+                                    <tabBarItem enabled="NO" title="Original" image="OriginalButton" selectedImage="OriginalButton" id="LDC-cG-3mm"/>
                                 </items>
                             </tabBar>
                         </subviews>
@@ -966,7 +961,7 @@ Similarly, you can change between displaying your event tagline or the event dat
                                 <rect key="frame" x="0.0" y="528" width="320" height="700"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tKB-vk-t9r" id="Ruj-Id-C1c">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="700"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="699.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Welcome!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6cL-rA-OPE">
@@ -977,13 +972,13 @@ Similarly, you can change between displaying your event tagline or the event dat
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9YQ-8f-ZWy">
                                             <rect key="frame" x="16" y="80" width="296" height="506.5"/>
-                                            <mutableString key="text">Thanks for downloading Moments! Just a few things to get you started here:  1. Swipe from right to left on any event to bring up the option to delete it. (You can do the same for this message too!)
+                                            <string key="text">Thanks for downloading Moments! Just a few things to get you started here:  1. Swipe from right to left on any event to bring up the option to delete it. (You can do the same for this message too!)
 
 2. Sharing and editing events is just as easy; swipe from left to right on the desired event to bring up those actions!
 
 3. Along the top navigation bar you have options that will take you to the settings page, filter and sort your events, and create a new event.
 
-If you have any questions or feedback, head over to the settings page to drop me a line. Enjoy each moment!</mutableString>
+If you have any questions or feedback, head over to the settings page to drop me a line. Enjoy each moment!</string>
                                             <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
                                             <color key="textColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
@@ -1075,19 +1070,18 @@ If you have any questions or feedback, head over to the settings page to drop me
         </scene>
     </scenes>
     <resources>
-        <image name="AppIconVectorSmall" width="16" height="16"/>
+        <image name="AppIconVector" width="15" height="15"/>
         <image name="BugReport" width="24" height="24"/>
         <image name="FacebookIcon" width="256" height="256"/>
         <image name="FilterButtonImage" width="16" height="16"/>
         <image name="HomeButtonImage" width="16" height="16"/>
-        <image name="ImageButtonImage" width="16" height="16"/>
         <image name="InstagramIcon" width="256" height="256"/>
         <image name="Lightbulb" width="30" height="30"/>
         <image name="MailIcon" width="256" height="256"/>
         <image name="Me" width="737" height="737"/>
+        <image name="OriginalButton" width="16" height="16"/>
         <image name="RateApp" width="24" height="24"/>
         <image name="RequestsButton" width="24" height="24"/>
-        <image name="ShoppingCart" width="15" height="15"/>
         <image name="SmileFace" width="30" height="30"/>
         <image name="TwitterIcon" width="256" height="256"/>
         <image name="Undo.png" width="16" height="16"/>
@@ -1096,7 +1090,7 @@ If you have any questions or feedback, head over to the settings page to drop me
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="6S0-TO-JiA"/>
-        <segue reference="aby-vh-xle"/>
-        <segue reference="AkY-5u-OXj"/>
+        <segue reference="Cuf-eb-5cU"/>
+        <segue reference="FcL-Fa-uEx"/>
     </inferredMetricsTieBreakers>
 </document>

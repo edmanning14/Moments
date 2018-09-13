@@ -114,7 +114,6 @@
 		64B1D9A32022B8930034FE21 /* Raleway-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9912022B8920034FE21 /* Raleway-BlackItalic.ttf */; };
 		64B1D9A42022B8930034FE21 /* Raleway-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9922022B8920034FE21 /* Raleway-ExtraLightItalic.ttf */; };
 		64B1D9A52022B8930034FE21 /* Raleway-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9932022B8930034FE21 /* Raleway-SemiBoldItalic.ttf */; };
-		64B1D9A72022C8820034FE21 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64B1D9A62022C8820034FE21 /* StoreKit.framework */; };
 		64B1D9A92022CD580034FE21 /* inAppPurchaseProductIDs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 64B1D9A82022CD580034FE21 /* inAppPurchaseProductIDs.plist */; };
 		64B1D9AB2022D1C50034FE21 /* SelectImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B1D9AA2022D1C50034FE21 /* SelectImageViewController.swift */; };
 		64B1D9AD2022E3160034FE21 /* SelectImageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */; };
@@ -257,7 +256,6 @@
 		64B1D9912022B8920034FE21 /* Raleway-BlackItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-BlackItalic.ttf"; sourceTree = "<group>"; };
 		64B1D9922022B8920034FE21 /* Raleway-ExtraLightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		64B1D9932022B8930034FE21 /* Raleway-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
-		64B1D9A62022C8820034FE21 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		64B1D9A82022CD580034FE21 /* inAppPurchaseProductIDs.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = inAppPurchaseProductIDs.plist; sourceTree = "<group>"; };
 		64B1D9AA2022D1C50034FE21 /* SelectImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectImageViewController.swift; path = "Multiple Event Countdown/View Controllers/SelectImageViewController.swift"; sourceTree = SOURCE_ROOT; };
 		64B1D9AC2022E3160034FE21 /* SelectImageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectImageCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -301,7 +299,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				64B1D9A72022C8820034FE21 /* StoreKit.framework in Frameworks */,
 				B65F908917762A0A66BE04AC /* Pods_Multiple_Event_Countdown.framework in Frameworks */,
 				64D5FF8F1FC6C31E0043E064 /* CloudKit.framework in Frameworks */,
 			);
@@ -592,7 +589,6 @@
 		DD3060DC2AD974C5A5F703F5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				64B1D9A62022C8820034FE21 /* StoreKit.framework */,
 				64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */,
 				BCE784872C9ABEA8E1BA2C39 /* Pods_Multiple_Event_Countdown.framework */,
 				641189D3212EA2C40021EA3D /* NotificationCenter.framework */,
@@ -673,7 +669,7 @@
 								enabled = 1;
 							};
 							com.apple.InAppPurchase = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.Push = {
 								enabled = 1;

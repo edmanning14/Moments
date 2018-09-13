@@ -279,15 +279,17 @@ class EMContentExpandableMaterialManagerView: UIView, EMContentExpandableMateria
     }
     
     func deselectSelectedMaterial(animated: Bool) {
-        _currentlyExpandedMaterial?.isExpanded = false
-        _currentlyExpandedMaterial?.regularFormat()
-        _currentlyExpandedMaterial = nil
-        invalidateIntrinsicContentSize()
-        setNeedsLayout()
-        
-        if animated {
-            let moveViewsAnim = UIViewPropertyAnimator(duration: 0.3, curve: .easeInOut) {self.layoutIfNeeded()}
-            moveViewsAnim.startAnimation()
+        if let currentlyExpandedMaterial = _currentlyExpandedMaterial {
+            currentlyExpandedMaterial.isExpanded = false
+            currentlyExpandedMaterial.regularFormat()
+            _currentlyExpandedMaterial = nil
+            invalidateIntrinsicContentSize()
+            setNeedsLayout()
+            
+            if animated {
+                let moveViewsAnim = UIViewPropertyAnimator(duration: 0.3, curve: .easeInOut) {self.layoutIfNeeded()}
+                moveViewsAnim.startAnimation()
+            }
         }
     }
     

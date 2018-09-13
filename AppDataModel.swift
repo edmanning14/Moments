@@ -460,6 +460,11 @@ internal class UserEventImage {
         serialImageCreationQueue = DispatchQueue(label: "serialImageCreationQueue", qos: qos)
         
         serialImageCreationQueue!.async {
+            let imageRenderer = UIGraphicsImageRenderer(size: size)
+            imageRenderer.image { (ctx) in
+                <#code#>
+            }
+            
             UIGraphicsBeginImageContextWithOptions(size, true, 0.0)
             let imageCTX = UIGraphicsGetCurrentContext()!
             
@@ -575,7 +580,6 @@ internal class AppEventImage: UserEventImage {
     override init?(fromEventImageInfo info: EventImageInfo) {
         
         let isAppImage = info.isAppImage
-        print(isAppImage)
         guard isAppImage else {return nil}
         
         category = info.category!
@@ -596,7 +600,7 @@ internal class AppEventImage: UserEventImage {
         if images.isEmpty {return nil}
     }
     
-    init?(category: String, title: String, recordName: String, recommendedLocationForCellView: CGFloat, images: [CountdownImage]) {
+    init?(category: String, title: String, recordName: String, recommendedLocationForCellView: CGFloat?, images: [CountdownImage]) {
         self.category = category
         self.recordName = recordName
         self.recommendedLocationForCellView = recommendedLocationForCellView
@@ -662,16 +666,18 @@ internal class AppEventImage: UserEventImage {
                     var success = [Bool]()
                     for imageType in imageTypes {
                         
-                        let imageAsset = record.value[imageType.recordKey] as! CKAsset
-                        let imageFileRootName = record.value[CloudKitKeys.EventImageKeys.fileRootName] as! String
-                        let imageFileExtension = record.value[imageType.extensionRecordKey] as! String
-                        
-                        do {
-                            let imageData = try Data(contentsOf: imageAsset.fileURL)
-                            let newImage = CountdownImage(imageType: imageType, fileRootName: imageFileRootName, fileExtension: imageFileExtension, imageData: imageData)
-                            images.append(newImage)
-                            success.append(true)
-                        } catch {success.append(false)}
+                        if let imageAsset = record.value[imageType.recordKey] as? CKAsset {
+                            let imageFileRootName = record.value[CloudKitKeys.EventImageKeys.fileRootName] as! String
+                            let imageFileExtension = record.value[imageType.extensionRecordKey] as! String
+                            
+                            do {
+                                let imageData = try Data(contentsOf: imageAsset.fileURL)
+                                let newImage = CountdownImage(imageType: imageType, fileRootName: imageFileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                                images.append(newImage)
+                                success.append(true)
+                            } catch {success.append(false)}
+                        }
+                        else {success.append(false)}
                     }
                     
                     weakSelf?.images.append(contentsOf: images)

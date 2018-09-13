@@ -64,6 +64,7 @@ func createHeaderDropdownButton() -> UIButton {
 var shouldUpdateDailyNotifications = false
 
 func scheduleNewEvents (titled eventTitles: [String]) {
+    print("Creating notifs for: \(eventTitles)")
     var notifsThatNeedBadge = [Date: [(String, UNMutableNotificationContent, UNNotificationTrigger)]]()
     autoreleasepool {
         let scheduleAndUpdateRealm = try! Realm(configuration: appRealmConfig)
@@ -197,9 +198,9 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                         if let triggerDate = trigger.nextTriggerDate() {
                             let newIdent =  UUID().uuidString
                             do {try! scheduleAndUpdateRealm.write {localManagedSpecialEvent.notificationsConfig!.eventNotifications[i].uuid = newIdent}}
-                            print("written uuid: \(localManagedSpecialEvent.notificationsConfig!.eventNotifications[i].uuid)")
+                            print("Written uuid: \(localManagedSpecialEvent.notificationsConfig!.eventNotifications[i].uuid)")
 
-                            print("Notifications stored during add event cycle:")
+                            print("Notifications stored after write:")
                             let allEventNotifications = scheduleAndUpdateRealm.objects(RealmEventNotification.self)
                             for (i, realmNotif) in allEventNotifications.enumerated() {
                                 print("\(i + 1): \(realmNotif.uuid)")
@@ -230,12 +231,13 @@ func scheduleNewEvents (titled eventTitles: [String]) {
             
             if !notifsThatNeedBadge.isEmpty {
                 UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
-                    
+                    var updateBadgesToZero = false
                     for request in requests {
-                        guard request.content.title != dailyNotificationsTitle else {continue}
                         if let calendarTrigger = request.trigger as? UNCalendarNotificationTrigger, let triggerDate = calendarTrigger.nextTriggerDate() {
                             for keyDate in notifsThatNeedBadge.keys {
                                 if currentCalendar.isDate(triggerDate, inSameDayAs: keyDate) {
+                                    
+                                    if request.content.title == dailyNotificationsTitle {updateBadgesToZero = true; continue}
                                     
                                     let content = UNMutableNotificationContent()
                                     content.title = request.content.title
@@ -246,7 +248,18 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                                     autoreleasepool {
                                         let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
                                         print("Looking for: \(request.identifier)")
-                                        let notifOfInterest = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)[0]
+                                        let notifOfInterestResult = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)
+                                        guard notifOfInterestResult.count == 1 else {
+                                            // Realm data corrupted somehow, remove all pending requests and do a full reschedule.
+                                            os_log("Found a scheduled UUID that was not found in Realm during getPendingNotificationRequests run, performing full reschedule", log: .default, type: .error)
+                                            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: requests.map({$0.identifier}))
+                                            
+                                            let changeUUIDSpecialEvents = changeUUIDRealm.objects(SpecialEvent.self)
+                                            updateDailyNotifications(async: false)
+                                            scheduleNewEvents(titled: changeUUIDSpecialEvents.map({$0.title}))
+                                            return
+                                        }
+                                        let notifOfInterest = notifOfInterestResult[0]
                                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
                                         print("Written ident: \(newIdent)")
@@ -272,34 +285,39 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                     
                     //
                     // Order requests
-                    for triggerGroup in notifsThatNeedBadge {
-                        let newValue = triggerGroup.value.sorted { (request1, request2) -> Bool in
-                            let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
-                            let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
-                            let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
-                            let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
-                            if request1TriggerDate < request2TriggerDate {return true} else {return false}
+                    if updateBadgesToZero {for data in notifsThatNeedBadge.values {
+                        for notif in data {notif.1.badge = NSNumber(integerLiteral: 0)}}
+                    }
+                    else {
+                        for triggerGroup in notifsThatNeedBadge {
+                            let newValue = triggerGroup.value.sorted { (request1, request2) -> Bool in
+                                let request1Trigger = request1.2 as! UNCalendarNotificationTrigger
+                                let request2Trigger = request2.2 as! UNCalendarNotificationTrigger
+                                let request1TriggerDate = currentCalendar.date(from: request1Trigger.dateComponents)!
+                                let request2TriggerDate = currentCalendar.date(from: request2Trigger.dateComponents)!
+                                if request1TriggerDate < request2TriggerDate {return true} else {return false}
+                            }
+                            notifsThatNeedBadge[triggerGroup.key] = newValue
                         }
-                        notifsThatNeedBadge[triggerGroup.key] = newValue
+                        
+                        for value in notifsThatNeedBadge.values {
+                            for data in value {
+                                let trigger = data.2 as! UNCalendarNotificationTrigger
+                                let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
+                                print("\(data.1.body) triggers \(triggerDate)")
+                            }
+                        }
+                        
+                        for triggerGroup in notifsThatNeedBadge {
+                            for (i, value) in triggerGroup.value.enumerated() {
+                                value.1.badge = NSNumber(integerLiteral: i + 1)
+                            }
+                        }
                     }
                     
-                    for value in notifsThatNeedBadge.values {
-                        for data in value {
-                            let trigger = data.2 as! UNCalendarNotificationTrigger
-                            let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
-                            print("\(data.1.body) triggers \(triggerDate)")
-                        }
-                    }
-                    
-                    for triggerGroup in notifsThatNeedBadge {
-                        for (i, value) in triggerGroup.value.enumerated() {
-                            value.1.badge = NSNumber(integerLiteral: i + 1)
-                        }
-                    }
-                    
-                    for triggerGroup in notifsThatNeedBadge {
+                    /*for triggerGroup in notifsThatNeedBadge {
                         for value in triggerGroup.value {print("\(value.1.body) Badge num: \(Int(truncating: value.1.badge ?? 0))")}
-                    }
+                    }*/
                     
                     //
                     // Schedule the new requests
@@ -324,11 +342,12 @@ fileprivate func schedule(request: UNNotificationRequest) {
             print(error.localizedDescription)
             fatalError("^ Check error")
         }
+        print("Scheduled uuid: \(request.identifier)")
     }
 }
 
 func updatePendingNotifcationsBadges(forDate date: Date) {
-    
+    print("Updating pending notification requests")
     //
     // Get pending notifs that trigger on the date.
     UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
@@ -349,6 +368,7 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                     
                     autoreleasepool {
                         let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
+                        print("Looking for: \(request.identifier)")
                         let notifOfInterestResult = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)
                         guard notifOfInterestResult.count == 1 else {
                             // Realm data corrupted somehow, remove all pending requests and do a full reschedule.
@@ -363,6 +383,7 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                         let notifOfInterest = notifOfInterestResult[0]
                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
+                        print("Written uuid: \(newIdent)")
                         
                         print("Notifications stored during pending notifications reset:")
                         let allEventNotifications = changeUUIDRealm.objects(RealmEventNotification.self)
@@ -420,7 +441,8 @@ func updateDailyNotificationsIfNeeded(async: Bool) {
     else {updateDailyNotifications(async: async)}
 }
 
-func updateDailyNotifications(async: Bool) {
+func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
+    print("Updating daily notifications")
     func performWork() {
         //autoreleasepool {
             let dailyNotifsRealm = try! Realm(configuration: appRealmConfig)
@@ -587,7 +609,7 @@ func updateDailyNotifications(async: Bool) {
                     }
                     
                     userDefaults.set(ident, forKey: currentlyScheduledUUIDKey)
-                    updatePendingNotifcationsBadges(forDate: newNotificationDate)
+                    if updatePending {updatePendingNotifcationsBadges(forDate: newNotificationDate)}
                 }
                 else {userDefaults.set(nil, forKey: notificationTimeAsDateKey)}
                     
@@ -671,8 +693,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         let eventImages = launchRealm.objects(EventImageInfo.self)
         
         if eventImages.count == 0 {
-            
-            print(sharedImageLocationURL)
             do {try FileManager.default.createDirectory(at: sharedImageLocationURL, withIntermediateDirectories: false, attributes: nil)}
             catch {
                 // TODO: Error handling.

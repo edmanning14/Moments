@@ -538,10 +538,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                             removeCropRect()
                         }
                     }
-                    else {
-                        // TODO: Error handling. Show an error to the user and ask for a bug report.
-                        fatalError("Fatal error: Failed to create mask home image!")
-                    }
                 }
             }
             else {
@@ -603,8 +599,8 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             selectedImage!.delegate = self
             if let appImage = selectedImage as? AppEventImage {
                 if appImage.mainImage?.cgImage == nil {loadStatus = .fetching}
-                if appImage.maskImage?.cgImage == nil {loadStatus = .fetching}
                 else {performAppImageSetup()}
+                appImage.fetch(imageTypes: [.mask], alertDelegate: true)
             }
             else {
                 if selectedImage!.mainImage?.cgImage == nil {loadStatus = .fetching}
@@ -613,17 +609,22 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         }
     }
     
+    fileprivate var isAppImageSetup = false
+    
     fileprivate func performAppImageSetup() {
-        let appImage = selectedImage as! AppEventImage
-        loadStatus = .creating
-        homePreviewCell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
-        fullSizePreviewCell.setSelectedImage(image: appImage, locationForCellView: nil)
-        loadStatus = .done
-        loadingStackView.isHidden = true
-        homeTabBarItem.isEnabled = true
-        originalTabBarItem.isEnabled = true
-        tabBarState = .original
-        homeTabBarItem.title = TabBarTitles.home
+        if !isAppImageSetup {
+            let appImage = selectedImage as! AppEventImage
+            loadStatus = .creating
+            homePreviewCell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
+            fullSizePreviewCell.setSelectedImage(image: appImage, locationForCellView: nil)
+            loadStatus = .done
+            loadingStackView.isHidden = true
+            homeTabBarItem.isEnabled = true
+            originalTabBarItem.isEnabled = true
+            tabBarState = .original
+            homeTabBarItem.title = TabBarTitles.home
+            isAppImageSetup = true
+        }
     }
     
     fileprivate func performUserImageSetup() {

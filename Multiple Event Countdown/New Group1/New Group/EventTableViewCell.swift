@@ -448,7 +448,6 @@ class EventTableViewCell: UITableViewCell {
                     months -= 1.0
                     let todaysDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: todaysDate)!
                     let daysInTodaysDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: todaysDatePreviousMonth)!.count
-                    //print(eventDateComponents.day ?? "No Days")
                     let daysLeftInTodaysDatePreviousMonth = daysInTodaysDatePreviousMonth - eventDateComponents.day!
                     abridgedDays = Double(daysLeftInTodaysDatePreviousMonth + todaysDateComponents.day!)
                 }
@@ -459,7 +458,6 @@ class EventTableViewCell: UITableViewCell {
                     months -= 1.0
                     let eventDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: eventDate!.date)!
                     let daysInEventDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: eventDatePreviousMonth)!.count
-                    //print(eventDateComponents.day ?? "No Days")
                     let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - todaysDateComponents.day!
                     abridgedDays = Double(daysLeftInEventDatePreviousMonth + eventDateComponents.day!)
                 }
