@@ -12,16 +12,11 @@ class MasterDetailSegue: UIStoryboardSegue {
     
     fileprivate func getCropRect(locationForCellView: CGFloat, imageView: UIImageView) -> CGRect? {
         if let imageFrame = imageView.imageRect {
-            print(imageView.frame)
-            
             let height: CGFloat = 160.0
             let width = self.destination.view.frame.width
             let x = imageFrame.origin.x
             let cropRectYRelativeToImage = (imageFrame.size.height * locationForCellView) - (height / 2)
             let cropRectYRelativeToImageView = cropRectYRelativeToImage + imageFrame.origin.y
-            
-            //print(cropRectYRelativeToImage)
-            //print(cropRectYRelativeToImageView)
             
             return CGRect(x: x, y: cropRectYRelativeToImageView, width: width, height: height)
         }
@@ -49,13 +44,13 @@ class MasterDetailSegue: UIStoryboardSegue {
                         movingView.translatesAutoresizingMaskIntoConstraints = false
                         movingView.layer.cornerRadius = 3.0
                         movingView.layer.masksToBounds = true
+                        movingView.backgroundColor = UIColor.black
                         if let homeImage = cell.mainImageView.image {
                             let imageView = UIImageView(image: homeImage)
                             imageView.translatesAutoresizingMaskIntoConstraints = false
                             imageView.frame = movingView.bounds
                             imageView.contentMode = .scaleAspectFit
                             movingView.addSubview(imageView)
-                            print(imageView.frame)
                         }
                         else {movingView.backgroundColor = UIColor.clear}
                         
@@ -66,7 +61,7 @@ class MasterDetailSegue: UIStoryboardSegue {
                         
                         
                         let blackRect1 = UIView(frame: CGRect(x: movingView.frame.origin.x, y: navStuffAdjustment, width: movingView.frame.width, height: movingView.frame.origin.y - navStuffAdjustment))
-                        let blackRect2 = UIView(frame: CGRect(x: movingView.frame.origin.x, y: movingView.frame.origin.y + movingView.frame.height, width: movingView.frame.width, height: detailVC.view.bounds.height - (movingView.frame.origin.y + movingView.frame.height)))
+                        let blackRect2 = UIView(frame: CGRect(x: movingView.frame.origin.x, y: movingView.frame.origin.y + movingView.frame.height, width: movingView.frame.width, height: max(detailVC.view.bounds.height - (movingView.frame.origin.y + movingView.frame.height), 0.0)))
                         
                         blackRect1.translatesAutoresizingMaskIntoConstraints = false
                         blackRect2.translatesAutoresizingMaskIntoConstraints = false
@@ -78,7 +73,10 @@ class MasterDetailSegue: UIStoryboardSegue {
                         transitionView.addSubview(movingView)
                         
                         // Master view belonging to splitViewController is only subview of mainWindow at this time.
-                        let event = tableViewVC.items(forSection: ipForSelectedCell.section)[ipForSelectedCell.row]
+                        var row = ipForSelectedCell.row
+                        if let welcome = tableViewVC.welcomeCellIndexPath, welcome.section == ipForSelectedCell.section {row -= 1}
+                        if let tip = tableViewVC.tipCellIndexPath, tip.section == ipForSelectedCell.section, tip.row < ipForSelectedCell.row {row -= 1}
+                        let event = tableViewVC.items(forSection: ipForSelectedCell.section)[row]
                         
                         if let intLocationForCellView = event.locationForCellView.value {
                             let locationForCellView = CGFloat(intLocationForCellView) / 100.0
@@ -107,22 +105,20 @@ class MasterDetailSegue: UIStoryboardSegue {
                             )
                             UIViewPropertyAnimator.runningPropertyAnimator(
                                 withDuration: 0.2,
-                                delay: 0.1,
+                                delay: 0.0,
                                 options: .curveLinear,
                                 animations: {movingView.layer.opacity = 1.0},
-                                completion: {(poistion) in
+                                completion:  {(poistion) in
                                     fauxImageView.removeFromSuperview()
                                     let imageView = detailVC.detailViewCell!.mainImageView!
-                                    //imageView.backgroundColor = GlobalColors.orangeRegular
                                     if let cropRect = self.getCropRect(locationForCellView: locationForCellView, imageView: imageView) {
+                                        
                                         //
                                         // Prep for animations
-                                        
                                         let newMovingViewOrigin = CGPoint(x: movingView.frame.origin.x, y: navStuffAdjustment + cropRect.origin.y)
                                         let newRect2Origin = CGPoint(x: blackRect2.frame.origin.x, y: newMovingViewOrigin.y + cropRect.size.height)
                                         let newRect2Size = CGSize(width: blackRect2.frame.size.width, height: self.destination.view.frame.height - (newMovingViewOrigin.y + cropRect.size.height))
-                                        //let distanceToTraverse = newMovingViewOrigin.y - cellFrameToTableView.origin.y + navStuffAdjustment
-                                        //let duration = Double(distanceToTraverse) * 0.00074 + 0.1
+
                                         //
                                         // Animate move of transitionView
                                         UIViewPropertyAnimator.runningPropertyAnimator(
@@ -165,7 +161,9 @@ class MasterDetailSegue: UIStoryboardSegue {
                             )
                         }
                         else { // No cell view location, do some normal transition.
-                            
+                            var vcs = sourceNavVC.viewControllers
+                            vcs.append(self.destination)
+                            sourceNavVC.setViewControllers(vcs, animated: false)
                         }
                     }
                 }
@@ -176,9 +174,15 @@ class MasterDetailSegue: UIStoryboardSegue {
             let destinationNavVC = tableViewVC.navigationController!
             let detailVC = self.source as! DetailViewController
             
-            if let ipForSelectedCell = tableViewVC.tableView.indexPathForSelectedRow, let cell = tableViewVC.tableView.cellForRow(at: ipForSelectedCell) as? EventTableViewCell, let mainImage = cell.mainImageView.image, let mainWindow = UIApplication.shared.keyWindow {
+            if let ipForSelectedCell = tableViewVC.tableView.indexPathForSelectedRow {
+            if let cell = tableViewVC.tableView.cellForRow(at: ipForSelectedCell) as? EventTableViewCell {
+            if let mainImage = cell.mainImageView.image {
+            if let mainWindow = UIApplication.shared.keyWindow {
                 
-                let event = tableViewVC.items(forSection: ipForSelectedCell.section)[ipForSelectedCell.row]
+                var row = ipForSelectedCell.row
+                if let welcome = tableViewVC.welcomeCellIndexPath, welcome.section == ipForSelectedCell.section {row -= 1}
+                if let tip = tableViewVC.tipCellIndexPath, tip.section == ipForSelectedCell.section, tip.row < ipForSelectedCell.row {row -= 1}
+                let event = tableViewVC.items(forSection: ipForSelectedCell.section)[row]
                 let detailImageView = detailVC.detailViewCell!.mainImageView!
                 
                 if let intLocationForCellView = event.locationForCellView.value, let cropRect = self.getCropRect(locationForCellView: CGFloat(intLocationForCellView) / 100.0, imageView: detailImageView) {
@@ -186,15 +190,15 @@ class MasterDetailSegue: UIStoryboardSegue {
                     let cellFrameToContentView = tableViewVC.tableView.rectForRow(at: ipForSelectedCell)
                     let contentOffset = tableViewVC.tableView.contentOffset.y
                     let cellOriginToTableView = CGPoint(x: cellFrameToContentView.origin.x, y: cellFrameToContentView.origin.y - contentOffset)
-                    let navStuffAdjustment = source.view.convert(CGPoint(x: 0.0, y: contentOffset), to: mainWindow).y
+                    let navStuffAdjustment = destination.view.convert(CGPoint(x: 0.0, y: contentOffset), to: mainWindow).y
                     let destinationOriginForMovingView = CGPoint(x: 0.0, y: cellOriginToTableView.y + navStuffAdjustment)
                     
                     let startOriginForMovingView = CGPoint(x: 0.0, y: cropRect.origin.y + navStuffAdjustment)
                     let movingView = UIView(frame: CGRect(origin: startOriginForMovingView, size: cropRect.size))
-                    print(movingView.frame)
                     movingView.translatesAutoresizingMaskIntoConstraints = false
                     movingView.layer.cornerRadius = 3.0
                     movingView.layer.masksToBounds = true
+                    movingView.backgroundColor = UIColor.black
                     
                     let imageView = UIImageView(image: mainImage)
                     imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -264,7 +268,7 @@ class MasterDetailSegue: UIStoryboardSegue {
                         }
                     )
                 }
-            }
+            }}}}
             else { // No cell view location, do some normal transition.
                 
             }

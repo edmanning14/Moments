@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import os
 
 class DatePickerTableViewCell: UITableViewCell {
     
@@ -18,12 +19,12 @@ class DatePickerTableViewCell: UITableViewCell {
                 typeButton.setTitle(notif.type.stringEquivalent, for: .normal)
                 switch notif.type {
                 case .afterEvent, .beforeEvent:
-                    guard notif.components?.month != nil || notif.components?.day != nil || notif.components?.hour != nil || notif.components?.minute != nil || notif.components?.second != nil else {
-                        // TODO: Figure out a way to fail this more gracefully
-                        fatalError("dateComponents was empty!")
+                    if notif.components?.month == nil && notif.components?.day == nil && notif.components?.hour == nil && notif.components?.minute == nil && notif.components?.second == nil {
+                        os_log("dateComponents was nil for cell %@", log: .default, type: .error, title ?? "Nil")
+                        digitButton.setTitle("1", for: .normal)
+                        precisionButton.setTitle("Day", for: .normal)
                     }
-                    
-                    if let months = notif.components?.month {
+                    else if let months = notif.components?.month {
                         digitButton.setTitle(String(months), for: .normal)
                         if months == 1 {precisionButton.setTitle("Month", for: .normal)}
                         else {precisionButton.setTitle("Months", for: .normal)}
@@ -69,9 +70,13 @@ class DatePickerTableViewCell: UITableViewCell {
                     }
                     
                 case .dayOfEvent:
-                    guard notif.components?.hour != nil && notif.components?.minute != nil else {
-                        // TODO: Figure out a way to fail this more gracefully
-                        fatalError("dateComponents was empty!")
+                    if notif.components?.hour == nil {
+                        os_log("Hour dateComponents was nil for cell %@", log: .default, type: .error, title ?? "Nil")
+                        eventNotification?.components?.hour = 9
+                        if notif.components?.minute == nil {
+                            os_log("minute dateComponents was nil for cell %@", log: .default, type: .error, title ?? "Nil")
+                            eventNotification?.components?.minute = 0
+                        }
                     }
                     
                     eventNotification?.components?.second = 0

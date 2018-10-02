@@ -8,6 +8,8 @@
 
 import UIKit
 import RealmSwift
+import os
+import UserNotifications
 
 class ConfigureNotificationsTableViewController: UITableViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
@@ -199,8 +201,8 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             case .eventReminders: return modifiedEventNotifications.count
             }
         default:
-            // TODO: log and break.
-            fatalError("Need to add a case??")
+            os_log("Unrecognized section encountered: %@", log: .default, type: .error, section)
+            return 0
         }
     }
 
@@ -224,9 +226,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             case 1:
                 cell.title = "Use custom notifications"
                 cell.onOffSwitch.isOn = useCustomNotifications
-            default:
-                // TODO: log and break.
-                fatalError("Need to add a case??")
+            default: os_log("Unrecognized row encountered: %@", log: .default, type: .error, indexPath.row)
             }
             
             return cell
@@ -273,10 +273,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 cell.eventNotification = modifiedEventNotifications[indexPath.row]
             }
             return cell
-        default:
-            // TODO: return an empty cell?
-            fatalError("Need to add a section??")
-            
+        default: os_log("Unrecognized section encountered: %@", log: .default, type: .error, indexPath.section)
         }
         return UITableViewCell()
     }
@@ -321,8 +318,8 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 
                 return headerView
             default:
-                // TODO: Log and break
-                fatalError("Need to add a case??")
+                os_log("Unrecognized section encountered: %@", log: .default, type: .error, section)
+                return UIView()
             }
         }
         
@@ -355,8 +352,8 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             case .eventReminders: return 100
             }
         default:
-            // TODO: Log and break
-            fatalError("Need to add a section??")
+            os_log("Unrecognized section encountered: %@", log: .default, type: .error, section)
+            return 50
         }
     }
     
@@ -373,8 +370,8 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             case .eventReminders: return true
             }
         default:
-            // TODO: Log and break
-            fatalError("Need to add a case??")
+            os_log("Unrecognized section encountered: %@", log: .default, type: .error, indexPath.section)
+            return false
         }
     }
     
@@ -428,72 +425,51 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             let cell = tableView.cellForRow(at: selectedCellIndexPath!) as! DatePickerTableViewCell
             switch editing {
             case .digit:
-                let value = Int(digitOptions![row])!
-                if let _currentPrecision = currentPrecision {
-                    switch _currentPrecision {
-                    case .months: modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = value
-                    case .days: modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = value
-                    case .hours: modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = value
-                    case .minutes: modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = value
-                    case .seconds: modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = value
-                    }
+                guard let _currentPrecision = currentPrecision else {
+                    os_log("currentPrecision was nil!", log: .default, type: .error)
+                    return
                 }
-                else {
-                    // TODO: Log, return from function probably
-                    fatalError("currentPrecision was nil!")
+                let value = Int(digitOptions![row])!
+                switch _currentPrecision {
+                case .months: modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = value
+                case .days: modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = value
+                case .hours: modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = value
+                case .minutes: modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = value
+                case .seconds: modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = value
                 }
                 cell.eventNotification = modifiedEventNotifications[selectedCellIndexPath!.row]
             case .precision:
                 if let digit = cell.digitButton.currentTitle {
-                    
-                    if let _currentPrecision = currentPrecision {
-                        switch _currentPrecision {
-                        case .months:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = nil
-                        case .days:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = nil
-                        case .hours:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = nil
-                        case .minutes:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = nil
-                        case .seconds:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = nil
-                        }
+                    guard let _currentPrecision = currentPrecision else {
+                        os_log("currentPrecision was nil!", log: .default, type: .error)
+                        return
                     }
-                    else {
-                        // TODO: Log, return from function probably
-                        fatalError("currentPrecision was nil!")
+                    switch _currentPrecision {
+                    case .months: modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = nil
+                    case .days: modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = nil
+                    case .hours: modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = nil
+                    case .minutes: modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = nil
+                    case .seconds: modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = nil
                     }
                     
-                    currentPrecision = PrecisionOptions(fromString: precisionOptionsTitles[row])!
+                    currentPrecision = PrecisionOptions(fromString: precisionOptionsTitles[row])
+                    guard let _newCurrentPrecision = currentPrecision else {
+                        os_log("Could not create curretnPrecision from %@", log: .default, type: .error, precisionOptionsTitles[row])
+                        return
+                    }
                     var currentValue = Int(digit)!
                     if !digitOptions!.contains(digit) {currentValue = Int(digitOptions!.last!)!}
+                    switch _newCurrentPrecision {
+                    case .months: modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = currentValue
+                    case .days: modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = currentValue
+                    case .hours: modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = currentValue
+                    case .minutes: modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = currentValue
+                    case .seconds: modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = currentValue
+                    }
                     
-                    if let _currentPrecision = currentPrecision {
-                        switch _currentPrecision {
-                        case .months:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.month = currentValue
-                        case .days:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.day = currentValue
-                        case .hours:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.hour = currentValue
-                        case .minutes:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.minute = currentValue
-                        case .seconds:
-                            modifiedEventNotifications[selectedCellIndexPath!.row].components?.second = currentValue
-                        }
-                    }
-                    else {
-                        // TODO: Log, return from function probably
-                        fatalError("currentPrecision was nil!")
-                    }
-
                     cell.eventNotification = modifiedEventNotifications[selectedCellIndexPath!.row]
                 }
-                else {
-                    // TODO: fail this gracefully
-                    fatalError("There was no title on the digit button for some reason...")
-                }
+                else {os_log("here was no title on the digit button for some reason...", log: .default, type: .error)}
             case .type:
                 let newType = EventNotification.Types(string: typeOptions[row])!
                 switch newType {
@@ -510,10 +486,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 cell.eventNotification = modifiedEventNotifications[selectedCellIndexPath!.row]
             }
         }
-        else {
-            // TODO: log and error and continue.
-            fatalError("Shouldn't have happened.")
-        }
+        else {os_log("currentlyEditing was nil when editing when pickerView selected a row for some reason...", log: .default, type: .error)}
     }
     
     //
@@ -600,28 +573,24 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 tableView.deleteSections(section, with: .fade)
                 tableView.endUpdates()
             }
-        default:
-            // TODO: log and break
-            fatalError("Need to add a case?")
+        default: os_log("Unrecognized row title encountered: %@", log: .default, type: .error, cell.title ?? "Nil")
         }
-        tableView.reloadData()
+        //tableView.reloadData()
     }
     
     @objc fileprivate func handleCellButtonsTap(_ sender: UIButton) {
         if let buttonTitle = sender.currentTitle {
             let cell = sender.superview!.superview!.superview as! DatePickerTableViewCell
+            guard let precisionButtonTitle = cell.precisionButton.currentTitle, let _currentPrecision = PrecisionOptions(fromString: precisionButtonTitle) else {
+                os_log("Could not create currentPrecision from string: %@", log: .default, type: .error, cell.precisionButton.currentTitle ?? "Nil")
+                return
+            }
+            
+            currentPrecision = _currentPrecision
             let newSelectedCellIP = tableView.indexPath(for: cell)!
             
             let otherPrecisionButtonTitles = ["Month", "Day", "Hour", "Minute", "Second"]
             var newEditable: Editables?
-            
-            if let _currentPrecision = PrecisionOptions(fromString: cell.precisionButton.currentTitle!) {
-                currentPrecision = _currentPrecision
-            }
-            else {
-                // TODO: Log, probably should alert user and break out of function.
-                fatalError("Couldn't get current precision, probably a title issue")
-            }
             
             let typei = typeOptions.index(of: buttonTitle)
             let precisioni: Int? = {
@@ -636,14 +605,12 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             else if precisioni != nil {newEditable = .precision}
             else if digiti != nil {newEditable = .digit}
             else {
-                if let date = dateFormatter.date(from: buttonTitle) {
-                    newDate = date
-                    newEditable = .digit
+                guard let date = dateFormatter.date(from: buttonTitle) else {
+                    os_log("Could not determin date from button titled: %@", log: .default, type: .error, buttonTitle)
+                    return
                 }
-                else {
-                    // TODO: Handle this gracefully
-                    fatalError("Couldn't determing button title!")
-                }
+                newDate = date
+                newEditable = .digit
             }
             
             if newSelectedCellIP == selectedCellIndexPath && newEditable == currentlyEditing {
@@ -702,16 +669,10 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                 else if let i = precisioni {cell.pickerView.selectRow(i, inComponent: 0, animated: false)}
                 else if let i = digiti {cell.pickerView.selectRow(i, inComponent: 0, animated: false)}
                 else if let _newDate = newDate {cell.datePicker.date = _newDate}
-                else {
-                    // TODO: Do nothing, I'm pretty sure this is quite literally impossible.
-                    fatalError("How the fuck did this happen?")
-                }
+                else {os_log("Guard in earlier code should have made this impossible...", log: .default, type: .error)}
             }
         }
-        else {
-            // TODO: Do nothing I think...
-            fatalError("No button title!?")
-        }
+        else {os_log("No button title", log: .default, type: .error)}
     }
     
     @objc fileprivate func handleEventConfigButtonsTap(_ sender: UIButton) {
@@ -731,9 +692,7 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
             case "DONE":
                 tableView.setEditing(false, animated: true)
                 sender.setTitle("EDIT", for: .normal)
-            default:
-                // TODO: Log and break
-                fatalError("Need to add a case??")
+            default: os_log("Unexpected event config button title: %@", log: .default, type: .error, title)
             }
         }
     }
@@ -766,20 +725,27 @@ class ConfigureNotificationsTableViewController: UITableViewController, UIPicker
                         defaultNotificationsConfig[0].eventNotifications.append(objectsIn: newRealmEventNotifications)
                     }
                 }
-                // TODO: Ask user if they would like to reset all current events to these settings or just future ones
-                performSegue(withIdentifier: "Unwind to Settings", sender: self)
+                
+                let resetAllPopup = UIAlertController(title: "Reset Events", message: "Would you like to reset all current events to these defaults, or use these defaults only for future events?", preferredStyle: .alert)
+                let yesAction = UIAlertAction(title: "Yes Please", style: .default) { (action) in
+                    DispatchQueue.global(qos: .utility).async {
+                        autoreleasepool {
+                            let resetNotifsRealm = try! Realm(configuration: appRealmConfig)
+                            let allResetNotifsEvents = resetNotifsRealm.objects(SpecialEvent.self)
+                            scheduleNewEvents(titled: allResetNotifsEvents.map({$0.title}))
+                        }
+                    }
+                    
+                    self.dismiss(animated: true) {self.performSegue(withIdentifier: "Unwind to Settings", sender: self)}
+                }
+                let noAction = UIAlertAction(title: "No Thanks", style: .cancel) { (action) in
+                    self.dismiss(animated: true) {self.performSegue(withIdentifier: "Unwind to Settings", sender: self)}
+                }
+                
+                resetAllPopup.addAction(yesAction)
+                resetAllPopup.addAction(noAction)
+                self.present(resetAllPopup, animated: true, completion: nil)                
             }
         }
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

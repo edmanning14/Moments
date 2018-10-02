@@ -84,9 +84,6 @@ class CountdownMainImageView: UIView {
                         let imageHeight = livingSelf.image.width
                         let imageWidth = livingSelf.image.height
                         
-                        print(imageWidth)
-                        print(imageWidth)
-                        
                         let croppingRectWidth = Int(CGFloat(imageHeight) / contextAR)
                         let croppingRectSize = CGSize(width: croppingRectWidth, height: imageHeight)
                         
@@ -99,9 +96,6 @@ class CountdownMainImageView: UIView {
                     else {
                         let imageHeight = livingSelf.image.height
                         let imageWidth = livingSelf.image.width
-                        
-                        print(imageWidth)
-                        print(imageWidth)
                         
                         let croppingRectHeight = Int(CGFloat(imageWidth) / contextAR)
                         let croppingRectSize = CGSize(width: imageWidth, height: croppingRectHeight)

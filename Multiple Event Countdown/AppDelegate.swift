@@ -64,17 +64,21 @@ func createHeaderDropdownButton() -> UIButton {
 var shouldUpdateDailyNotifications = false
 
 func scheduleNewEvents (titled eventTitles: [String]) {
+    #if DEBUG
     print("Creating notifs for: \(eventTitles)")
+    #endif
     var notifsThatNeedBadge = [Date: [(String, UNMutableNotificationContent, UNNotificationTrigger)]]()
     autoreleasepool {
         let scheduleAndUpdateRealm = try! Realm(configuration: appRealmConfig)
         let defaultNotificationsConfig = scheduleAndUpdateRealm.objects(DefaultNotificationsConfig.self)[0]
         
+        #if DEBUG
         print("Notifications stored at start of add event cycle:")
         let allEventNotifications = scheduleAndUpdateRealm.objects(RealmEventNotification.self)
         for (i, realmNotif) in allEventNotifications.enumerated() {
             print("\(i + 1): \(realmNotif.uuid)")
         }
+        #endif
         
         if defaultNotificationsConfig.allOn && defaultNotificationsConfig.individualEventRemindersOn {
             for eventTitle in eventTitles {
@@ -130,16 +134,16 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                         }
                         
                         guard let type = _type else {
-                            // TODO: Log, don't create notification.
-                            fatalError("Type was nil!")
+                            os_log("Notification creation failed, type was nil when creating \"%@\".", log: .default, type: .error, eventTitle)
+                            continue
                         }
                         
                         switch type {
                         case .beforeEvent:
                             setValuePrecisionComponent()
                             guard let value = _value, let precision = _precision, let calendarComponent = _calendarComponent else {
-                                // TODO: Log, don't create notification.
-                                fatalError("Value or precision was nil!")
+                                os_log("Notification creation failed, value or precision was nil when creating \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                             if let newDate = Calendar.current.date(byAdding: calendarComponent, value: -value, to: specialEventDate, wrappingComponents: false) {
                                 let triggerComponents = Calendar.current.dateComponents(yearToSecondsComponents, from: newDate)
@@ -152,14 +156,14 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                                 notificationContent.body = bodyString
                             }
                             else {
-                                // TODO: Log, don't create notification
-                                fatalError("Couldn't create new date!")
+                                os_log("Notification creation failed, couldn't create trigger date for \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                         case .afterEvent:
                             setValuePrecisionComponent()
                             guard let value = _value, let precision = _precision, let calendarComponent = _calendarComponent else {
-                                // TODO: Log, don't create notification.
-                                fatalError("Value or precision was nil!")
+                                os_log("Notification creation failed, value or precision was nil when creating \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                             
                             if let newDate = Calendar.current.date(byAdding: calendarComponent, value: value, to: specialEventDate, wrappingComponents: false) {
@@ -171,17 +175,17 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                                 notificationContent.body = bodyString
                             }
                             else {
-                                // TODO: Log, don't create notification
-                                fatalError("Couldn't create new date!")
+                                os_log("Notification creation failed, couldn't create trigger date for \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                         case .dayOfEvent:
                             guard let hour = realmEventNotification.notificationComponents?.hour.value else {
-                                // TODO: Log, don't create notification.
-                                fatalError("hour was nil!")
+                                os_log("Notification creation failed, hour was nil when creating \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                             guard let minute = realmEventNotification.notificationComponents?.hour.value else {
-                                // TODO: Log, don't create notification.
-                                fatalError("minute was nil!")
+                                os_log("Notification creation failed, minute was nil when creating \"%@\".", log: .default, type: .error, eventTitle)
+                                continue
                             }
                             
                             trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(calendar: Calendar.current, timeZone: TimeZone.current, era: nil, year: eventDateComponents.year, month: eventDateComponents.month, day: eventDateComponents.day, hour: hour, minute: minute, second: 0, nanosecond: nil, weekday: nil, weekdayOrdinal: nil, quarter: nil, weekOfMonth: nil, weekOfYear: nil, yearForWeekOfYear: nil), repeats: false)
@@ -198,13 +202,15 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                         if let triggerDate = trigger.nextTriggerDate() {
                             let newIdent =  UUID().uuidString
                             do {try! scheduleAndUpdateRealm.write {localManagedSpecialEvent.notificationsConfig!.eventNotifications[i].uuid = newIdent}}
+                            
+                            #if DEBUG
                             print("Written uuid: \(localManagedSpecialEvent.notificationsConfig!.eventNotifications[i].uuid)")
-
                             print("Notifications stored after write:")
                             let allEventNotifications = scheduleAndUpdateRealm.objects(RealmEventNotification.self)
                             for (i, realmNotif) in allEventNotifications.enumerated() {
                                 print("\(i + 1): \(realmNotif.uuid)")
                             }
+                            #endif
                             
                             if currentCalendar.isDate(localManagedSpecialEvent.date!.date, inSameDayAs: triggerDate) {
                                 var addNew = true
@@ -224,10 +230,12 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                 }
             }
             
+            #if DEBUG
             print("Trigger group count: \(notifsThatNeedBadge.count)")
             for value in notifsThatNeedBadge.values {
                 print("Number of values in each trigger group: \(value.count)")
             }
+            #endif
             
             if !notifsThatNeedBadge.isEmpty {
                 UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
@@ -247,7 +255,9 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                                     
                                     autoreleasepool {
                                         let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
+                                        #if DEBUG
                                         print("Looking for: \(request.identifier)")
+                                        #endif
                                         let notifOfInterestResult = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)
                                         guard notifOfInterestResult.count == 1 else {
                                             // Realm data corrupted somehow, remove all pending requests and do a full reschedule.
@@ -262,13 +272,15 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                                         let notifOfInterest = notifOfInterestResult[0]
                                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
-                                        print("Written ident: \(newIdent)")
                                         
+                                        #if DEBUG
+                                        print("Written ident: \(newIdent)")
                                         print("Notifications stored during old notifications fetch:")
                                         let allEventNotifications = changeUUIDRealm.objects(RealmEventNotification.self)
                                         for (i, realmNotif) in allEventNotifications.enumerated() {
                                             print("\(i + 1): \(realmNotif.uuid)")
                                         }
+                                        #endif
                                     }
                                     
                                     notifsThatNeedBadge[keyDate]!.append((newIdent, content, calendarTrigger))
@@ -276,8 +288,8 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                             }
                         }
                         else {
-                            // TODO: Log, continue
-                            fatalError("Unexpected trigger type or no trigger!")
+                            os_log("Notification creation failed, unexpected or no trigger type found when creating \"%@\".", log: .default, type: .error, request.content)
+                            continue
                         }
                     }
                     
@@ -304,7 +316,9 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                             for data in value {
                                 let trigger = data.2 as! UNCalendarNotificationTrigger
                                 let triggerDate = currentCalendar.date(from: trigger.dateComponents)!
+                                #if DEBUG
                                 print("\(data.1.body) triggers \(triggerDate)")
+                                #endif
                             }
                         }
                         
@@ -314,10 +328,6 @@ func scheduleNewEvents (titled eventTitles: [String]) {
                             }
                         }
                     }
-                    
-                    /*for triggerGroup in notifsThatNeedBadge {
-                        for value in triggerGroup.value {print("\(value.1.body) Badge num: \(Int(truncating: value.1.badge ?? 0))")}
-                    }*/
                     
                     //
                     // Schedule the new requests
@@ -336,18 +346,14 @@ func scheduleNewEvents (titled eventTitles: [String]) {
 
 fileprivate func schedule(request: UNNotificationRequest) {
     UNUserNotificationCenter.current().add(request) { (_error) in
-        if let error = _error {
-            // TODO: Log, continue, maybe alert user that notifs are not working properly.
-            print("Request \"\(request.content.body)\" had an error:")
-            print(error.localizedDescription)
-            fatalError("^ Check error")
-        }
-        print("Scheduled uuid: \(request.identifier)")
+        if let error = _error {os_log("%@", log: .default, type: .error, error.localizedDescription)}
     }
 }
 
 func updatePendingNotifcationsBadges(forDate date: Date) {
+    #if DEBUG
     print("Updating pending notification requests")
+    #endif
     //
     // Get pending notifs that trigger on the date.
     UNUserNotificationCenter.current().getPendingNotificationRequests { (requests) in
@@ -368,7 +374,9 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                     
                     autoreleasepool {
                         let changeUUIDRealm = try! Realm(configuration: appRealmConfig)
+                        #if DEBUG
                         print("Looking for: \(request.identifier)")
+                        #endif
                         let notifOfInterestResult = changeUUIDRealm.objects(RealmEventNotification.self).filter("uuid = %@", request.identifier)
                         guard notifOfInterestResult.count == 1 else {
                             // Realm data corrupted somehow, remove all pending requests and do a full reschedule.
@@ -383,21 +391,23 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
                         let notifOfInterest = notifOfInterestResult[0]
                         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifOfInterest.uuid])
                         do {try! changeUUIDRealm.write {notifOfInterest.uuid = newIdent}}
-                        print("Written uuid: \(newIdent)")
                         
+                        #if DEBUG
+                        print("Written uuid: \(newIdent)")
                         print("Notifications stored during pending notifications reset:")
                         let allEventNotifications = changeUUIDRealm.objects(RealmEventNotification.self)
                         for (i, realmNotif) in allEventNotifications.enumerated() {
                             print("\(i + 1): \(realmNotif.uuid)")
                         }
+                        #endif
                     }
                     
                     notificationDataToReschedule.append((newIdent, content, calendarTrigger))
                 }
             }
             else {
-                // TODO: Log, continue
-                fatalError("Unexpected trigger type or no trigger!")
+                os_log("Unexpected trigger type or no trigger for \"%@\"", log: .default, type: .error, request.content)
+                continue
             }
         }
         
@@ -428,21 +438,18 @@ func updatePendingNotifcationsBadges(forDate date: Date) {
 }
 
 let dailyNotificationsTitle = "Daily Update 🗞"
-let notificationTimeAsDateKey = "Notification Time As Date"
-let currentlyScheduledUUIDKey = "currently Scheduled UUID"
 let currentCalendar = Calendar.current
 let yearToSecondsComponents: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
 
 func updateDailyNotificationsIfNeeded(async: Bool) {
     let dateNow = Date()
-    if let notificationTimeAsDate = userDefaults.value(forKey: notificationTimeAsDateKey) as? Date {
+    if let notificationTimeAsDate = userDefaults.value(forKey: UserDefaultKeys.notificationTimeAsDateKey) as? Date {
         if dateNow > notificationTimeAsDate {updateDailyNotifications(async: async)}
     }
     else {updateDailyNotifications(async: async)}
 }
 
 func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
-    print("Updating daily notifications")
     func performWork() {
         //autoreleasepool {
             let dailyNotifsRealm = try! Realm(configuration: appRealmConfig)
@@ -466,10 +473,10 @@ func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
                     
                     let dateNow = Date()
                     let todaysDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: dateNow)
-                    guard var day = todaysDateComponents.day else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
-                    guard let currentHour = todaysDateComponents.hour else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
-                    guard let hour = components.hour.value else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
-                    guard let minute = components.minute.value else {userDefaults.set(nil, forKey: notificationTimeAsDateKey); return}
+                    guard var day = todaysDateComponents.day else {userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey); return}
+                    guard let currentHour = todaysDateComponents.hour else {userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey); return}
+                    guard let hour = components.hour.value else {userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey); return}
+                    guard let minute = components.minute.value else {userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey); return}
                     
                     if currentHour > hour {day += 1}
                     
@@ -528,7 +535,7 @@ func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
                             let date = chronologicalUpcomingSpecialEvents[0].date!.date
                             let eventDateComponents = currentCalendar.dateComponents(yearToSecondsComponents, from: date)
                             
-                            var days = Double(eventDateComponents.day! - todaysDateComponents.day!)
+                            var days = Double(eventDateComponents.day! - notificationTimeDateComponents.day!)
                             var months = 0.0
                             var years = 0.0
                             
@@ -536,17 +543,17 @@ func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
                                 months -= 1.0
                                 let eventDatePreviousMonth = currentCalendar.date(byAdding: .month, value: -1, to: date)!
                                 let daysInEventDatePreviousMonth = currentCalendar.range(of: .day, in: .month, for: eventDatePreviousMonth)!.count
-                                let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - todaysDateComponents.day!
+                                let daysLeftInEventDatePreviousMonth = daysInEventDatePreviousMonth - notificationTimeDateComponents.day!
                                 days = Double(daysLeftInEventDatePreviousMonth + eventDateComponents.day!)
                             }
                             
-                            months += Double(eventDateComponents.month! - todaysDateComponents.month!)
+                            months += Double(eventDateComponents.month! - notificationTimeDateComponents.month!)
                             if months < 0.0 {
                                 years -= 1.0
                                 months = 12 + months
                             }
                             
-                            years += Double(eventDateComponents.year! - todaysDateComponents.year!)
+                            years += Double(eventDateComponents.year! - notificationTimeDateComponents.year!)
                             
                             defaultEventNotification.body = "Your next event \"\(chronologicalUpcomingSpecialEvents[0].title)\" is in "
                             
@@ -590,35 +597,34 @@ func updateDailyNotifications(async: Bool, updatePending: Bool = true) {
                     else {
                         defaultEventNotification.body = "You have no upcoming events. Open the app to create one!"
                     }
-                    
-                    userDefaults.set(newNotificationDate, forKey: notificationTimeAsDateKey)
-                    
-                    if let currentlyScheduledUUID = userDefaults.value(forKey: currentlyScheduledUUIDKey) as? String {
-                        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [currentlyScheduledUUID])
-                    }
-                    
+
                     let ident = UUID().uuidString
                     
                     let request = UNNotificationRequest(identifier: ident, content: defaultEventNotification, trigger: trigger)
                     UNUserNotificationCenter.current().add(request) { (_error) in
                         if let error = _error {
-                            // TODO: Log, send failed to completion handler, remove lastFetchAtempt so that another attempt can be made.
-                            print(error.localizedDescription)
-                            fatalError("^ Check error")
+                            os_log("Error adding daily notifications request to notification center: %@", log: .default, type: .error, error.localizedDescription)
+                            userDefaults.set(nil, forKey: UserDefaultKeys.currentlyScheduledUUIDKey)
+                            userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey)
+                        }
+                        else {
+                            userDefaults.set(ident, forKey: UserDefaultKeys.currentlyScheduledUUIDKey)
+                            userDefaults.set(newNotificationDate, forKey: UserDefaultKeys.notificationTimeAsDateKey)
+                            if let currentlyScheduledUUID = userDefaults.value(forKey: UserDefaultKeys.currentlyScheduledUUIDKey) as? String {
+                                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [currentlyScheduledUUID])
+                            }
+                            if updatePending {updatePendingNotifcationsBadges(forDate: newNotificationDate)}
                         }
                     }
-                    
-                    userDefaults.set(ident, forKey: currentlyScheduledUUIDKey)
-                    if updatePending {updatePendingNotifcationsBadges(forDate: newNotificationDate)}
                 }
-                else {userDefaults.set(nil, forKey: notificationTimeAsDateKey)}
+                else {userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey)}
                     
             }
             else {
-                if let currentlyScheduledUUID = userDefaults.value(forKey: currentlyScheduledUUIDKey) as? String {
+                if let currentlyScheduledUUID = userDefaults.value(forKey: UserDefaultKeys.currentlyScheduledUUIDKey) as? String {
                     UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [currentlyScheduledUUID])
                 }
-                userDefaults.set(nil, forKey: notificationTimeAsDateKey)
+                userDefaults.set(nil, forKey: UserDefaultKeys.notificationTimeAsDateKey)
             }
                 
         //}
@@ -681,11 +687,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             
             do {try! launchRealm.write {launchRealm.add(newConfig)}}
             
+            #if DEBUG
             print("Notifications stored after initial realm init:")
             let allEventNotifications = launchRealm.objects(RealmEventNotification.self)
             for (i, realmNotif) in allEventNotifications.enumerated() {
                 print("\(i + 1): \(realmNotif.uuid)")
             }
+            #endif
         }
         
         //
@@ -695,8 +703,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         if eventImages.count == 0 {
             do {try FileManager.default.createDirectory(at: sharedImageLocationURL, withIntermediateDirectories: false, attributes: nil)}
             catch {
-                // TODO: Error handling.
-                print(error.localizedDescription)
+                os_log("FATAL ERROR: Unable to create group directory, terminating app with error: %@", log: .default, type: .error, error.localizedDescription)
                 fatalError()
             }
             
@@ -704,20 +711,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             for imageInfo in AppEventImage.bundleMainImageInfo {
                 let fileRootName = imageInfo.title.convertToFileName()
                 if let mainImageSourceURL = Bundle.main.url(forResource: fileRootName, withExtension: ".jpg") {
+                    var imageInfoToAdd = imageInfo
                     if imageInfo.hasMask {
                         if let maskImageSourceURL = Bundle.main.url(forResource: fileRootName + "Mask", withExtension: ".png") {
-                            do {try! launchRealm.write {launchRealm.add(imageInfo)}}
-                            
                             let maskDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Mask.png", isDirectory: false)
                             do {try FileManager.default.copyItem(at: maskImageSourceURL, to: maskDestinationURL)}
                             catch {
-                                // TODO: Error handling.
-                                print(error.localizedDescription)
-                                fatalError()
+                                os_log("Unable to copy bundle mask image to group directory: %@", log: .default, type: .error, error.localizedDescription)
                             }
                         }
                         else {
-                            let imageInfoToAdd = EventImageInfo(
+                            imageInfoToAdd = EventImageInfo(
                                 imageTitle: imageInfo.title,
                                 imageCategory: imageInfo.category,
                                 isAppImage: imageInfo.isAppImage,
@@ -725,44 +729,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                                 hasMask: imageInfo.hasMask,
                                 recommendedLocationForCellView: imageInfo.recommendedLocationForCellView.value
                             )
-                            do {try! launchRealm.write {launchRealm.add(imageInfoToAdd)}}
                         }
                     }
-                    else {do {try! launchRealm.write {launchRealm.add(imageInfo)}}}
                 
                     let mainDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + ".jpg", isDirectory: false)
-                    do {try FileManager.default.copyItem(at: mainImageSourceURL, to: mainDestinationURL)}
+                    do {
+                        try FileManager.default.copyItem(at: mainImageSourceURL, to: mainDestinationURL)
+                        try! launchRealm.write {launchRealm.add(imageInfoToAdd)}
+                    }
                     catch {
-                        // TODO: Error handling.
-                        print(error.localizedDescription)
-                        fatalError()
+                        os_log("Unable to copy bundle main image to group directory: %@", log: .default, type: .error, error.localizedDescription)
                     }
                     
                     if let mainThumbnail1xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@1x", withExtension: ".jpg") {
                         let mainThumbnail1xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@1x.jpg", isDirectory: false)
                         do {try FileManager.default.copyItem(at: mainThumbnail1xSourceURL, to: mainThumbnail1xDestinationURL)}
                         catch {
-                            // TODO: Error handling.
-                            print(error.localizedDescription)
-                            fatalError()
+                            os_log("Unable to copy bundle @1x thumbnail image to group directory: %@", log: .default, type: .error, error.localizedDescription)
                         }
                     }
                     if let mainThumbnail2xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@2x", withExtension: ".jpg") {
                         let mainThumbnail2xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@2x.jpg", isDirectory: false)
                         do {try FileManager.default.copyItem(at: mainThumbnail2xSourceURL, to: mainThumbnail2xDestinationURL)}
                         catch {
-                            // TODO: Error handling.
-                            print(error.localizedDescription)
-                            fatalError()
+                            os_log("Unable to copy bundle @2x thumbnail image to group directory: %@", log: .default, type: .error, error.localizedDescription)
                         }
                     }
                     if let mainThumbnail3xSourceURL = Bundle.main.url(forResource: fileRootName + "Thumbnail@3x", withExtension: ".jpg") {
                         let mainThumbnail3xDestinationURL = sharedImageLocationURL.appendingPathComponent(fileRootName + "Thumbnail@3x.jpg", isDirectory: false)
                         do {try FileManager.default.copyItem(at: mainThumbnail3xSourceURL, to: mainThumbnail3xDestinationURL)}
                         catch {
-                            // TODO: Error handling.
-                            print(error.localizedDescription)
-                            fatalError()
+                            os_log("Unable to copy bundle @3x thumbnail image to group directory: %@", log: .default, type: .error, error.localizedDescription)
                         }
                     }
                 }
@@ -793,8 +790,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                     }
                     return RealmEventNotificationConfig(eventNotifications: eventNotifs)
                 }()
-                static let imageTitle = "Desert Dunes"
-                static let useMask: Bool = true
+                static let imageTitle = "Sparkler Art"
+                static let useMask: Bool = false
             }
             
             if let i = eventImages.index(where: {$0.title == DefaultEvent.imageTitle}) {
@@ -819,8 +816,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                 try! launchRealm.write {launchRealm.add(defaultEvent)}
             }
             else {
-                // TODO: error handling
-                fatalError("Default Image for the default event was not on the disk!")
+                os_log("Default image for the default event was not on the disk.", log: .default, type: .default)
             }
         }
         
@@ -869,7 +865,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         let dateNow = Date()
         let backgroundFetchRealm = try! Realm(configuration: appRealmConfig)
         let backgroundFetchDefaultNotificationsConfig = backgroundFetchRealm.objects(DefaultNotificationsConfig.self)[0]
-        if let notificationTimeAsDate = userDefaults.value(forKey: notificationTimeAsDateKey) as? Date {
+        if let notificationTimeAsDate = userDefaults.value(forKey: UserDefaultKeys.notificationTimeAsDateKey) as? Date {
             if dateNow > notificationTimeAsDate {
                 updateDailyNotifications(async: false)
                 if backgroundFetchDefaultNotificationsConfig.allOn && backgroundFetchDefaultNotificationsConfig.dailyNotificationOn {

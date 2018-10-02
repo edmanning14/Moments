@@ -69,11 +69,6 @@
 		645A8A9F20294FD200E5934D /* AppDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A8A9E20294FD200E5934D /* AppDataModel.swift */; };
 		64691C1C201EBA7300ADA4C3 /* SpecialEventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */; };
 		64691C1F201FDF5700ADA4C3 /* DS-DIGIB.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 64FE12751FBC21FB0025C005 /* DS-DIGIB.TTF */; };
-		646C5D672033DD13008B4BE1 /* DesertDunesThumbnail@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D602033DD12008B4BE1 /* DesertDunesThumbnail@2x.jpg */; };
-		646C5D692033DD13008B4BE1 /* DesertDunesThumbnail@1x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D622033DD12008B4BE1 /* DesertDunesThumbnail@1x.jpg */; };
-		646C5D6B2033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D642033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg */; };
-		646C5D6E2033DDD5008B4BE1 /* DesertDunes.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D6C2033DDD4008B4BE1 /* DesertDunes.jpg */; };
-		646C5D6F2033DDD5008B4BE1 /* DesertDunesMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 646C5D6D2033DDD5008B4BE1 /* DesertDunesMask.png */; };
 		6474D9AD2137E58500BE4F87 /* EMContentExpandableMaterialManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6474D9AC2137E58400BE4F87 /* EMContentExpandableMaterialManagerView.swift */; };
 		64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */; };
 		6477FB0F201311CE00EDFF50 /* CGSizeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */; };
@@ -130,6 +125,10 @@
 		64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E057292032AC6400ABCF3B /* BoolExtensions.swift */; };
 		64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */; };
 		64E330CF2115E6F200F6CB65 /* SettingsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64E330CE2115E6F200F6CB65 /* SettingsTableViewCell.xib */; };
+		64EFA12F214B9FC40050B3DB /* SparklerArt.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64EFA12B214B9FC20050B3DB /* SparklerArt.jpg */; };
+		64EFA130214B9FC40050B3DB /* SparklerArtThumbnail@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64EFA12C214B9FC30050B3DB /* SparklerArtThumbnail@2x.jpg */; };
+		64EFA131214B9FC40050B3DB /* SparklerArtThumbnail@3x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64EFA12D214B9FC30050B3DB /* SparklerArtThumbnail@3x.jpg */; };
+		64EFA132214B9FC40050B3DB /* SparklerArtThumbnail@1x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64EFA12E214B9FC40050B3DB /* SparklerArtThumbnail@1x.jpg */; };
 		64F08BE720FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F08BE620FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift */; };
 		64F08BE920FB4242009DE926 /* EventTableViewCellDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F08BE820FB4242009DE926 /* EventTableViewCellDelegate.swift */; };
 		64F7809D20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */; };
@@ -211,11 +210,6 @@
 		64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownImageDelegate.swift; sourceTree = "<group>"; };
 		645A8A9E20294FD200E5934D /* AppDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataModel.swift; sourceTree = "<group>"; };
 		64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpecialEventCell.xib; sourceTree = "<group>"; };
-		646C5D602033DD12008B4BE1 /* DesertDunesThumbnail@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "DesertDunesThumbnail@2x.jpg"; sourceTree = "<group>"; };
-		646C5D622033DD12008B4BE1 /* DesertDunesThumbnail@1x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "DesertDunesThumbnail@1x.jpg"; sourceTree = "<group>"; };
-		646C5D642033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "DesertDunesThumbnail@3x.jpg"; sourceTree = "<group>"; };
-		646C5D6C2033DDD4008B4BE1 /* DesertDunes.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = DesertDunes.jpg; sourceTree = "<group>"; };
-		646C5D6D2033DDD5008B4BE1 /* DesertDunesMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DesertDunesMask.png; sourceTree = "<group>"; };
 		6474D9AC2137E58400BE4F87 /* EMContentExpandableMaterialManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EMContentExpandableMaterialManagerView.swift; sourceTree = "<group>"; };
 		64768B1B1F9E4395005CA6CA /* EventTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCell.swift; sourceTree = "<group>"; };
 		6477FB0E201311CE00EDFF50 /* CGSizeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CGSizeExtensions.swift; path = Extensions/CGSizeExtensions.swift; sourceTree = SOURCE_ROOT; };
@@ -272,6 +266,10 @@
 		64E057292032AC6400ABCF3B /* BoolExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BoolExtensions.swift; path = Extensions/BoolExtensions.swift; sourceTree = SOURCE_ROOT; };
 		64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTypeDataSource.swift; sourceTree = "<group>"; };
 		64E330CE2115E6F200F6CB65 /* SettingsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsTableViewCell.xib; sourceTree = "<group>"; };
+		64EFA12B214B9FC20050B3DB /* SparklerArt.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SparklerArt.jpg; sourceTree = "<group>"; };
+		64EFA12C214B9FC30050B3DB /* SparklerArtThumbnail@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "SparklerArtThumbnail@2x.jpg"; sourceTree = "<group>"; };
+		64EFA12D214B9FC30050B3DB /* SparklerArtThumbnail@3x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "SparklerArtThumbnail@3x.jpg"; sourceTree = "<group>"; };
+		64EFA12E214B9FC40050B3DB /* SparklerArtThumbnail@1x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "SparklerArtThumbnail@1x.jpg"; sourceTree = "<group>"; };
 		64F08BE620FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewCellDelegate.swift; sourceTree = "<group>"; };
 		64F08BE820FB4242009DE926 /* EventTableViewCellDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTableViewCellDelegate.swift; sourceTree = "<group>"; };
 		64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedCatalogImagesDelegate.swift; sourceTree = "<group>"; };
@@ -447,11 +445,10 @@
 		645A8AA02029726700E5934D /* FileAssets */ = {
 			isa = PBXGroup;
 			children = (
-				646C5D6C2033DDD4008B4BE1 /* DesertDunes.jpg */,
-				646C5D6D2033DDD5008B4BE1 /* DesertDunesMask.png */,
-				646C5D622033DD12008B4BE1 /* DesertDunesThumbnail@1x.jpg */,
-				646C5D602033DD12008B4BE1 /* DesertDunesThumbnail@2x.jpg */,
-				646C5D642033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg */,
+				64EFA12B214B9FC20050B3DB /* SparklerArt.jpg */,
+				64EFA12E214B9FC40050B3DB /* SparklerArtThumbnail@1x.jpg */,
+				64EFA12C214B9FC30050B3DB /* SparklerArtThumbnail@2x.jpg */,
+				64EFA12D214B9FC30050B3DB /* SparklerArtThumbnail@3x.jpg */,
 			);
 			path = FileAssets;
 			sourceTree = "<group>";
@@ -726,44 +723,43 @@
 				64E330CF2115E6F200F6CB65 /* SettingsTableViewCell.xib in Resources */,
 				64B1D9992022B8930034FE21 /* Raleway-ExtraLight.ttf in Resources */,
 				6489FBBC20EE20F800F32B5A /* FiraSans-BoldItalic.ttf in Resources */,
+				64EFA132214B9FC40050B3DB /* SparklerArtThumbnail@1x.jpg in Resources */,
 				64A4855420AABD0400CE4418 /* Comfortaa-Regular.ttf in Resources */,
+				64EFA131214B9FC40050B3DB /* SparklerArtThumbnail@3x.jpg in Resources */,
 				6489FBBE20EE20F800F32B5A /* FiraSans-ExtraLightItalic.ttf in Resources */,
 				64074C412018473000BD6C39 /* TextInputAccessoryView.xib in Resources */,
 				64C28D3121394CF500D0388E /* ConfigureCellInputView.xib in Resources */,
 				64B1D99F2022B8930034FE21 /* Raleway-ThinItalic.ttf in Resources */,
 				6444D8E71F9CFDFF005C0F9C /* LaunchScreen.storyboard in Resources */,
 				6489FBC320EE20F800F32B5A /* FiraSans-ExtraBold.ttf in Resources */,
+				64EFA130214B9FC40050B3DB /* SparklerArtThumbnail@2x.jpg in Resources */,
 				64B1D9942022B8930034FE21 /* Raleway-BoldItalic.ttf in Resources */,
 				64B1D9952022B8930034FE21 /* Raleway-ExtraBold.ttf in Resources */,
 				64B1D9962022B8930034FE21 /* Raleway-Bold.ttf in Resources */,
 				64B1D9A42022B8930034FE21 /* Raleway-ExtraLightItalic.ttf in Resources */,
-				646C5D692033DD13008B4BE1 /* DesertDunesThumbnail@1x.jpg in Resources */,
 				6489FBCB20EE20F800F32B5A /* FiraSans-SemiBold.ttf in Resources */,
 				64A4855520AABD0400CE4418 /* Comfortaa-Bold.ttf in Resources */,
 				6489FBC420EE20F800F32B5A /* FiraSans-BlackItalic.ttf in Resources */,
+				64EFA12F214B9FC40050B3DB /* SparklerArt.jpg in Resources */,
 				6489FBC720EE20F800F32B5A /* FiraSans-Italic.ttf in Resources */,
 				64B1D9982022B8930034FE21 /* Raleway-Black.ttf in Resources */,
 				64B1D99C2022B8930034FE21 /* Raleway-Regular.ttf in Resources */,
 				6489FBC520EE20F800F32B5A /* FiraSans-MediumItalic.ttf in Resources */,
 				64B1D9A32022B8930034FE21 /* Raleway-BlackItalic.ttf in Resources */,
 				642E2C0C213291650059A588 /* Raleway-Medium.ttf in Resources */,
-				646C5D672033DD13008B4BE1 /* DesertDunesThumbnail@2x.jpg in Resources */,
 				6489FBC120EE20F800F32B5A /* FiraSans-Medium.ttf in Resources */,
-				646C5D6E2033DDD5008B4BE1 /* DesertDunes.jpg in Resources */,
 				64B1D9A12022B8930034FE21 /* Raleway-LightItalic.ttf in Resources */,
 				64B1D99E2022B8930034FE21 /* Raleway-Thin.ttf in Resources */,
 				6444D8F51F9D0509005C0F9C /* Default-568h@2x.png in Resources */,
 				642E2C0A213291650059A588 /* Raleway-Light.ttf in Resources */,
 				64B1D9972022B8930034FE21 /* Raleway-ExtraBoldItalic.ttf in Resources */,
 				6444D8E41F9CFDFF005C0F9C /* Assets.xcassets in Resources */,
-				646C5D6F2033DDD5008B4BE1 /* DesertDunesMask.png in Resources */,
 				64691C1C201EBA7300ADA4C3 /* SpecialEventCell.xib in Resources */,
 				64C28D2D2139448700D0388E /* DateInputView.xib in Resources */,
 				644A9D3D2136D04100411C3A /* CategoryInputView.xib in Resources */,
 				6489FBBD20EE20F800F32B5A /* FiraSans-ExtraBoldItalic.ttf in Resources */,
 				64691C1F201FDF5700ADA4C3 /* DS-DIGIB.TTF in Resources */,
 				64B1D9A52022B8930034FE21 /* Raleway-SemiBoldItalic.ttf in Resources */,
-				646C5D6B2033DD13008B4BE1 /* DesertDunesThumbnail@3x.jpg in Resources */,
 				6444D8E21F9CFDFF005C0F9C /* Main.storyboard in Resources */,
 				64B1D9A92022CD580034FE21 /* inAppPurchaseProductIDs.plist in Resources */,
 				64C28D2F2139450900D0388E /* ImageInputView.xib in Resources */,

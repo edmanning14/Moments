@@ -9,6 +9,7 @@
 import UIKit
 import CloudKit
 import Photos
+import os
 
 class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITabBarDelegate, UIPopoverPresentationControllerDelegate {
     
@@ -23,8 +24,18 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     var locationForCellView: CGFloat? {
         didSet {
             if isViewLoaded {
-                if locationForCellView != nil {homeTabBarItem.title = TabBarTitles.home}
-                else {homeTabBarItem.title = TabBarTitles.setImage}
+                if locationForCellView != nil {
+                    homeTabBarItem.title = TabBarTitles.home
+                    navigationItem.setRightBarButton(nil, animated: true)
+                    doneButton.title = "USE IMAGE"
+                    navigationItem.setRightBarButton(doneButton, animated: true)
+                }
+                else {
+                    homeTabBarItem.title = TabBarTitles.setImage
+                    navigationItem.setRightBarButton(nil, animated: true)
+                    doneButton.title = "CROP IMAGE"
+                    navigationItem.setRightBarButton(doneButton, animated: true)
+                }
             }
         }
     }
@@ -38,14 +49,23 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     // MARK: Types
     
     enum LoadStatuses {
-        case locating, fetching, creating, done
+        case fetching, done, failedImageFetch, failedMainHomeCreate
         
-        var message: String {
+        var statusLabelMessage: String {
             switch self {
-            case .locating: return "Locating Image"
             case .fetching: return "Fetching Image"
-            case .creating: return "Creating Image"
             case .done: return "Done!"
+            case .failedImageFetch: return "Oops"
+            case .failedMainHomeCreate: return "Oops"
+            }
+        }
+        
+        var detailMessage: String {
+            switch self {
+            case .fetching: return "This may take a moment."
+            case .done: return ""
+            case .failedImageFetch: return "There was an error fetching the image from iCloud, please try again. If problem persists, it would be greatly appreciated if you submitted a bug report by navigating to the 'Settings' page."
+            case .failedMainHomeCreate: return "There was an error creating the cropped image, please try again. If problem persists, it would be greatly appreciated if you submitted a bug report by navigating to the 'Settings' page."
             }
         }
     }
@@ -70,9 +90,22 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         }
     }
     
-    fileprivate var loadStatus: LoadStatuses = .locating {
+    fileprivate var loadStatus: LoadStatuses = .fetching {
         didSet {
-            loadingStatusLabel?.text = loadStatus.message
+            loadingStatusLabel.text = loadStatus.statusLabelMessage
+            loadingDetailLabel.text = loadStatus.detailMessage
+            switch loadStatus {
+            case .fetching:
+                loadingActivityIndicator.startAnimating()
+                loadingActivityIndicator.isHidden = false
+                loadingStackView.isHidden = false
+            case .failedImageFetch, .failedMainHomeCreate:
+                loadingActivityIndicator.stopAnimating()
+                loadingActivityIndicator.isHidden = true
+                if loadStatus == .failedImageFetch && tabBarState == .original {loadingStackView.isHidden = false}
+                else if loadStatus == .failedMainHomeCreate && tabBarState == .home {loadingStackView.isHidden = false}
+            case .done: loadingStackView.isHidden = true
+            }
             if loadStatus == .done && oldValue != .done {
                 if locationForCellView == nil {createHomeImageButton.isHidden =  false}
             }
@@ -92,100 +125,83 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             
             switch tabBarState {
             case .home:
-                previewTypeTabBar.selectedItem = homeTabBarItem
-                let cropRect = getCropRect()
-                let desiredOriginY = cropRect.origin.y - ((homePreviewView.bounds.height - cropRect.size.height) / 2)
-                homePreviewView.frame.origin = CGPoint(x: 0.0, y: desiredOriginY)
-                let centeredOrigin = CGPoint(x: 0.0, y: (view.bounds.height / 2) - (homePreviewView.bounds.height / 2))
-                homePreviewView.isHidden = false
-                
-                if let _ = selectedImage as? AppEventImage {toggleMaskButton.isHidden = false}
-                else {toggleMaskButton.isHidden = true}
-                
-                homePreviewOptionsButtonsStackView.layer.opacity = 0.0
-                homePreviewOptionsButtonsStackView.isHidden = false
-                
-                let standardDuration = 0.2
-                let cascadeDelayTime = 0.1
-                
-                let originalFadeOutAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
-                    self.fullSizePreviewView.layer.opacity = 0.0
-                }
-                let cellMoveAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .easeInOut) {
-                    self.homePreviewView.frame.origin = centeredOrigin
-                }
-                let optionsButtonsFadeInAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
-                    self.homePreviewOptionsButtonsStackView.layer.opacity = 1.0
-                }
-                
-                originalFadeOutAnim.addCompletion { (position) in self.fullSizePreviewView.isHidden = true}
-                
-                originalFadeOutAnim.startAnimation()
-                cellMoveAnim.startAnimation(afterDelay: cascadeDelayTime)
-                optionsButtonsFadeInAnim.startAnimation(afterDelay: 2 * cascadeDelayTime)
-                
-            case .original:
-                previewTypeTabBar.selectedItem = originalTabBarItem
-                
-                if !homePreviewView.isHidden {
-                    
-                    // Preconfigure
-                    fullSizePreviewView.layer.opacity = 0.0
-                    fullSizePreviewView.isHidden = false
+                if let image = selectedImage {
+                    previewTypeTabBar.selectedItem = homeTabBarItem
                     let cropRect = getCropRect()
                     let desiredOriginY = cropRect.origin.y - ((homePreviewView.bounds.height - cropRect.size.height) / 2)
-                    let destOrigin = CGPoint(x: 0.0, y: desiredOriginY)
+                    homePreviewView.frame.origin = CGPoint(x: 0.0, y: desiredOriginY)
+                    let centeredOrigin = CGPoint(x: 0.0, y: (view.bounds.height / 2) - (homePreviewView.bounds.height / 2))
+                    homePreviewView.isHidden = false
                     
-                    // Anims
-                    let optionsButtonsFadeOutAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
-                        self.homePreviewOptionsButtonsStackView.layer.opacity = 0.0
+                    if let appImage = image as? AppEventImage, appImage.maskImage != nil {toggleMaskButton.isHidden = false}
+                    else {toggleMaskButton.isHidden = true}
+                    
+                    homePreviewOptionsButtonsStackView.layer.opacity = 0.0
+                    homePreviewOptionsButtonsStackView.isHidden = false
+                    
+                    let standardDuration = 0.2
+                    let cascadeDelayTime = 0.1
+                    
+                    let originalFadeOutAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
+                        self.fullSizePreviewView.layer.opacity = 0.0
                     }
                     let cellMoveAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .easeInOut) {
-                        self.homePreviewView.frame.origin = destOrigin
+                        self.homePreviewView.frame.origin = centeredOrigin
                     }
-                    let fullSizePreviewFadeIn = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
-                        self.fullSizePreviewView.layer.opacity = 1.0
+                    let optionsButtonsFadeInAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
+                        self.homePreviewOptionsButtonsStackView.layer.opacity = 1.0
                     }
                     
-                    // Completions
-                    optionsButtonsFadeOutAnim.addCompletion { (position) in self.homePreviewOptionsButtonsStackView.isHidden = true}
-                    fullSizePreviewFadeIn.addCompletion { (position) in self.homePreviewView.isHidden = true}
+                    originalFadeOutAnim.addCompletion { (position) in self.fullSizePreviewView.isHidden = true}
                     
-                    // Starts
-                    cellMoveAnim.startAnimation()
-                    optionsButtonsFadeOutAnim.startAnimation()
-                    fullSizePreviewFadeIn.startAnimation(afterDelay: cascadeDelayTime)
+                    originalFadeOutAnim.startAnimation()
+                    cellMoveAnim.startAnimation(afterDelay: cascadeDelayTime)
+                    optionsButtonsFadeInAnim.startAnimation(afterDelay: 2 * cascadeDelayTime)
+                }
+                else {loadingStackView.isHidden = false}
+            case .original:
+                if selectedImage != nil {
+                    previewTypeTabBar.selectedItem = originalTabBarItem
                     
-                    /*UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: animationDuration,
-                        delay: 0.0,
-                        options: .curveEaseInOut,
-                        animations: {self.homePreviewView.frame.origin = self.getCropRect().origin},
-                        completion: { [weak self] (_) in
-                            if let livingSelf = self {
-                                livingSelf.fullSizePreviewView.layer.opacity = 0.0
-                                livingSelf.fullSizePreviewView.isHidden = false
-                                UIViewPropertyAnimator.runningPropertyAnimator(
-                                    withDuration: livingSelf.animationDuration,
-                                    delay: 0.0,
-                                    options: .curveEaseInOut,
-                                    animations: {
-                                        livingSelf.fullSizePreviewView.layer.opacity = 1.0
-                                    },
-                                    completion: { (_) in livingSelf.homePreviewView.isHidden = true}
-                                )
-                            }
+                    if !homePreviewView.isHidden {
+                        
+                        // Preconfigure
+                        fullSizePreviewView.layer.opacity = 0.0
+                        fullSizePreviewView.isHidden = false
+                        let cropRect = getCropRect()
+                        let desiredOriginY = cropRect.origin.y - ((homePreviewView.bounds.height - cropRect.size.height) / 2)
+                        let destOrigin = CGPoint(x: 0.0, y: desiredOriginY)
+                        
+                        // Anims
+                        let optionsButtonsFadeOutAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
+                            self.homePreviewOptionsButtonsStackView.layer.opacity = 0.0
                         }
-                    )*/
-                }
-                else {
-                    fullSizePreviewView.layer.opacity = 0.0
-                    fullSizePreviewView.isHidden = false
-                    let fullSizePreviewFadeIn = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
-                        self.fullSizePreviewView.layer.opacity = 1.0
+                        let cellMoveAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .easeInOut) {
+                            self.homePreviewView.frame.origin = destOrigin
+                        }
+                        let fullSizePreviewFadeIn = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
+                            self.fullSizePreviewView.layer.opacity = 1.0
+                        }
+                        
+                        // Completions
+                        optionsButtonsFadeOutAnim.addCompletion { (position) in self.homePreviewOptionsButtonsStackView.isHidden = true}
+                        fullSizePreviewFadeIn.addCompletion { (position) in self.homePreviewView.isHidden = true}
+                        
+                        // Starts
+                        cellMoveAnim.startAnimation()
+                        optionsButtonsFadeOutAnim.startAnimation()
+                        fullSizePreviewFadeIn.startAnimation(afterDelay: cascadeDelayTime)
                     }
-                    fullSizePreviewFadeIn.startAnimation()
+                    else {
+                        fullSizePreviewView.layer.opacity = 0.0
+                        fullSizePreviewView.isHidden = false
+                        let fullSizePreviewFadeIn = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
+                            self.fullSizePreviewView.layer.opacity = 1.0
+                        }
+                        fullSizePreviewFadeIn.startAnimation()
+                    }
                 }
+                else {loadingStackView.isHidden = false}
             }
         }
     }
@@ -196,7 +212,9 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     //
     // MARK: GUI
     @IBOutlet weak var loadingStackView: UIStackView!
-    @IBOutlet weak var loadingStatusLabel: UILabel?
+    @IBOutlet weak var loadingActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var loadingStatusLabel: UILabel!
+    @IBOutlet weak var loadingDetailLabel: UILabel!
     @IBOutlet weak var editingButtonsStackView: UIStackView!
     @IBOutlet weak var homePreviewOptionsButtonsStackView: UIStackView!
     @IBOutlet weak var previewTypeTabBar: UITabBar!
@@ -216,6 +234,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     var blurView2: UIVisualEffectView?
     var sideBlurView1: UIVisualEffectView?
     var sideBlurView2: UIVisualEffectView?
+    var doneButton: UIBarButtonItem!
     
     
     //
@@ -225,10 +244,14 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        _ = addBackButton(action: #selector(defaultPop), title: "IMAGES", target: self)
-        let doneButton = addBarButtonItem(side: .right, action: #selector(handleNavButtonClick(_:)), target: self, title: "USE IMAGE", image: nil)
+        _ = addBackButton(action: #selector(defaultPop), title: "BACK", target: self)
+        doneButton = addBarButtonItem(side: .right, action: #selector(handleNavButtonClick(_:)), target: self, title: "CROP IMAGE", image: nil)
         
-        if locationForCellView == nil {doneButton.isEnabled = false}
+        if locationForCellView != nil {
+            doneButton.title = "USE IMAGE"
+            homeTabBarItem.title = TabBarTitles.home
+        }
+        else {homeTabBarItem.title = TabBarTitles.setImage}
         
         previewTypeTabBar.delegate = self
         previewTypeTabBar.barTintColor = UIColor.clear
@@ -333,8 +356,8 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                     }
                 }
                 else {
-                    // TODO: Error handling
-                    fatalError("There was an error fetching the main image from the cloud!")
+                    os_log("There was an error fetching the main image for %@ from the cloud!", log: .default, type: .error, appImage.title)
+                    loadStatus = .failedImageFetch
                 }
             }
         }
@@ -344,99 +367,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     //
     // MARK: TabBar Delegate
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
-//        if item == homeTabBarItem && tabBarState == .home {
-//
-//            let optionsViewController = UIViewController()
-//            optionsViewController.modalPresentationStyle = .popover
-//
-//            let popController = optionsViewController.popoverPresentationController!
-//            popController.backgroundColor = GlobalColors.darkPurpleForFills
-//            popController.delegate = self
-//            popController.sourceView = tabBar
-//
-//            let edgeInsets: CGFloat = 12.0
-//            let spacing: CGFloat = 6.0
-//
-//            let setHomeImageButton = UIButton()
-//            setHomeImageButton.translatesAutoresizingMaskIntoConstraints = false
-//            setHomeImageButton.tag = 1
-//            setHomeImageButton.addTarget(self, action: #selector(enterEditMode), for: .touchUpInside)
-//            setHomeImageButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
-//            setHomeImageButton.setTitle("Set Home Image", for: .normal)
-//            setHomeImageButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
-//            setHomeImageButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
-//
-//            let setHomeImageImageButton = UIButton()
-//            setHomeImageImageButton.translatesAutoresizingMaskIntoConstraints = false
-//            setHomeImageImageButton.tag = 2
-//            setHomeImageImageButton.addTarget(self, action: #selector(enterEditMode), for: .touchUpInside)
-//            setHomeImageImageButton.setImage(#imageLiteral(resourceName: "HomeButtonImage"), for: .normal)
-//            setHomeImageImageButton.tintColor = GlobalColors.orangeDark
-//            setHomeImageImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
-//
-//            let maskPreviewButton = UIButton()
-//            maskPreviewButton.translatesAutoresizingMaskIntoConstraints = false
-//            maskPreviewButton.tag = 3
-//            maskPreviewButton.addTarget(self, action: #selector(togglePreviewMode), for: .touchUpInside)
-//            maskPreviewButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
-//            maskPreviewButton.setTitle("Toggle Mask Preview", for: .normal)
-//            maskPreviewButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 10.0)
-//            maskPreviewButton.contentEdgeInsets = UIEdgeInsets(top: spacing / 2, left: edgeInsets, bottom: edgeInsets, right: edgeInsets)
-//
-//            let maskPreviewImageButton = UIButton()
-//            maskPreviewImageButton.translatesAutoresizingMaskIntoConstraints = false
-//            maskPreviewImageButton.tag = 4
-//            maskPreviewImageButton.addTarget(self, action: #selector(togglePreviewMode), for: .touchUpInside)
-//            maskPreviewImageButton.setImage(#imageLiteral(resourceName: "ImageButtonImage"), for: .normal)
-//            maskPreviewImageButton.tintColor = GlobalColors.orangeDark
-//            maskPreviewImageButton.contentEdgeInsets = UIEdgeInsets(top: edgeInsets, left: edgeInsets, bottom: spacing / 2, right: edgeInsets)
-//
-//            optionsViewController.view = {
-//                let rootView = UIView()
-//                rootView.backgroundColor = UIColor.clear
-//                rootView.translatesAutoresizingMaskIntoConstraints = false
-//
-//                let buttonsStackView = UIStackView()
-//                buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
-//                buttonsStackView.axis = UILayoutConstraintAxis.horizontal
-//                buttonsStackView.alignment = .center
-//                buttonsStackView.distribution = UIStackViewDistribution.fillEqually
-//                buttonsStackView.spacing = 4.0
-//
-//                let setHomeImageStackView = UIStackView()
-//                setHomeImageStackView.translatesAutoresizingMaskIntoConstraints = false
-//                setHomeImageStackView.axis = .vertical
-//                setHomeImageStackView.alignment = .center
-//
-//                setHomeImageStackView.addArrangedSubview(setHomeImageImageButton)
-//                setHomeImageStackView.addArrangedSubview(setHomeImageButton)
-//
-//                let maskPreviewStackView = UIStackView()
-//                maskPreviewStackView.translatesAutoresizingMaskIntoConstraints = false
-//                maskPreviewStackView.axis = .vertical
-//                maskPreviewStackView.alignment = .center
-//
-//                maskPreviewStackView.addArrangedSubview(maskPreviewImageButton)
-//                maskPreviewStackView.addArrangedSubview(maskPreviewButton)
-//
-//                buttonsStackView.addArrangedSubview(setHomeImageStackView)
-//                buttonsStackView.addArrangedSubview(maskPreviewStackView)
-//
-//                rootView.addSubview(buttonsStackView)
-//
-//                rootView.topAnchor.constraint(equalTo: buttonsStackView.topAnchor).isActive = true
-//                rootView.leftAnchor.constraint(equalTo: buttonsStackView.leftAnchor).isActive = true
-//                rootView.rightAnchor.constraint(equalTo: buttonsStackView.rightAnchor).isActive = true
-//                rootView.bottomAnchor.constraint(equalTo: buttonsStackView.bottomAnchor).isActive = true
-//
-//                return rootView
-//            }()
-//
-//            optionsViewController.preferredContentSize = optionsViewController.view.systemLayoutSizeFitting(UILayoutFittingCompressedSize)
-//            popController.sourceRect = CGRect(x: 0.0, y: 0.0, width: tabBar.bounds.width / 2, height: tabBar.bounds.height)
-//
-//            present(optionsViewController, animated: true, completion: nil)
-//        }
         if item == homeTabBarItem && tabBarState != .home {
             if locationForCellView == nil {enterCropMode(animated: true)}
             else {tabBarState = .home}
@@ -460,6 +390,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             if button.title == "USE IMAGE" {
                 performSegue(withIdentifier: "UnwindToNewEventController", sender: self)
             }
+            else if button.title == "CROP IMAGE" {enterCropMode()}
         }
     }
     
@@ -515,61 +446,31 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             locationForCellView = _locationForCellView
             cropRect = cropAreaView!.frame
             
+            guard let mainImage = selectedImage?.generateMainHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView) else {
+                os_log("There was an error creating the main home image for %@.", log: .default, type: .error, selectedImage!.title)
+                loadStatus = .failedMainHomeCreate
+                viewTransition(from: editingButtonsStackView, to: previewTypeTabBar)
+                removeCropRect()
+                setHomePreview()
+                return
+            }
+            var maskImage: UIImage?
             if let appImage = selectedImage as? AppEventImage {
-                appImage.generateMainHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView, userInitiated: true) { (mainHomeImage) in
-                    if let main = mainHomeImage {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.homePreviewCell.setHomeImages(mainHomeImage: main, maskHomeImage: nil)
-                            self?.viewTransition(from: self!.editingButtonsStackView, to: self!.previewTypeTabBar)
-                            removeCropRect()
-                            setHomePreview()
-                        }
-                    }
-                    else {
-                        // TODO: Error handling. Show an error to the user and ask for a bug report.
-                        fatalError("Fatal error: Failed to create main home image!")
-                    }
-                }
-                appImage.generateMaskHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView, userInitiated: true) { [weak self] (maskHomeImage) in
-                    if let mask = maskHomeImage {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.homePreviewCell.setHomeImages(mainHomeImage: nil, maskHomeImage: mask)
-                            self?.viewTransition(from: self!.editingButtonsStackView, to: self!.previewTypeTabBar)
-                            removeCropRect()
-                        }
-                    }
-                }
+                maskImage = appImage.generateMaskHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView)
             }
-            else {
-                selectedImage!.generateMainHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView, userInitiated: true) { (mainHomeImage) in
-                    if let main = mainHomeImage {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.homePreviewCell.setHomeImages(mainHomeImage: main, maskHomeImage: nil)
-                            setHomePreview()
-                            self?.viewTransition(from: self!.editingButtonsStackView, to: self!.previewTypeTabBar)
-                            removeCropRect()
-                        }
-                    }
-                    else {
-                        // TODO: Error handling. Show an error to the user and ask for a bug report.
-                        fatalError("Fatal error: Failed to create main home image!")
-                    }
-                }
-            }
+            
+            homePreviewCell.setHomeImages(mainHomeImage: mainImage, maskHomeImage: maskImage)
+            viewTransition(from: editingButtonsStackView, to: previewTypeTabBar)
+            removeCropRect()
+            setHomePreview()
         }
-        else {
-            // TODO: Remove for prodcution.
-            fatalError("Fatal Error: Unrecognized editButton title.")
-        }
+        else {os_log("Unrecognized edit button title!", log: .default, type: .error)}
     }
     
     @objc fileprivate func handleHomeOptionsButtonClick(_ sender: UIButton) {
         if sender == cropImageButton {enterCropMode(animated: true)}
         else if sender == toggleMaskButton {isInMaskPreviewMode = !isInMaskPreviewMode}
-        else {
-            // TODO: Remove
-            fatalError("Forget a case??")
-        }
+        else {os_log("Unrecognized options button title!", log: .default, type: .error)}
     }
     
     @objc fileprivate func handleCropRectPan(_ sender: UIPanGestureRecognizer) {
@@ -598,12 +499,12 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         if selectedImage != nil {
             selectedImage!.delegate = self
             if let appImage = selectedImage as? AppEventImage {
-                if appImage.mainImage?.cgImage == nil {loadStatus = .fetching}
+                if appImage.mainImage?.uiImage == nil {loadStatus = .fetching}
                 else {performAppImageSetup()}
                 appImage.fetch(imageTypes: [.mask], alertDelegate: true)
             }
             else {
-                if selectedImage!.mainImage?.cgImage == nil {loadStatus = .fetching}
+                if selectedImage!.mainImage?.uiImage == nil {loadStatus = .fetching}
                 else {performUserImageSetup()}
             }
         }
@@ -614,7 +515,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     fileprivate func performAppImageSetup() {
         if !isAppImageSetup {
             let appImage = selectedImage as! AppEventImage
-            loadStatus = .creating
             homePreviewCell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
             fullSizePreviewCell.setSelectedImage(image: appImage, locationForCellView: nil)
             loadStatus = .done
@@ -733,10 +633,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     fileprivate func getCropRect() -> CGRect {
         if let rect = cropRect {return rect}
         else if let imageFrame = fullSizePreviewCell.mainImageView.imageRect {
-            let height: CGFloat = {
-                print((160.0 / fullSizePreviewView.bounds.width) * imageFrame.width)
-                return (160.0 / fullSizePreviewView.bounds.width) * imageFrame.width
-            }()
+            let height: CGFloat = {return (160.0 / fullSizePreviewView.bounds.width) * imageFrame.width}()
             let width = imageFrame.width
             let x = imageFrame.origin.x
             let y: CGFloat = {

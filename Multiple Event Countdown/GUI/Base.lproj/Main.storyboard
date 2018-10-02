@@ -511,7 +511,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="so8-Gc-WYr">
-                                <rect key="frame" x="92.5" y="177" width="136" height="49.5"/>
+                                <rect key="frame" x="92" y="177.5" width="136" height="49.5"/>
                                 <subviews>
                                     <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="YnK-KK-MwH">
                                         <rect key="frame" x="58" y="0.0" width="20" height="20"/>
@@ -713,26 +713,26 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="up6-GZ-0TS">
-                                <rect key="frame" x="92" y="203.5" width="136" height="49.5"/>
+                                <rect key="frame" x="8" y="202" width="304" height="51.5"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="OsY-eR-lAd">
-                                        <rect key="frame" x="5.5" y="0.0" width="125.5" height="20"/>
+                                        <rect key="frame" x="85.5" y="0.0" width="133" height="20"/>
                                         <subviews>
                                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="Jxr-qG-Kl5">
                                                 <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
                                                 <color key="color" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             </activityIndicatorView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fetching Image" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A9j-2H-cae">
-                                                <rect key="frame" x="30" y="1.5" width="95.5" height="17"/>
-                                                <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="14"/>
+                                                <rect key="frame" x="30" y="2" width="103" height="16.5"/>
+                                                <fontDescription key="fontDescription" name="Raleway-SemiBold" family="Raleway" pointSize="14"/>
                                                 <color key="textColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
                                     </stackView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This may take a moment." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pbj-6N-x7S">
-                                        <rect key="frame" x="0.0" y="35" width="136" height="14.5"/>
-                                        <fontDescription key="fontDescription" name="FiraSans-Regular" family="Fira Sans" pointSize="12"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This may take a moment." textAlignment="natural" lineBreakMode="clip" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pbj-6N-x7S">
+                                        <rect key="frame" x="71.5" y="35" width="161.5" height="16.5"/>
+                                        <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="14"/>
                                         <color key="textColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
@@ -829,11 +829,12 @@
                             <constraint firstItem="6Yp-nR-QO3" firstAttribute="bottom" secondItem="nMe-rE-fDY" secondAttribute="bottom" constant="20" id="2Lj-xf-O0a"/>
                             <constraint firstItem="zzx-f7-4X4" firstAttribute="leading" secondItem="6Yp-nR-QO3" secondAttribute="leading" id="2bx-cz-xqt"/>
                             <constraint firstItem="6Yp-nR-QO3" firstAttribute="trailing" secondItem="oZR-le-veF" secondAttribute="trailing" id="6bv-dE-AiJ"/>
-                            <constraint firstItem="up6-GZ-0TS" firstAttribute="centerX" secondItem="6Yp-nR-QO3" secondAttribute="centerX" id="A1R-TV-c2U"/>
                             <constraint firstItem="zzx-f7-4X4" firstAttribute="centerY" secondItem="oZR-le-veF" secondAttribute="centerY" id="Mwi-HK-epX"/>
+                            <constraint firstItem="6Yp-nR-QO3" firstAttribute="trailing" secondItem="up6-GZ-0TS" secondAttribute="trailing" constant="8" id="QJh-AJ-fJu"/>
                             <constraint firstItem="6Yp-nR-QO3" firstAttribute="trailing" secondItem="Mfs-ZP-92r" secondAttribute="trailing" constant="20" id="Vr8-nb-cgB"/>
                             <constraint firstItem="SVx-eH-zNV" firstAttribute="trailing" secondItem="6Yp-nR-QO3" secondAttribute="trailing" id="cfe-xY-59F"/>
                             <constraint firstItem="SVx-eH-zNV" firstAttribute="top" secondItem="Mfs-ZP-92r" secondAttribute="bottom" constant="12" id="cy6-uU-67U"/>
+                            <constraint firstItem="up6-GZ-0TS" firstAttribute="leading" secondItem="6Yp-nR-QO3" secondAttribute="leading" constant="8" id="dTp-0z-9xF"/>
                             <constraint firstItem="6Yp-nR-QO3" firstAttribute="trailing" secondItem="zzx-f7-4X4" secondAttribute="trailing" id="drj-a2-ChW"/>
                             <constraint firstItem="6Yp-nR-QO3" firstAttribute="bottom" secondItem="SVx-eH-zNV" secondAttribute="bottom" id="gSt-Zh-rEP"/>
                             <constraint firstItem="Mfs-ZP-92r" firstAttribute="leading" secondItem="6Yp-nR-QO3" secondAttribute="leading" constant="20" id="gvI-re-Hhf"/>
@@ -856,6 +857,8 @@
                         <outlet property="homePreviewView" destination="zzx-f7-4X4" id="FVp-WJ-98K"/>
                         <outlet property="homePreviewViewCenterYConstraint" destination="Mwi-HK-epX" id="1jV-L2-xBH"/>
                         <outlet property="homeTabBarItem" destination="vAe-Fr-vKN" id="JVv-Jf-Dsu"/>
+                        <outlet property="loadingActivityIndicator" destination="Jxr-qG-Kl5" id="Tw6-bH-icu"/>
+                        <outlet property="loadingDetailLabel" destination="Pbj-6N-x7S" id="0jT-73-7P5"/>
                         <outlet property="loadingStackView" destination="up6-GZ-0TS" id="QG9-U2-BPB"/>
                         <outlet property="loadingStatusLabel" destination="A9j-2H-cae" id="sf6-PP-zeB"/>
                         <outlet property="originalTabBarItem" destination="LDC-cG-3mm" id="L01-Ly-wtE"/>

@@ -67,6 +67,8 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         allSpecialEvents = mainRealm.objects(SpecialEvent.self)
         
         populateCompactView()
+        let openAppTap = UITapGestureRecognizer(target: self, action: #selector(openApp))
+        view.addGestureRecognizer(openAppTap)
         
         extensionContext?.widgetLargestAvailableDisplayMode = .compact
         compactView.effect = UIVibrancyEffect.widgetPrimary()
@@ -83,6 +85,10 @@ class TodayViewController: UIViewController, NCWidgetProviding {
     
     //
     // MARK: Helper methods
+    @objc fileprivate func openApp() {
+        if let appURL = URL(string: "Moments://") {extensionContext?.open(appURL, completionHandler: nil)}
+    }
+    
     fileprivate func populateCompactView() {
         let chronologicalUpcomingEvents = allSpecialEvents.sorted { (event1, event2) -> Bool in
             if let eventDate1 = event1.date, let eventDate2 = event2.date {

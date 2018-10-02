@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -30,7 +31,7 @@
                     <rect key="frame" x="5" y="5" width="365" height="75"/>
                     <subviews>
                         <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" text="Hey!" borderStyle="roundedRect" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="16" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="r26-v6-Sis">
-                            <rect key="frame" x="8" y="43" width="349" height="24"/>
+                            <rect key="frame" x="156" y="43" width="53" height="24"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="24" id="0ai-gZ-GOy"/>
@@ -70,9 +71,11 @@
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstItem="CGm-4u-kjU" firstAttribute="leading" secondItem="oNc-8n-0po" secondAttribute="leading" id="BQz-LI-AMP"/>
+                                <constraint firstItem="0ui-sa-80a" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="kzz-r1-3d4" secondAttribute="trailing" constant="8" id="OT4-EL-5xk"/>
                                 <constraint firstItem="kzz-r1-3d4" firstAttribute="top" secondItem="oNc-8n-0po" secondAttribute="top" id="OdL-wR-4Bm"/>
                                 <constraint firstItem="CGm-4u-kjU" firstAttribute="centerY" secondItem="oNc-8n-0po" secondAttribute="centerY" id="WHu-qa-AdN"/>
                                 <constraint firstItem="kzz-r1-3d4" firstAttribute="centerX" secondItem="oNc-8n-0po" secondAttribute="centerX" id="dLL-XU-f3X"/>
+                                <constraint firstItem="kzz-r1-3d4" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="CGm-4u-kjU" secondAttribute="trailing" constant="8" id="hss-fN-Wuw"/>
                                 <constraint firstAttribute="bottom" secondItem="kzz-r1-3d4" secondAttribute="bottom" id="tDQ-Tv-2h2"/>
                                 <constraint firstAttribute="trailing" secondItem="0ui-sa-80a" secondAttribute="trailing" id="xi8-3O-e4W"/>
                                 <constraint firstItem="0ui-sa-80a" firstAttribute="centerY" secondItem="oNc-8n-0po" secondAttribute="centerY" id="yfw-Dk-CSs"/>
@@ -82,12 +85,13 @@
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstItem="r26-v6-Sis" firstAttribute="top" secondItem="oNc-8n-0po" secondAttribute="bottom" constant="8" id="LL1-wb-EtC"/>
-                        <constraint firstItem="r26-v6-Sis" firstAttribute="leading" secondItem="uTe-XA-QbU" secondAttribute="leading" constant="8" id="LXS-ET-UaU"/>
+                        <constraint firstItem="r26-v6-Sis" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uTe-XA-QbU" secondAttribute="leading" constant="8" id="LXS-ET-UaU"/>
                         <constraint firstAttribute="bottom" secondItem="r26-v6-Sis" secondAttribute="bottom" constant="8" id="PGy-eh-wdN"/>
-                        <constraint firstAttribute="trailing" secondItem="r26-v6-Sis" secondAttribute="trailing" constant="8" id="VTK-ux-mXO"/>
+                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="r26-v6-Sis" secondAttribute="trailing" constant="8" id="VTK-ux-mXO"/>
                         <constraint firstItem="oNc-8n-0po" firstAttribute="top" secondItem="uTe-XA-QbU" secondAttribute="top" constant="8" id="Voo-gp-gdr"/>
                         <constraint firstAttribute="trailing" secondItem="oNc-8n-0po" secondAttribute="trailing" constant="8" id="W5d-W7-ei9"/>
                         <constraint firstItem="oNc-8n-0po" firstAttribute="leading" secondItem="uTe-XA-QbU" secondAttribute="leading" constant="8" id="cNx-BY-7UJ"/>
+                        <constraint firstItem="r26-v6-Sis" firstAttribute="centerX" secondItem="kzz-r1-3d4" secondAttribute="centerX" id="hsJ-UY-KxP"/>
                     </constraints>
                 </view>
             </subviews>

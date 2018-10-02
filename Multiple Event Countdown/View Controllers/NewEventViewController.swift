@@ -100,10 +100,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     var eventDate: EventDate? {
         didSet {
             specialEventView?.eventDate = eventDate
-            if editingEvent && isUserChange {
-                let master = navigationController!.viewControllers[0] as! MasterViewController
-                master.dateDidChange = true
-            }
             if let date = eventDate?.date {
                 let newStringDate = dateFormatter.string(from: date)
                 if dateInputView.dateButton.title(for: .normal) != newStringDate {
@@ -207,7 +203,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         didSet {
             if let image = selectedImage {
                 hideImageNilLabel(animated: false)
-                if let _ = image as? AppEventImage {useMask = true}
+                if let appImage = image as? AppEventImage, appImage.maskImage != nil {useMask = true}
                 else {useMask = false}
                 specialEventView?.setSelectedImage(image: image, locationForCellView: locationForCellView)
                 if !isUserChange {currentInputViewState = .none}
@@ -310,7 +306,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    fileprivate enum CloudErrors: Error {
+    fileprivate enum AssetFetchErrors: Error {
         case imageCreationFailure, assetCreationFailure, noRecords
     }
     enum NetworkStates: Equatable {
@@ -336,9 +332,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
         case loading, complete, failed(String?)
     }
-    fileprivate var currentNetworkState = NetworkStates.loading {
-        didSet{selectImageController?.networkState = currentNetworkState}
-    }
+    fileprivate var currentNetworkState = NetworkStates.loading {didSet{selectImageController?.networkState = currentNetworkState}}
     
     //
     // MARK: Constants
@@ -553,9 +547,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     // MARK: Flags
     var initialLoad = true
     var needNewObject = true
-    //var keyboardVisible = false
-    var momentsAssetFetchComplete = false {didSet {selectImageController?.momentsAssetFetchComplete = true}}
-    var albumsAssetFetchComplete = false {didSet {selectImageController?.albumsAssetFetchComplete = true}}
+    var momentsAssetFetchComplete = false {didSet {selectImageController?.momentsAssetFetchComplete = momentsAssetFetchComplete}}
+    var albumsAssetFetchComplete = false {didSet {selectImageController?.albumsAssetFetchComplete = albumsAssetFetchComplete}}
     
     var expandedCellIndexPath: IndexPath? {
         didSet {
@@ -679,7 +672,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 categoryInputView.translatesAutoresizingMaskIntoConstraints = false
                 categoryInputView.backgroundColor = UIColor.clear
                 if let pickerIndex = view.subviews.index(where: {$0 is UIPickerView}) {
-                    categoryInputViewPickerView = view.subviews[pickerIndex] as! UIPickerView
+                    categoryInputViewPickerView = (view.subviews[pickerIndex] as! UIPickerView)
                     categoryInputViewPickerView.delegate = self
                     categoryInputViewPickerView.dataSource = self
                     categoryInputViewPickerView.reloadAllComponents()
@@ -728,7 +721,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 configureCellInputView = view
                 configureCellInputView.translatesAutoresizingMaskIntoConstraints = false
                 if let tableViewIndex = view.subviews.index(where: {$0 is UITableView}) {
-                    configureCellInputViewTableView = view.subviews[tableViewIndex] as! UITableView
+                    configureCellInputViewTableView = (view.subviews[tableViewIndex] as! UITableView)
                     configureCellInputViewTableView.translatesAutoresizingMaskIntoConstraints = false
                     configureCellInputViewTableView.delegate = self
                     configureCellInputViewTableView.dataSource = self
@@ -1030,8 +1023,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
         }
         else {
-            // TODO: Error Handling
-            fatalError("Unable to fetch categories from user defaults in NewEventViewController")
+            os_log("Unable to fetch categories from user defaults, error setting them in appDelegate maybe?", log: .default, type: .error)
+            selectableCategories.append(contentsOf: immutableCategories)
         }
         
         mainRealm = try! Realm(configuration: appRealmConfig)
@@ -1147,37 +1140,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         eventTimer = nil
     }
     
-    /*fileprivate func eventViewAnimateForKeyboardIn() {
-        if let _keyboardHeight = keyboardHeight, let animDuration = keyboardAnimDuration, let animCurve = keyboardAnimCurve {
-            let totalKeyboardHeight = _keyboardHeight + textInputAccessoryView.bounds.height
-            
-            print(eventAndCategoryLabelHuggingView.frame.origin)
-            let eventAndCategoryLabelHuggingViewOriginInContentView = resizableEventContainer.convert(eventAndCategoryLabelHuggingView.frame.origin, to: mainScrollViewContentView)
-            let specialEventViewDistanceFromBottom = mainScrollView.frame.height - (eventAndCategoryLabelHuggingViewOriginInContentView.y + eventAndCategoryLabelHuggingView.frame.height)
-            
-            if totalKeyboardHeight > specialEventViewDistanceFromBottom {
-                let diff = totalKeyboardHeight - specialEventViewDistanceFromBottom
-                eventAndCategoryLabelHuggingViewCenteringConstraint.constant -= diff
-                resizableEventContainer.setNeedsLayout()
-                let moveViewAnim = UIViewPropertyAnimator(duration: animDuration, curve: animCurve) {self.resizableEventContainer.layoutIfNeeded()}
-                moveViewAnim.startAnimation()
-            }
-        }
-    }
-    
-    fileprivate func eventViewAnimateForKeyboardOut() {
-        if eventAndCategoryLabelHuggingViewCenteringConstraint.constant != 0.0, let animDuration = keyboardAnimDuration, let animCurve = keyboardAnimCurve {
-            eventAndCategoryLabelHuggingViewCenteringConstraint.constant = 0.0
-            resizableEventContainer.setNeedsLayout()
-            let moveViewAnim = UIViewPropertyAnimator(duration: animDuration, curve: animCurve) {self.resizableEventContainer.layoutIfNeeded()}
-            moveViewAnim.startAnimation()
-        }
-    }*/
-    
-//    var keyboardHeight: CGFloat?
-//    var keyboardAnimDuration: Double?
-//    var keyboardAnimCurve: UIViewAnimationCurve?
-    
     @objc fileprivate func keyboardChangeFrame(notification: NSNotification) {
         if !initialLoad, let keyboardFrame: NSValue = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
             let animDuration: Double? = notification.userInfo?[UIKeyboardAnimationDurationUserInfoKey] as? Double
@@ -1185,9 +1147,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             
             let keyboardFrame = keyboardFrame.cgRectValue
             let totalKeyboardHeight = keyboardFrame.height
-            print(totalKeyboardHeight)
             
-            print(eventAndCategoryLabelHuggingView.frame.origin)
             let specialEventViewDistanceFromBottom = mainScrollView.frame.height - (eventAndCategoryLabelHuggingView.frame.origin.y + eventAndCategoryLabelHuggingView.frame.height)
             
             if totalKeyboardHeight > specialEventViewDistanceFromBottom {
@@ -1235,9 +1195,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         try imageCleanupRealm.write {imageCleanupRealm.delete(imageInfo)}
                     }
                     catch {
-                        // TODO: Error Handling
-                        print(error.localizedDescription)
-                        fatalError()
+                        os_log("Error removing image on disk and/or image info from realm: %@", log: .default, type: .error, error.localizedDescription)
                     }
                 }
             }
@@ -1295,9 +1253,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             currentDateComponents.minute = hmsDateComponents.minute!
             currentDateComponents.second = hmsDateComponents.second!
         default:
-            // TODO: Error Handling
             os_log("DatePicker in NewEventController somehow got in an undefined mode.", log: OSLog.default, type: .error)
-            fatalError()
+            dateInputView.datePicker.datePickerMode = .date
         }
         eventDate = EventDate(date: currentCalendar.date(from: currentDateComponents)!, dateOnly: eventDate!.dateOnly)
     }
@@ -1414,8 +1371,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 case StaticData.Options.TimerDisplayMode.detailed: abridgedDisplayMode = false
                 case StaticData.Options.TimerDisplayMode.abridged: abridgedDisplayMode = true
                 default:
-                    // TODO: log an error
-                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                    os_log("Unexpected option encountered in table view cell!", log: .default, type: .error)
+                    break
                 }
             case StaticData.Text.RowTitles.infoDiplayed:
                 if let optionString = selectedOption.text, let temp = DisplayInfoOptions(rawValue: optionString) {infoDisplayed = temp}
@@ -1427,12 +1384,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 case StaticData.Options.Notifications.custom: break
                 case StaticData.Options.Notifications.off: break
                 default:
-                    // TODO: log an error
-                    fatalError("Unexpected option encountered! Do you need to add a new one?")
+                    os_log("Unexpected option encountered in table view cell!", log: .default, type: .error)
+                    break
                 }
             default:
-                // TODO: Remove
-                fatalError("Forget a case?")
+                os_log("Unexpected title encountered in table view cell!", log: .default, type: .error)
+                break
             }
         }
     }
@@ -1442,18 +1399,14 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         switch cell.title {
         case StaticData.Text.RowTitles.toggleMask: isUserChange = true; useMask = sender.isOn
         default:
-            // TODO: log and break
-            fatalError("Need to add a case?")
+            os_log("Unexpected title encountered in table view cell!", log: .default, type: .error)
+            break
         }
     }
     
     //
     // MARK: EventTableViewCellDelegate
-    func eventDateRepeatTriggered(cell: EventTableViewCell, newDate: EventDate) {
-        let master = navigationController!.viewControllers[0] as! MasterViewController
-        master.dateDidChange = true
-        eventDate = newDate
-    }
+    func eventDateRepeatTriggered(cell: EventTableViewCell, newDate: EventDate) {eventDate = newDate}
     
     //
     // MARK: From storyboard actions
@@ -1496,10 +1449,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     func shouldSelectMaterial(_ material: EMContentExpandableMaterial) -> Bool {
         if material == inputInfoMaterial {currentInputViewState = nextInput}
         else if material == configureEventMaterial {currentInputViewState = .configure}
-        else {
-            // TODO: Remove
-            fatalError("Did you miss a case??")
-        }
+        else {os_log("Unexpected material encountered!", log: .default, type: .error)}
         return false
     }
     
@@ -1576,7 +1526,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         dataSource[s1].rows[s1r3].options.append(StaticData.Options.InfoDisplayed.date)
         dataSource[s1].rows[s1r3].options.append(StaticData.Options.InfoDisplayed.none)
         
-        if let _ = selectedImage as? AppEventImage {
+        if let appImage = selectedImage as? AppEventImage, appImage.maskImage != nil {
             let s1r4 = dataSource[s1].addRow(type: .onOrOff, title: StaticData.Text.RowTitles.toggleMask)
             dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.on)
             dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.off)
@@ -1594,79 +1544,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         static let titleDetail = "Title/Detail"
     }
     
-    /*struct DataSource {
-        
-        struct Section {
-            let title: String?
-            let rows: [Row]
-            
-            init(title: String?, rows: [Row]) {self.title = title; self.rows = rows}
-        }
-        struct Row {
-            enum RowTypes {
-                case repeats, timerDisplayMode, infoDisplayed, useMask, notifications
-                
-                var title: String {
-                    switch self {
-                    case .repeats: return "Repeats"
-                    case .timerDisplayMode: return "Timer Display Mode"
-                    case .infoDisplayed: return "Info Displayed"
-                    case .useMask: return "Toggle Mask"
-                    case .notifications: return "Notifications"
-                    }
-                }
-                
-                var options: [SettingsTypeDataSource.Option]? {
-                    switch self {
-                    case .repeats: return [
-                        SettingsTypeDataSource.Option(text: RepeatingOptions.never.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: RepeatingOptions.monthly.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: RepeatingOptions.yearly.displayText, action: nil)
-                    ]
-                    case .timerDisplayMode: return [
-                        SettingsTypeDataSource.Option(text: "Detailed", action: nil),
-                        SettingsTypeDataSource.Option(text: "Abridged", action: nil),
-                    ]
-                    case .infoDisplayed: return [
-                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.none.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.tagline.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: DisplayInfoOptions.date.displayText, action: nil)
-                    ]
-                    case .useMask: return [
-                        SettingsTypeDataSource.Option(text: ToggleMaskOptions.on.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: ToggleMaskOptions.off.displayText, action: nil),
-                    ]
-                    case .notifications: return [
-                        SettingsTypeDataSource.Option(text: NotificationsOptions._default.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: NotificationsOptions.custom.displayText, action: nil),
-                        SettingsTypeDataSource.Option(text: NotificationsOptions.off.displayText, action: nil)
-                    ]
-                    }
-                }
-            }
-            
-            let rowType: RowTypes
-            let title: String
-            let options: [SettingsTypeDataSource.Option]?
-            
-            init(rowType: RowTypes) {self.rowType = rowType; self.title = rowType.title; self.options = rowType.options}
-     }
-        
-        static let data = [
-            Section(title: nil, rows: [
-                Row(rowType: .repeats),
-                Row(rowType: .timerDisplayMode),
-                Row(rowType: .infoDisplayed),
-                Row(rowType: .useMask),
-                Row(rowType: .notifications)
-                ]
-            )
-        ]
-    }*/
-    
     func numberOfSections(in tableView: UITableView) -> Int {
-//        print(configureCellInputViewTableView.contentSize.height)
-//        print(configureCellInputViewTableView.bounds.height)
         if configureCellInputViewTableViewHeightConstraint.constant != configureCellInputViewTableView.contentSize.height {
             configureCellInputViewTableViewHeightConstraint.constant = configureCellInputViewTableView.contentSize.height
             configureCellInputViewTableViewWidthConstraint.constant = view.bounds.width - 40.0 - standardDirectionalLayoutMargins.leading - standardDirectionalLayoutMargins.trailing
@@ -1693,8 +1571,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             case .segue:
                 performSegue(withIdentifier: "Configure Notifications", sender: self)
             case .action, .onOrOff:
-                // TODO: break
-                fatalError("Need implementation!")
+                os_log("SettingsTableViewCell .onOrOff rowType is not implemented, yet it was selected!", log: .default, type: .error)
+                break
             }
         }
     }
@@ -1707,8 +1585,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             else {return SettingsTableViewCell.collapsedHeight}
         }
         else {
-            // TODO: Remove this, provide a standard height.
-            fatalError("Unknown cell encoutntered!")
+            os_log("Unexpected tableView section encountered! Using a default cell height", log: .default, type: .error)
+            return 60.0
         }
     }
     
@@ -1766,8 +1644,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 }
                 else {cell.selectedOption = rowData.options[0]}
             default:
-                // TODO: break
-                fatalError("Need to add a row title?")
+                os_log("Unexepcted row title encountered!", log: .default, type: .error)
+                break
             }
         }
         
@@ -1803,7 +1681,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         if _viewToReturn == nil {
             _viewToReturn = UILabel()
             if pickerView == categoryInputViewPickerView {_viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayLight, size: 20.0)}
-            else {_viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayLight, size: 14.0)}
+            else {_viewToReturn!.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)}
             _viewToReturn!.textColor = GlobalColors.cyanRegular
             _viewToReturn!.textAlignment = .center
         }
@@ -1847,9 +1725,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 destination.dateOnly = eventDate!.dateOnly
             case "Unwind To Master": break
             default:
-                // TODO: Error Handling
-                print("Unhandled Segue: \(ident)")
-                fatalError()
+                os_log("Unhandled segue: %@", log: .default, type: .error, ident)
+                break
             }
         }
     }
@@ -1978,9 +1855,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     
     @objc fileprivate func finish(_ sender: UIButton) {
         
-        // TODO: Probably need to just get rid of this.
         guard eventTitle != nil && eventDate != nil && selectedImage != nil else {
-            // TODO: Throw an alert to user that title and event date are requrired.
+            os_log("finish method invoked even though title, date, or image were nil.", log: .default, type: .error)
             let alert = UIAlertController(title: "Missing Information", message: "Please populate the event title, date, and image.", preferredStyle: .alert)
             let action = UIAlertAction(title: "Okay", style: .default) { (action) in
                 self.dismiss(animated: true, completion: nil)
@@ -2003,8 +1879,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 let alert = UIAlertController(title: "Event Already Exists", message: "An event with this title already exists. Did you want to replace that event with this one?", preferredStyle: .alert)
                 let yesAction = UIAlertAction(title: "Yes please!", style: .default) { (action) in
                     self.dismiss(animated: true, completion: nil)
+                    
                     self.createNewObject(overwrite: true)
-                    self.navigationController!.navigationController!.popViewController(animated: true)
+                    scheduleNewEvents(titled: [self.eventTitle!])
+                    updateDailyNotifications(async: true, updatePending: false)
+                    self.performSegue(withIdentifier: "Unwind To Master", sender: self)
                 }
                 let noAction = UIAlertAction(title: "No, Thanks.", style: .default) { (action) in
                     self.dismiss(animated: true, completion: nil)
@@ -2020,11 +1899,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
         else {
             specialEvent!.cascadeDelete()
-//            print("Notifications stored after special event cascade delete:")
-//            let allEventNotifications = mainRealm.objects(RealmEventNotification.self)
-//            for (i, realmNotif) in allEventNotifications.enumerated() {
-//                print("\(i + 1): \(realmNotif.uuid)")
-//            }
             try! mainRealm.write {
                 specialEvent!.category = eventCategory ?? "Uncatagorized"
                 specialEvent!.tagline = eventTagline
@@ -2034,23 +1908,14 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 specialEvent!.repeats = repeats.rawValue
                 specialEvent!.notificationsConfig = RealmEventNotificationConfig(fromEventNotificationConfig: eventNotificationsConfig)
                 
-//                print("Notifications stored after special event new config add:")
-//                for (i, realmNotif) in allEventNotifications.enumerated() {
-//                    print("\(i + 1): \(realmNotif.uuid)")
-//                }
-                
                 specialEvent!.useMask = useMask
                 if let _selectedImage = selectedImage {
                     if specialEvent?.image == nil || specialEvent!.image!.title != _selectedImage.title {
                         let image = getEventImageInfo()
                         specialEvent!.image = image
-                        // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
                     }
                 }
-                else {
-                    specialEvent!.image = nil
-                    // TODO: Consider deleting old EventImageInfo, or adding support in settings to purge this.
-                }
+                else {specialEvent!.image = nil}
                 if let _locationForCellView = locationForCellView {
                     specialEvent!.locationForCellView.value = Int(_locationForCellView * 100.0)
                 }
@@ -2398,8 +2263,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                     imagesToReturn.append(newEventImage)
                 }
                 else {
-                    // TODO: - Error handling
-                    fatalError("Unable to locate \(imageInfo.title)'s thumbnail image on the disk!")
+                    os_log("Unable to locate %@'s thumbnail image on the disk!", log: .default, type: .error, imageInfo.title)
                 }
             }
         }
@@ -2464,9 +2328,77 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         productRequest!.start()
     }*/
     
+    /*fileprivate func cloudFetch(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], forImage title: String, completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: AssetFetchErrors?) -> Void) {
+        
+        let getImageTitledPredicate = NSPredicate(format: "title = %@", argumentArray: [title])
+        let eventImageQuerry = CKQuery(recordType: "EventImage", predicate: getImageTitledPredicate)
+        let queryOperation = CKQueryOperation(query: eventImageQuerry)
+        
+        var desiredKeys = [String]()
+        for imageType in imageTypes {desiredKeys.append(contentsOf: [imageType.recordKey, imageType.extensionRecordKey])}
+        queryOperation.desiredKeys = desiredKeys
+        
+        func queryCompletionBlock(_ weakSelf: NewEventViewController?, _ _cursor: CKQueryCursor?, _ error: Error?) {
+            // TODO: Add error handling, retry network errors gracefully.
+            if let nsError = error as NSError? {
+                os_log("There was an error fetching products from CloudKit", log: OSLog.default, type: .error)
+                print("Error Code: \(nsError.code)")
+                print("Error Description: \(nsError.debugDescription)")
+                print("Error Domain: \(nsError.domain)")
+                print("Error Recovery Suggestions: \(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")")
+                
+                switch nsError.code {
+                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+                    // Error code 3: Network Unavailable.
+                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+                // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
+                case 1, 4, 4097:
+                    if previousNetworkFetchAtempts <= 1 {weakSelf?.cloudFetch(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, forImage: title, completionHandler: completion); return}
+                    else {return}
+                case 3: return
+                default: return
+                }
+            }
+            
+            if let cursor = _cursor {
+                let newQuerryOperation = CKQueryOperation(cursor: cursor)
+                newQuerryOperation.desiredKeys = desiredKeys
+                newQuerryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
+                newQuerryOperation.recordFetchedBlock = recordFetchedBlock
+                weakSelf?.publicCloudDatabase.add(newQuerryOperation)
+            }
+        }
+        
+        func recordFetchedBlock(_ record: CKRecord) {
+            var images = [CountdownImage]()
+            for imageType in imageTypes {
+                if let imageAsset = record[imageType.recordKey] as? CKAsset {
+                    let imageFileExtension = record[imageType.extensionRecordKey] as! String
+                    
+                    do {
+                        let imageData = try Data(contentsOf: imageAsset.fileURL)
+                        let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                        images.append(newImage)
+                    }
+                    catch {completion(nil, .imageCreationFailure); return}
+                }
+                else {completion(nil, .imageCreationFailure); return}
+            }
+            
+            if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images) {
+                completion(newEventImage, nil)
+            }
+            else {completion(nil, .assetCreationFailure)}
+        }
+        
+        queryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
+        queryOperation.recordFetchedBlock = recordFetchedBlock
+        publicCloudDatabase.add(queryOperation)
+    }*/
+    
     func reFetchCloudImages() {fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))}
     
-    fileprivate func fetchCloudImages(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: CloudErrors?) -> Void) {
+    fileprivate func fetchCloudImages(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: AssetFetchErrors?) -> Void) {
         
         let getAllPredicate = NSPredicate(value: true)
         let eventImageQuerry = CKQuery(recordType: "EventImage", predicate: getAllPredicate)
@@ -2483,45 +2415,44 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
         queryOperation.desiredKeys = desiredKeys
         
-        queryOperation.queryCompletionBlock = { [weak self] (_cursor, error) in
-            // TODO: Add error handling, retry network errors gracefully.
+        func queryCompletionBlock(_ weakSelf: NewEventViewController?, _ _cursor: CKQueryCursor?, _ error: Error?) {
             if let nsError = error as NSError? {
-                os_log("There was an error fetching products from CloudKit", log: OSLog.default, type: .error)
-                print("Error Code: \(nsError.code)")
-                print("Error Description: \(nsError.debugDescription)")
-                print("Error Domain: \(nsError.domain)")
-                print("Error Recovery Suggestions: \(nsError.localizedRecoverySuggestion ?? "No recovery suggestions.")")
-                
                 switch nsError.code {
-                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
-                    // Error code 3: Network Unavailable.
-                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+                // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+                // Error code 3: Network Unavailable.
+                // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
                 // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
                 case 1, 4, 4097:
-                    if previousNetworkFetchAtempts <= 1 {self?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
-                    else {self?.networkErrorHandler(nsError); return}
-                case 3: self?.networkErrorHandler(nsError); return
-                default: return
+                    if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
+                    else {weakSelf?.networkErrorHandler(nsError); return}
+                case 3: weakSelf?.networkErrorHandler(nsError); return
+                default:
+                    os_log("There was an new error fetching products from CloudKit: %@", log: OSLog.default, type: .error, nsError.localizedDescription)
+                    weakSelf?.networkErrorHandler(nsError)
+                    return
                 }
             }
             
             if let cursor = _cursor {
                 let newQuerryOperation = CKQueryOperation(cursor: cursor)
-                self?.publicCloudDatabase.add(newQuerryOperation)
+                newQuerryOperation.desiredKeys = desiredKeys
+                newQuerryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
+                newQuerryOperation.recordFetchedBlock = recordFetchedBlock
+                weakSelf?.publicCloudDatabase.add(newQuerryOperation)
             }
+            else {DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .complete}}
         }
         
-        queryOperation.recordFetchedBlock = { (record) in
+        func recordFetchedBlock(_ record: CKRecord) {
             let recordID = record.recordID
-            let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as! String
-            let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as! String
-            let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as! String
+            guard let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as? String else {completion(nil, .assetCreationFailure); return}
+            guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
+            guard let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as? String else {completion(nil, .assetCreationFailure); return}
             let intLocationForCellView = record[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as? Int
             var locationForCellView: CGFloat?
             if let intLoc = intLocationForCellView {locationForCellView = CGFloat(intLoc) / 100.0}
             
             var images = [CountdownImage]()
-            var cloudError: CloudErrors?
             for imageType in imageTypes {
                 if let imageAsset = record[imageType.recordKey] as? CKAsset {
                     let imageFileExtension = record[imageType.extensionRecordKey] as! String
@@ -2531,17 +2462,19 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                         let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
                         images.append(newImage)
                     }
-                    catch {cloudError = .imageCreationFailure; break}
+                    catch {completion(nil, .imageCreationFailure); return}
                 }
-                else {cloudError = .noRecords}
+                else {completion(nil, .imageCreationFailure); return}
             }
             
-            if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images), cloudError == nil {
+            if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images) {
                 completion(newEventImage, nil)
             }
-            else {completion(nil, cloudError)}
+            else {completion(nil, .assetCreationFailure)}
         }
-
+        
+        queryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
+        queryOperation.recordFetchedBlock = recordFetchedBlock
         publicCloudDatabase.add(queryOperation)
     }
     
@@ -2560,21 +2493,16 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
-    fileprivate func thumbnailLoadComplete(_ image: AppEventImage?, _ error: CloudErrors?) {
-        if image != nil && error == nil {
-            DispatchQueue.main.async { [weak weakSelf = self] in
-                weakSelf?.cachedImages.append(image!)
-                weakSelf?.currentNetworkState = .complete
+    fileprivate func thumbnailLoadComplete(_ _image: AppEventImage?, _ _error: AssetFetchErrors?) {
+        if let error = _error {
+            switch error {
+            case .assetCreationFailure: os_log("There was an error creating the asset from the cloud", log: .default, type: .error)
+            case .imageCreationFailure: os_log("There was an error creating the image from the cloud", log: .default, type: .error)
+            case .noRecords: break
             }
         }
-        else {
-            if error == .noRecords {
-                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.currentNetworkState = .complete}
-            }
-            else {
-                // TODO: - Error handling
-                fatalError("There was an error fetching images from the cloud")
-            }
+        else if let image = _image {
+            DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.cachedImages.append(image)}
         }
     }
     
@@ -2645,10 +2573,17 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     fileprivate func getEventImageInfo() -> EventImageInfo? {
         if let image = selectedImage {
             if !image.imagesAreSavedToDisk {
-                let results = image.saveToDisk(imageTypes: [.main, .mask, .thumbnail])
-                if results.contains(false) {
-                    // TODO: return nil Error Handling
-                    fatalError("Images were unable to be saved to the disk!")
+                let imageTypes: [CountdownImage.ImageType] = [.main, .mask, .thumbnail]
+                let results = image.saveToDisk(imageTypes: imageTypes)
+                if let i = results.index(of: false) {
+                    let type: String = {
+                        switch imageTypes[i] {
+                        case .main: return "main image"
+                        case .mask: return "mask image"
+                        case .thumbnail: return "thumbnail images"
+                        }
+                    }()
+                    os_log("Failed to save %@ (at least) to disk!", log: .default, type: .error, type)
                 }
             }
             if let appImage = image as? AppEventImage {
@@ -2686,12 +2621,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 locationForCellView: locationForCellView
             )
             try! mainRealm.write {mainRealm.add(newEvent, update: overwrite)}
+            #if DEBUG
             let specialEvents = mainRealm.objects(SpecialEvent.self)
             for event in specialEvents {print(event.title)}
-        }
-        else {
-            // TODO: Remove for production, should never hit this if earlier guards work.
-            fatalError("Fatal Error: selectedImage or locationForCellView were nil when trying to create new event!")
+            #endif
         }
     }
     

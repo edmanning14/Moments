@@ -73,10 +73,10 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         
         fileprivate func add(_ image: AppEventImage) -> Bool {
             guard image.thumbnail?.uiImage != nil else {
-                fatalError("An image in catalogImages did not contain a thumbnail!")
+                os_log("%@ did not contain a thumbnail!", log: .default, type: .error, image.title)
+                return false
             }
-            
-            if contains(image) {return false}
+            guard !contains(image) else {return false}
             
             let category = image.category
             if !orderedCategories.contains(category) {
@@ -152,8 +152,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             static let noImages = "Couldn't find any images!"
             static let loading = "Fetching Images"
             static let loadImagesError = "Sorry! There was an error loading the images. Please try again later."
-            static let restrictedAccess = "Need a message here..." // TODO: Add a message here.
-            static let deniedAccess = "Your moments are inaccessable! If you would like to allow access, please navigate to Settings -> Photos to allow access."
+            static let restrictedAccess = "Sorry, buy your moments are inaccessable and permission cannot be granted."
+            static let deniedAccess = "Your moments are inaccessable! If you would like to allow access, please navigate to Settings -> Moments -> Photos and allow read and write access."
         }
         
         var message = Messages.loading {didSet{messageLabel.text = message}}
@@ -237,9 +237,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 case TabBarTitles.userMoments: tabBarSelection = .userMoments
                 case TabBarTitles.userAlbums: tabBarSelection = .userAlbums
                 case nil: tabBarSelection = .none
-                default:
-                    // TODO: Remove
-                    fatalError("Unexpected State: Recieved an unrecognized TabBar Title")
+                default: os_log("Unexpected TabBar title recieved", log: .default, type: .error)
                 }
                 
                 let transition = CATransition()
@@ -350,7 +348,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             if isViewLoaded {
                 if networkState == .complete {
                     catalogImagesCollectionView.reloadData()
-                    //catalogImagesCollectionView.selectItem(at: selectedCatalogImageIndexPath, animated: true, scrollPosition: .top)
                     return
                 }
                 for (section, images) in catalogImages.enumerated() {
@@ -366,7 +363,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                             cell.networkActivityIndicator.startAnimating()
                             cell.networkActivityIndicator.isHidden = false
                             cell.textLabel.isHidden = true
-                        case .complete: fatalError("This should have never happened...")
+                        case .complete: break
                         }
                     }
                 }
@@ -436,6 +433,8 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             titleLabel.textColor = secondaryTextRegularColor
             titleLabel.font = UIFont(name: headingsFontName, size: 30.0)
             titleLabel.textAlignment = .left
+            titleLabel.adjustsFontSizeToFitWidth = true
+            titleLabel.minimumScaleFactor = 0.5
             
             self.addSubview(titleLabel)
             self.leftAnchor.constraint(equalTo: titleLabel.leftAnchor, constant: -20.0).isActive = true
@@ -521,7 +520,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         findTabBar.delegate = self
         catalogImages.delegate = self
         
-        _ = addBackButton(action: #selector(defaultPop), title: "CANCEL", target: self)
+        _ = addBackButton(action: #selector(defaultPop), title: "BACK", target: self)
         //doneButton = addBarButtonItem(side: .right, action: #selector(handleNavButtonClick(_:)), target: self, title: "USE IMAGE", image: nil)
         
         /*if locationForCellView == nil {doneButton.isEnabled = false}
@@ -835,19 +834,14 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             
             func momentsPhotoAssetsRequest() {
                 let id = userPhotosImageManager?.requestImage(for: momentsPhotoAssets[indexPath.section][indexPath.row], targetSize: userPhotoCellSize, contentMode: .aspectFill, options: nil) { (image, _info) in
-                    if let info = _info {
-                        if let error = info[PHImageErrorKey] as? NSError {
-                            // TODO: Handle errors gracefully
-                            print(error.debugDescription)
-                            fatalError()
-                        }
+                    if let info = _info, let error = info[PHImageErrorKey] as? NSError {
+                        os_log("There was an error fetching thumbnail user photo from the image manager: %@", log: .default, type: .error, error.debugDescription)
                     }
                     imageView.image = image
                 }
-                if id != nil {cell.tag = Int(id!)}
+                if let _id = id {cell.tag = Int(_id)}
                 else {
-                    // TODO: Error handling
-                    fatalError("Error requesting the image... userPhotosManager is nil maybe?")
+                    os_log("There was an error requesting thumbnail... userPhotosManager is nil maybe?", log: .default, type: .error)
                 }
             }
             
@@ -855,19 +849,14 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             case .userMoments: momentsPhotoAssetsRequest()
             case .userAlbums:
                 let id = userPhotosImageManager?.requestImage(for: albumsPhotoAssets[indexPath.section][indexPath.row], targetSize: userPhotoCellSize, contentMode: .aspectFill, options: nil) { (image, _info) in
-                    if let info = _info {
-                        if let error = info[PHImageErrorKey] as? NSError {
-                            // TODO: Handle errors gracefully
-                            print(error.debugDescription)
-                            fatalError()
-                        }
+                    if let info = _info, let error = info[PHImageErrorKey] as? NSError {
+                        os_log("There was an error fetching thumbnail user photo from the image manager: %@", log: .default, type: .error, error.debugDescription)
                     }
                     imageView.image = image
                 }
                 if id != nil {cell.tag = Int(id!)}
                 else {
-                    // TODO: Error handling
-                    fatalError("Error requesting the image... userPhotosManager is nil maybe?")
+                    os_log("There was an error requesting thumbnail... userPhotosManager is nil maybe?", log: .default, type: .error)
                 }
             default: momentsPhotoAssetsRequest()
             }
@@ -1263,101 +1252,11 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
     
     
     //
-    // MARK: - Target-Action and Objc Targeted Methods
-    //
-    
-    /*@objc fileprivate func handleNavButtonClick(_ sender: Any?) {
-        if let button = sender as? UIBarButtonItem {
-            let newEventController = navigationController!.viewControllers[1] as! NewEventViewController
-            if button == doneButton {
-                if doneButton.title == "USE IMAGE" {
-                    guard locationForCellView != nil else {
-                        fatalError("Unexpected State: Done button was activated even though the image had no locationForCell View!")
-                    }
-                    var imagesToFetch = [CountdownImage.ImageType]()
-                    if selectedImage?.mainImage?.cgImage == nil {imagesToFetch.append(.main)}
-                    if let appImage = selectedImage as? AppEventImage {
-                        if appImage.maskImage?.cgImage == nil {imagesToFetch.append(.mask)}
-                    }
-                    if imagesToFetch.isEmpty {
-                        newEventController.selectedImage = selectedImage
-                        newEventController.locationForCellView = locationForCellView
-                        navigationController?.popViewController(animated: true)
-                    }
-                    else {
-                        let popup = UIAlertController(title: "Fetching Image", message: "This may take a moment.", preferredStyle: .alert)
-                        let cancelAction = UIAlertAction(title: "CANCEL", style: .cancel) { (action) in
-                            if action.title == "CANCEL" {
-                                self.selectedImage?.cancelNetworkFetches()
-                                self.needToDismissSelf = false
-                            }
-                        }
-                        popup.addAction(cancelAction)
-                        self.present(popup, animated: true, completion: nil)
-                        selectedImage?.delegate = self
-                        needToDismissSelf = true
-                        selectedImage?.fetch(imageTypes: imagesToFetch, alertDelegate: true)
-                        
-                        Timer.scheduledTimer(withTimeInterval: 6.0, repeats: false) { [weak self] (timer) in
-                            if let _ = self {
-                                popup.message = "Still fetching, the network is a bit slow."
-                            }
-                        }
-                    }
-                }
-                else if doneButton.title == "CREATE IMAGE" {
-                    performSegue(withIdentifier: SegueIdentifiers.imagePreview, sender: doneButton)
-                }
-                else {fatalError("Fatal Error: Unhandled done button title!")}
-            }
-        }
-    }*/
-    
-    /*@objc fileprivate func handleUserPhotosOptionsButtonClick(_ sender: UIButton) {
-        
-        switch sender.tag {
-        case 1, 2: dismiss(animated: false, completion: nil); presentFilterPopover()
-        case 3, 4: dismiss(animated: true, completion: nil); tabBarSelectionTitle = TabBarTitles.userMoments
-        case 5, 6: dismiss(animated: true, completion: nil); tabBarSelectionTitle = TabBarTitles.userAlbums
-        default:
-            // TODO: Remove for production.
-            fatalError("Fatal Error: Unrecognized options button title handled.")
-        }
-    }*/
-    
-    /*@objc fileprivate func handleCellDoubleTap(_ sender: Any?) {
-        if let recognizer = sender as? UITapGestureRecognizer {
-            if let cell = recognizer.view as? SelectImageCollectionViewCell, let ipForCell = catalogImagesCollectionView.indexPath(for: cell) {
-                selectedImage = catalogImages[ipForCell.section][ipForCell.row]
-                locationForCellView = catalogImages[ipForCell.section][ipForCell.row].recommendedLocationForCellView
-                selectedCatalogImageIndexPath = ipForCell
-            }
-            else if let cell = recognizer.view as? UICollectionViewCell, let ipForCell = userPhotosCollectionView.indexPath(for: cell) {
-                locationForCellView = nil
-                switch tabBarSelection {
-                case .userMoments:
-                    let userImage = momentsPhotoAssets[ipForCell.section][ipForCell.row]
-                    selectedImage = UserEventImage(fromPhotosAsset: userImage)
-                    selectedUserPhotoIndexPath = ipForCell
-                case .userAlbums:
-                    let userImage = albumsPhotoAssets[ipForCell.section][ipForCell.row]
-                    selectedImage = UserEventImage(fromPhotosAsset: userImage)
-                    selectedUserPhotoIndexPath = ipForCell
-                default: break
-                }
-            }
-            performSegue(withIdentifier: SegueIdentifiers.imagePreview, sender: self)
-        }
-    }*/
-    
-    
-    //
     // MARK: - Private helper methods
     //
     
     //
     // MARK: init helpers
-    
     fileprivate func presentFilterPopover() {
         let filterViewController = UITableViewController()
         filterViewController.view.backgroundColor = UIColor.clear

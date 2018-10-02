@@ -9,6 +9,7 @@
 import UIKit
 import CoreGraphics
 import Foundation
+import os
 
 class EventTableViewCell: UITableViewCell {
     
@@ -168,9 +169,7 @@ class EventTableViewCell: UITableViewCell {
             formatter.dateStyle = .long
             if eventDate?.dateOnly ?? true {formatter.timeStyle = .none}
             else {formatter.timeStyle = .short}
-        default:
-            // TODO: log and break
-            fatalError("Need to add a case??")
+        default: os_log("Unexpected date display mode encoutnered!", log: .default, type: .error)
         }
         return formatter
     }
@@ -346,7 +345,7 @@ class EventTableViewCell: UITableViewCell {
         if let mainUIImage = image.mainImage?.uiImage {
             mainImageView.contentMode = .scaleAspectFit
             switch configuration {
-            case .cell: getHomeImages(nil)
+            case .cell: getHomeImages()
             case .detail: mainImageView.image = mainUIImage
             }
         }
@@ -386,21 +385,13 @@ class EventTableViewCell: UITableViewCell {
                         if let nextMonth = currentCalendar.date(byAdding: .month, value: 1, to: eventDate!.date, wrappingComponents: true) {
                             delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextMonth, dateOnly: eventDate!.dateOnly))
                         }
-                        else {
-                            // TODO: log an error, make sure this breaks and just keeps the same date.
-                            fatalError("There was an issue creating the next date!")
-                        }
+                        else {os_log("Error creating next date for repeating date event: %@", log: .default, type: .error, self.eventTitle ?? "Nil")}
                     case .yearly:
                         if let nextYear = currentCalendar.date(byAdding: .year, value: 1, to: eventDate!.date, wrappingComponents: true) {
                             delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextYear, dateOnly: eventDate!.dateOnly))
                         }
-                        else {
-                            // TODO: log an error, make sure this breaks and just keeps the same date.
-                            fatalError("There was an issue creating the next date!")
-                        }
+                        else {os_log("Error creating next date for repeating date event: %@", log: .default, type: .error, self.eventTitle ?? "Nil")}
                     }
-                    
-                    //timeInterval = eventDate!.date.timeIntervalSince(todaysDate)
                 }
             }
             else {isPastEvent = false}
@@ -757,55 +748,19 @@ class EventTableViewCell: UITableViewCell {
         }
     }
     
-    fileprivate func getHomeImages(_ completion: (() -> Void)?) {
-        if let _eventImage = eventImage, _eventImage.mainImage?.uiImage != nil {
-            var mainFetchComplete = false
-            var maskFetchComplete = false
-            if let appImage = _eventImage as? AppEventImage {
-                appImage.generateMainHomeImage(
-                    size: defaultHomeImageSize,
-                    locationForCellView: locationForCellView,
-                    userInitiated: true,
-                    completion: { [weak self] (image) in
-                        if image != nil {
-                            mainFetchComplete = true
-                            DispatchQueue.main.async { [weak self] in
-                                self?.mainHomeImage = image
-                                if maskFetchComplete {completion?()}
-                            }
-                        }
-                    }
-                )
-                appImage.generateMaskHomeImage(
-                    size: defaultHomeImageSize,
-                    locationForCellView: locationForCellView,
-                    userInitiated: true,
-                    completion: { [weak self] (maskHomeImage) in
-                        maskFetchComplete = true
-                        DispatchQueue.main.async { [weak self] in
-                            self?.maskHomeImage = maskHomeImage
-                            if mainFetchComplete {completion?()}
-                        }
-                    }
-                )
-            }
-            else {
-                maskFetchComplete = true
-                _eventImage.generateMainHomeImage(
-                    size: defaultHomeImageSize,
-                    locationForCellView: locationForCellView,
-                    userInitiated: true,
-                    completion: { [weak self] (image) in
-                        if image != nil {
-                            DispatchQueue.main.async { [weak self] in
-                                self?.mainHomeImage = image
-                                completion?()
-                            }
-                        }
-                    }
-                )
+    fileprivate func getHomeImages() {
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+            let _mainHomeImage = self?.eventImage?.generateMainHomeImage(size: self!.defaultHomeImageSize, locationForCellView: self!.locationForCellView)
+            DispatchQueue.main.async { [weak self] in self?.mainHomeImage = _mainHomeImage}
+            if let appImage = self?.eventImage as? AppEventImage {
+                let _maskHomeImage = appImage.generateMaskHomeImage(size: self!.defaultHomeImageSize, locationForCellView: self!.locationForCellView)
+                DispatchQueue.main.async { [weak self] in self?.maskHomeImage = _maskHomeImage}
             }
         }
+//        mainHomeImage = eventImage?.generateMainHomeImage(size: defaultHomeImageSize, locationForCellView: locationForCellView)
+//        if let appImage = eventImage as? AppEventImage {
+//            maskHomeImage = appImage.generateMaskHomeImage(size: defaultHomeImageSize, locationForCellView: locationForCellView)
+//        }
     }
     
     //
@@ -926,8 +881,8 @@ class EventTableViewCell: UITableViewCell {
         var mediumLabels: [UILabel]
         var lowLabels: [UILabel]
         highLabels = [tomorrowLabel, titleLabel]
-        mediumLabels = [taglineLabel, abridgedMonthsLabel, abridgedDaysLabel, weeksLabel, daysLabel, hoursLabel, minutesLabel, secondsLabel]
-        lowLabels = [abridgedInLabel, abridgedMonthsTextLabel, abridgedDaysTextLabel, inLabel, weeksColon, daysColon, hoursColon, minutesColon, agoLabel, weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
+        mediumLabels = [taglineLabel, abridgedYearsLabel, abridgedMonthsLabel, abridgedDaysLabel, weeksLabel, daysLabel, hoursLabel, minutesLabel, secondsLabel]
+        lowLabels = [abridgedInLabel, abridgedYearsTextLabel, abridgedMonthsTextLabel, abridgedDaysTextLabel, abridgedAgoLabel, inLabel, weeksColon, daysColon, hoursColon, minutesColon, agoLabel, weeksTextLabel!, daysTextLabel!, hoursTextLabel!, minutesTextLabel!, secondsTextLabel!]
         initializeShadows(for: highLabels, withShadowRadius: 3.0)
         initializeShadows(for: mediumLabels, withShadowRadius: 2.0)
         initializeShadows(for: lowLabels, withShadowRadius: 1.0)

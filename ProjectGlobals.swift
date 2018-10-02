@@ -45,6 +45,8 @@ struct UserDefaultKeys {
     static let widgetConfiguration = "Widget Configuration"
     static let numberOfLaunches = "Number of Launches"
     static let tipShown = "Tip Shown"
+    static let notificationTimeAsDateKey = "Notification Time As Date"
+    static let currentlyScheduledUUIDKey = "currently Scheduled UUID"
 }
 let defaultCategories = ["Holidays", "Travel", "Business", "Pleasure", "Birthdays", "Anniversaries", "Wedding", "Family", "Other"]
 let immutableCategories = ["Favorites", "Uncategorized", "All"]

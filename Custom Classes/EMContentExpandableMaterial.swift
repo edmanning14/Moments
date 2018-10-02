@@ -48,8 +48,6 @@ public class EMContentExpandableMaterial: UIView {
                             titleLabelRightConstraint?.isActive = true
                         }
                         
-                        //content.layer.opacity = 0.0
-                        print(content.layer.opacity)
                         addSubview(content)
                         
                         titleLabelTopConstraint?.constant = 8.0

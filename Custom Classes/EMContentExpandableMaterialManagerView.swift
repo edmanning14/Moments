@@ -236,7 +236,6 @@ class EMContentExpandableMaterialManagerView: UIView, EMContentExpandableMateria
         let endPoints = touches.map { (touch) -> CGPoint in touch.location(in: self)}
         for point in endPoints {
             for material in _managedMaterialViews {
-                print(material.frame)
                 if material.frame.contains(point) {
                     if !material.isExpanded {
                         if delegate?.shouldSelectMaterial?(material) ?? true {select(material: material, animated: true)}

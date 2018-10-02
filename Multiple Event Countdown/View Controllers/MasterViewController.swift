@@ -9,6 +9,7 @@
 import UIKit
 import RealmSwift
 import UserNotifications
+import os
 
 class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
     
@@ -189,7 +190,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     // MARK: Flags
     var isUserChange = false
-    var dateDidChange = false
     var categoryDidChange = false
     
     //
@@ -252,16 +252,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             eventTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerBlock(timerFireMethod:)), userInfo: nil, repeats: true)
         }
         
-//        let allnotifConfigs = mainRealm.objects(RealmEventNotificationConfig.self)
-//        let allEventNotifs = mainRealm.objects(RealmEventNotification.self)
-//        let allNotifComponents = mainRealm.objects(RealmEventNotificationComponents.self)
-//        let allEventDates = mainRealm.objects(EventDate.self)
-//
-//        print("Notification Configs: \(allnotifConfigs.count)")
-//        print("Event Notifications: \(allEventNotifs.count)")
-//        print("All Notification Components: \(allNotifComponents.count)")
-//        print("All Event Dates: \(allEventDates.count)")
-        
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
     }
@@ -311,28 +301,32 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 center.requestAuthorization(options: [.alert, .badge, .sound])
                 { (granted, error) in
                     if let _error = error {
-                        // TODO: Log and break
-                        print(_error.localizedDescription)
-                        fatalError("^ Check error")
-                    }
-                    
-                    autoreleasepool {
-                        let authorizationRealm = try! Realm(configuration: appRealmConfig)
-                        if granted {
-                            updateDailyNotifications(async: false, updatePending: false)
-                        
-                            let authorizationSpecialEvents = authorizationRealm.objects(SpecialEvent.self)
-                            var titles = [String]()
-                            for event in authorizationSpecialEvents {titles.append(event.title)}
-                            scheduleNewEvents(titled: titles)
-
+                        os_log("Error requesting notification authorization: %@", log: .default, type: .error, _error.localizedDescription)
+                        let errorPopup = UIAlertController(title: "Oops", message: "There was an error getting authorization to send notifications. If you could file a bug report on this by navigting to the 'Settings' view that would be much appreciated!", preferredStyle: .alert)
+                        let okayButton2 = UIAlertAction(title: "Okay", style: .default) { (action) in
+                            self.dismiss(animated: true, completion: nil)
                         }
-                        else {
-                            let authorizationDefaultNotificationsConfig = authorizationRealm.objects(DefaultNotificationsConfig.self)
-                            authorizationDefaultNotificationsConfig[0].allOn = false
+                        errorPopup.addAction(okayButton2)
+                        self.present(errorPopup, animated: true, completion: nil)
+                    }
+                    else {
+                        autoreleasepool {
+                            let authorizationRealm = try! Realm(configuration: appRealmConfig)
+                            if granted {
+                                updateDailyNotifications(async: false, updatePending: false)
+                                
+                                let authorizationSpecialEvents = authorizationRealm.objects(SpecialEvent.self)
+                                var titles = [String]()
+                                for event in authorizationSpecialEvents {titles.append(event.title)}
+                                scheduleNewEvents(titled: titles)
+                                
+                            }
+                            else {
+                                let authorizationDefaultNotificationsConfig = authorizationRealm.objects(DefaultNotificationsConfig.self)
+                                authorizationDefaultNotificationsConfig[0].allOn = false
+                            }
                         }
                     }
-                    
                     DispatchQueue.main.async {
                         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (timer) in
                             DispatchQueue.main.async { [weak self] in
@@ -366,6 +360,18 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         eventTimer = nil
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        if welcomeCellIndexPath != nil {
+            welcomeCellIndexPath = nil
+            var newSelectedRow: IndexPath?
+            if let currentSelectedRow = tableView.indexPathForSelectedRow {
+                newSelectedRow = IndexPath(row: currentSelectedRow.row - 1, section: currentSelectedRow.section)
+            }
+            tableView.reloadData()
+            tableView.selectRow(at: newSelectedRow, animated: false, scrollPosition: .none)
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         if UIApplication.shared.applicationState == .background {
             eventTimer?.invalidate()
@@ -393,15 +399,21 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             
         case SegueIdentifiers.showDetail:
             if let indexPath = tableView.indexPathForSelectedRow {
-                let eventToDetail = items(forSection: indexPath.section)[indexPath.row]
+                var row = indexPath.row
+                if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+                if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                let eventToDetail = items(forSection: indexPath.section)[row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.specialEvent = eventToDetail
             }
             
         case SegueIdentifiers.addNewEventSegue:
             if let cell = sender as? EventTableViewCell {
-                let ip = tableView.indexPath(for: cell)!
-                let event = items(forSection: ip.section)[ip.row]
+                let indexPath = tableView.indexPath(for: cell)!
+                var row = indexPath.row
+                if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+                if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                let event = items(forSection: indexPath.section)[row]
                 let dest = segue.destination as! NewEventViewController
                 dest.specialEvent = event
                 dest.editingEvent = true
@@ -420,7 +432,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     @IBAction func unwindFromDetail(segue: UIStoryboardSegue) {}
     
     @IBAction func unwindFromNewEventController(segue: UIStoryboardSegue) {
-        welcomeCellIndexPath = nil
         updateActiveCategories()
         updateIndexPathMap()
         tableView.reloadData()
@@ -739,24 +750,31 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         let cell = sender.view!.superview!.superview! as! EventTableViewCell
         let indexPath = tableView.indexPath(for: cell)!
         cell.abridgedDisplayMode = !cell.abridgedDisplayMode
+        
+        var row = indexPath.row
+        if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+        if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
         mainRealm.beginWrite()
-        items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode = !items(forSection: indexPath.section)[indexPath.row].abridgedDisplayMode
+        items(forSection: indexPath.section)[row].abridgedDisplayMode = !items(forSection: indexPath.section)[row].abridgedDisplayMode
         try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
     }
     
     @objc fileprivate func handleChangeInfoDisplayModeTap(_ sender: UITapGestureRecognizer) {
         let cell = sender.view!.superview!.superview! as! EventTableViewCell
         let indexPath = tableView.indexPath(for: cell)!
+        var row = indexPath.row
+        if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
+        if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
         switch cell.infoDisplayed {
         case .tagline:
             cell.infoDisplayed = .date
             mainRealm.beginWrite()
-            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.date.rawValue
+            items(forSection: indexPath.section)[row].infoDisplayed = DisplayInfoOptions.date.rawValue
             try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .date:
             cell.infoDisplayed = .tagline
             mainRealm.beginWrite()
-            items(forSection: indexPath.section)[indexPath.row].infoDisplayed = DisplayInfoOptions.tagline.rawValue
+            items(forSection: indexPath.section)[row].infoDisplayed = DisplayInfoOptions.tagline.rawValue
             try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
         case .none: break
         }
@@ -903,7 +921,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         updateActiveCategories()
         updateIndexPathMap()
         tableView.reloadData()
-        addOrRemoveNewCellPrompt()
     }
     
     // Function to update the active categories when changes to the data model occur.
@@ -959,21 +976,6 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     // Function to add a new event from the events page.
     @objc fileprivate func insertNewObject(_ sender: Any) {performSegue(withIdentifier: "Add New Event Segue", sender: self)}
-    
-    fileprivate func addOrRemoveNewCellPrompt() -> Void {
-        // TODO: Make this a soft and comfortable glyph instead of harsh text.
-        if activeCategories.isEmpty {
-            let addNewCellPrompt = UILabel(frame: CGRect(x: 0.0, y: 0.0, width: self.view.bounds.width, height: 300.0))
-            addNewCellPrompt.text = "Tap the '+' in the upper right to create a new event!"
-            addNewCellPrompt.textColor = UIColor.white
-            addNewCellPrompt.font = UIFont(name: "FiraSans-Light", size: 16.0)
-            addNewCellPrompt.numberOfLines = 0
-            addNewCellPrompt.lineBreakMode = .byClipping
-            addNewCellPrompt.textAlignment = .center
-            self.tableView.backgroundView = addNewCellPrompt
-        }
-        else {self.tableView.backgroundView = nil}
-    }
     
     func items(forSection section: Int) -> Results<SpecialEvent> {
         var eventsToReturn = mainRealmSpecialEvents!

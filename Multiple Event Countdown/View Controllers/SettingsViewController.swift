@@ -10,6 +10,7 @@ import UIKit
 import RealmSwift
 import UserNotifications
 import MessageUI
+import os
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, SettingsTableViewCellDelegate, MFMailComposeViewControllerDelegate {
 
@@ -63,9 +64,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let s1 = dataSource.addSection(title: Text.SectionTitles.general)
         
         let s1r1 = dataSource[s1].addRow(type: .segue, title: Text.RowTitles.organizeCategories)
-        
-        /*let s1r2 = dataSource[s1].addRow(type: .action, title: Text.RowTitles.resetAllThemes)
-        dataSource[s1].rows[s1r2].options.append(Options.resetAllThemes)*/
         
         let s1r3 = dataSource[s1].addRow(type: .selectOption, title: Text.RowTitles.dateDisplayMode)
         dataSource[s1].rows[s1r3].options.append(Options.dateDisplayMode.short)
@@ -182,13 +180,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
         else {
             guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
-                #if DEBUG
-                fatalError("Expected a valid URL here.")
-                #endif
-                // TODO: Tell user there was a problem sending the mail.
+                let alert = UIAlertController(title: "Sorry!", message: "There appears to have been an error sending mail.\n\nIf you would manual send me an e-mail to indiedeved@gmail.com telling me about this issue that would be greatly appreciated!", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
+                return
             }
             guard UIApplication.shared.canOpenURL(mailToURL) else {
-                // TODO: Tell user they may not be configured to send mail.
+                let alert = UIAlertController(title: "Hmm...", message: "Looks like you may not be configured to send e-mail on this device. You can change this by going to your e-mail settings the system settings app.", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
                 return
             }
             UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
@@ -204,16 +206,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 if let fbInternetURL = URL(string: "https://www.facebook.com/IndieDevEd") {
                     UIApplication.shared.open(fbInternetURL, options: [:], completionHandler: nil)
                 }
-                else {
-                    // TODO: Log, continue
-                    fatalError("URL couldnt be created for some reason...")
-                }
+                else {os_log("Facebook www URL could not be initialized.", log: .default, type: .error)}
             }
         }
-        else {
-            // TODO: Log, continue
-            fatalError("URL couldnt be created for some reason...")
-        }
+        else {os_log("Facebook app URL could not be initialized.", log: .default, type: .error)}
     }
     
     @IBAction func tweetAtMe(_ sender: UIButton) {
@@ -225,16 +221,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 if let twitterInternetURL = URL(string: "https://twitter.com/IndieMakerEd") {
                     UIApplication.shared.open(twitterInternetURL, options: [:], completionHandler: nil)
                 }
-                else {
-                    // TODO: Log, continue
-                    fatalError("URL couldnt be created for some reason...")
-                }
+                else {os_log("Twitter www URL could not be initialized.", log: .default, type: .error)}
             }
         }
-        else {
-            // TODO: Log, continue
-            fatalError("URL couldnt be created for some reason...")
-        }
+        else {os_log("Twitter app URL could not be initialized.", log: .default, type: .error)}
     }
     
     @IBAction func sendInstaMessage(_ sender: UIButton) {
@@ -246,16 +236,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 if let instaInternetURL = URL(string: "https://www.instagram.com/indiemakered/") {
                     UIApplication.shared.open(instaInternetURL, options: [:], completionHandler: nil)
                 }
-                else {
-                    // TODO: Log, continue
-                    fatalError("URL couldnt be created for some reason...")
-                }
+                else {os_log("Instagram www URL could not be initialized.", log: .default, type: .error)}
             }
         }
-        else {
-            // TODO: Log, continue
-            fatalError("URL couldnt be created for some reason...")
-        }
+        else {os_log("Instagram app URL could not be initialized.", log: .default, type: .error)}
     }
     
     @IBAction func request(_ sender: UIButton) {
@@ -266,19 +250,22 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             composeVC.setToRecipients(["indiedeved@gmail.com"])
             composeVC.setSubject("I have an idea!")
-            composeVC.setMessageBody("Have an idea how this app can be better? Is it missing a feature you desparately want? Does somthing not quite look right? How can I do better?:\n\n", isHTML: false)
+            composeVC.setMessageBody("Have an idea how this app can be better? Is it missing a feature you desparately want? Does something not quite look right? How can I do better?:\n\n", isHTML: false)
             
             self.present(composeVC, animated: true, completion: nil)
         }
         else {
             guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
-                #if DEBUG
-                fatalError("Expected a valid URL here.")
-                #endif
-                // TODO: Tell user there was a problem sending the mail.
-            }
+                let alert = UIAlertController(title: "Sorry!", message: "There appears to have been an error sending mail.\n\nIf you would manual send me an e-mail to indiedeved@gmail.com telling me about this issue that would be greatly appreciated!", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
+                return            }
             guard UIApplication.shared.canOpenURL(mailToURL) else {
-                // TODO: Tell user they may not be configured to send mail.
+                let alert = UIAlertController(title: "Hmm...", message: "Looks like you may not be configured to send e-mail on this device. You can change this by going to your e-mail settings the system settings app.", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
                 return
             }
             UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
@@ -293,19 +280,23 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             composeVC.setToRecipients(["indiedeved@gmail.com"])
             composeVC.setSubject("I found a bug!")
-            composeVC.setMessageBody("Please describe the bug in detail. e.g. What happened? Did the app fail to perform as expected? Did it fail at a task? Does somthing look funny?:\n\n\n\nPlease describe what you were doing when the bug occured or what was the last thing you did when the bug occured. e.g. Did you tap a button? Were you scrolling through a view?:\n\n", isHTML: false)
+            composeVC.setMessageBody("Please describe the bug in detail. e.g. What happened? Did the app fail to perform as expected? Did it fail at a task? Does something look funny?:\n\n\n\nPlease describe what you were doing when the bug occured or what was the last thing you did when the bug occured. e.g. Did you tap a button? Were you scrolling through a view?:\n\n", isHTML: false)
             
             self.present(composeVC, animated: true, completion: nil)
         }
         else {
             guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
-                #if DEBUG
-                fatalError("Expected a valid URL here.")
-                #endif
-                // TODO: Tell user there was a problem sending the mail.
+                let alert = UIAlertController(title: "Sorry!", message: "There appears to have been an error sending mail.\n\nIf you would manual send me an e-mail to indiedeved@gmail.com telling me about this issue that would be greatly appreciated!", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
+                return
             }
             guard UIApplication.shared.canOpenURL(mailToURL) else {
-                // TODO: Tell user they may not be configured to send mail.
+                let alert = UIAlertController(title: "Hmm...", message: "Looks like you may not be configured to send e-mail on this device. You can change this by going to your e-mail settings the system settings app.", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
                 return
             }
             UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
@@ -346,8 +337,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         
         if defaultNotificationsConfig.count != 1 {
-            // TODO: Log this error, delete the first one maybe for production?
-            fatalError("There were multiple notification configs! Should only be one.")
+            os_log("Multiple notifications configs found! Assuming first one is default.", log: .default, type: .error)
         }
         
         if userDefaults.value(forKey: UserDefaultKeys.dateDisplayMode) as! String == Defaults.DateDisplayMode.short {
@@ -440,9 +430,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             case Text.RowTitles.dailyReminders: cell.selectedOption = dailyReminders
             case Text.RowTitles.eventReminders: cell.selectedOption = eventReminders
             case Text.RowTitles.organizeCategories: break
-            default:
-                // TODO: break
-                fatalError("Need to add a row title?")
+            default: os_log("Unrecognized row title encountered: %@", log: .default, type: .error, rowData.title)
             }
         }
         return cell
@@ -492,11 +480,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                     }
                     
+                    #if DEBUG
                     print("Notifications stored after reset to defaults:")
                     let allEventNotifications = self.mainRealm.objects(RealmEventNotification.self)
                     for (i, realmNotif) in allEventNotifications.enumerated() {
                         print("\(i + 1): \(realmNotif.uuid)")
                     }
+                    #endif
                     
                     updateDailyNotifications(async: true)
                     let alert2 = UIAlertController(title: "Reset Current Events?", message: "Would you like to reset all current event notifications to these new default settings?", preferredStyle: .alert)
@@ -513,7 +503,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                 var uuidsToDeschedule = [String]()
                                 
                                 for event in resetDefaultsSpecialEvents {
+                                    #if DEBUG
                                     print("Reseting \"\(event.title)\"")
+                                    #endif
                                     
                                     if event.notificationsConfig != nil { // Old config
                                         for notif in event.notificationsConfig!.eventNotifications {uuidsToDeschedule.append(notif.uuid)}
@@ -550,11 +542,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                     
                                 }
                                 
+                                #if DEBUG
                                 print("Notifications stored after adding new notifs:")
                                 let allEventNotifications = resetDefaultsRealm.objects(RealmEventNotification.self)
                                 for (i, realmNotif) in allEventNotifications.enumerated() {
                                     print("\(i + 1): \(realmNotif.uuid)")
                                 }
+                                #endif
                                 
                                 //
                                 // Cancel all pending event notification requests
@@ -582,9 +576,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 alert.addAction(yes)
                 alert.addAction(no)
                 self.present(alert, animated: true, completion: nil)
-            default:
-                // TODO: log and break
-                fatalError("Need to add a case?")
+            default: os_log("Unrecognized row title encountered: %@", log: .default, type: .error, rowData.title)
             }
             
         case .onOrOff: break
@@ -648,26 +640,45 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             case Options.dateDisplayMode.long:
                 userDefaults.set(Defaults.DateDisplayMode.long, forKey: UserDefaultKeys.dateDisplayMode)
                 masterViewController?.tableView.reloadData()
-            default:
-                // TODO: Log and break
-                fatalError("Do you need to add a case??")
+            default: os_log("Unrecognized option encountered!", log: .default, type: .error)
             }
-        default:
-            // TODO: break
-            fatalError("Need to add a case?")
+        default: os_log("Unrecognized row title encountered: %@", log: .default, type: .error, cell.title ?? "Nil")
         }
     }
     
     //
     // MARK: mailComposeDelegate
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-        if let _error = error {
-            #if DEBUG
-            print(_error.localizedDescription)
-            fatalError("^ Check Error")
-            #endif
-            // TODO: Tell user there was an error sending the message.
+        
+        let failedController = UIAlertController(title: "There Was a Problem", message: "\nSorry, but the mail app told me there was a problem sending your message. You can try again later, or we can try sending from your default mail app.", preferredStyle: .alert)
+        let dismissAction = UIAlertAction(title: "I'll try later.", style: .cancel) { (action) in
+            self.dismiss(animated: true, completion: nil)
         }
+        let mailtoAction = UIAlertAction(title: "Try default mail app", style: .default) { (Action) in
+            guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
+                let alert = UIAlertController(title: "Sorry!", message: "There appears to have been an error sending mail.\n\nIf you would manual send me an e-mail to indiedeved@gmail.com telling me about this issue that would be greatly appreciated!", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
+                return                    }
+            guard UIApplication.shared.canOpenURL(mailToURL) else {
+                let alert = UIAlertController(title: "Hmm...", message: "Looks like you may not be configured to send e-mail on this device. You can change this by going to your e-mail settings the system settings app.", preferredStyle: .alert)
+                let okayAction = UIAlertAction(title: "Okay", style: .default) { [weak self] (action) in self?.dismiss(animated: true, completion: nil)}
+                alert.addAction(okayAction)
+                self.present(alert, animated: true, completion: nil)
+                return
+            }
+            UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
+        }
+        
+        failedController.addAction(dismissAction)
+        failedController.addAction(mailtoAction)
+        
+        if let _error = error {
+            os_log("Error from mailComposeController while attempting to send mail: %@", log: .default, type: .error, _error.localizedDescription)
+            self.present(failedController, animated: true, completion: nil)
+        }
+        
         self.dismiss(animated: true) {
             switch result {
             case .sent:
@@ -692,28 +703,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     thanksController.addAction(dismissAction)
                     self.present(thanksController, animated: true, completion: nil)
                 }
-            case .failed:
-                let failedController = UIAlertController(title: "There Was a Problem", message: "\nSorry, but the mail app told me there was a problem sending your message. You can try again later, or we can try sending from your default mail app.", preferredStyle: .alert)
-                let dismissAction = UIAlertAction(title: "I'll try later.", style: .cancel) { (action) in
-                    self.dismiss(animated: true, completion: nil)
-                }
-                let mailtoAction = UIAlertAction(title: "Try default mail app", style: .default) { (Action) in
-                    guard let mailToURL = URL(string: "mailto:indiedeved@gmail.com") else {
-                        #if DEBUG
-                        fatalError("Expected a valid URL here.")
-                        #endif
-                        // TODO: Tell user there was a problem sending the mail.
-                    }
-                    guard UIApplication.shared.canOpenURL(mailToURL) else {
-                        // TODO: Tell user they may not be configured to send mail.
-                        return
-                    }
-                    UIApplication.shared.open(mailToURL, options: [:], completionHandler: nil)
-                }
-                
-                failedController.addAction(dismissAction)
-                failedController.addAction(mailtoAction)
-                self.present(failedController, animated: true, completion: nil)
+            case .failed: self.present(failedController, animated: true, completion: nil)
             default: break
             }
         }
@@ -749,9 +739,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 tableView.deleteRows(at: ipsToModify, with: .fade)
                 tableView.endUpdates()
             }
-        default:
-            // TODO: log and break
-            fatalError("Need to add a case?")
+        default: os_log("Unrecognized row title encountered: %@", log: .default, type: .error, cell.title ?? "Nil")
         }
     }
 
@@ -768,9 +756,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             destination.useCustomNotifications = false
         case "Order Categories": break
-        default:
-            // TODO: log and break
-            fatalError("Need to add a case?")
+        default: os_log("Unrecognized segue ident encountered: %@", log: .default, type: .error, segue.identifier ?? "Nil")
         }
     }
     

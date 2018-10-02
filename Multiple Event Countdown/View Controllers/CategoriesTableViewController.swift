@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import os
 
 class CategoriesTableViewController: UITableViewController, UITextFieldDelegate {
     
@@ -26,8 +27,8 @@ class CategoriesTableViewController: UITableViewController, UITextFieldDelegate 
             }
         }
         else {
-            // TODO: Error Handling
-            fatalError("Unable to fetch categories from user defaults in NewEventViewController")
+            os_log("Unable to fetch categories from user defaults, error setting them in appDelegate maybe?", log: .default, type: .error)
+            editableCategories.append(contentsOf: immutableCategories)
         }
         
         tableView.setEditing(true, animated: false)
