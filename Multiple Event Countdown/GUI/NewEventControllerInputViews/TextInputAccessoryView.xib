@@ -13,9 +13,6 @@
         <array key="Raleway-Italic.ttf">
             <string>Raleway-Italic</string>
         </array>
-        <array key="Raleway-Light.ttf">
-            <string>Raleway-Light</string>
-        </array>
         <array key="Raleway-Regular.ttf">
             <string>Raleway-Regular</string>
         </array>
@@ -44,11 +41,11 @@
                             <rect key="frame" x="8" y="8" width="349" height="27"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0ui-sa-80a">
-                                    <rect key="frame" x="299" y="-6.5" width="50" height="40"/>
-                                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                                    <rect key="frame" x="282" y="-5" width="67" height="37"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="14"/>
                                     <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <inset key="contentEdgeInsets" minX="15" minY="10" maxX="15" maxY="10"/>
-                                    <state key="normal" image="NextInputButtonImage">
+                                    <state key="normal" title="NEXT">
                                         <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </state>
                                 </button>
@@ -59,11 +56,11 @@
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CGm-4u-kjU">
-                                    <rect key="frame" x="0.0" y="-6.5" width="40" height="40"/>
-                                    <fontDescription key="fontDescription" name="Raleway-Light" family="Raleway" pointSize="14"/>
+                                    <rect key="frame" x="0.0" y="-5" width="84" height="37"/>
+                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="14"/>
                                     <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
-                                    <state key="normal" image="CloseImage">
+                                    <state key="normal" title="CONFIRM">
                                         <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </state>
                                 </button>
@@ -114,8 +111,4 @@
             <point key="canvasLocation" x="34.5" y="34"/>
         </view>
     </objects>
-    <resources>
-        <image name="CloseImage" width="20" height="20"/>
-        <image name="NextInputButtonImage" width="20" height="20"/>
-    </resources>
 </document>

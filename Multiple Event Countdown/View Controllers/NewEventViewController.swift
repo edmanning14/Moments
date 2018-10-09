@@ -829,12 +829,21 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         inputInfoMaterial.regularFormat()
         updateInfoInputMaterialTitle()
         
-        inputInfoMaterial.colapseButton.setImage(#imageLiteral(resourceName: "CloseImage"), for: .normal)
-        inputInfoMaterial.colapseButton.tintColor = GlobalColors.orangeDark
+        inputInfoMaterial.colapseButton.directionalLayoutMargins = standardDirectionalLayoutMargins
+        inputInfoMaterial.colapseButton.contentEdgeInsets = UIEdgeInsets(top: standardDirectionalLayoutMargins.top, left: standardDirectionalLayoutMargins.leading, bottom: standardDirectionalLayoutMargins.bottom, right: standardDirectionalLayoutMargins.trailing)
+        inputInfoMaterial.colapseButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)
+        inputInfoMaterial.colapseButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
+        inputInfoMaterial.colapseButton.setTitle("CONFIRM", for: .normal)
+        //inputInfoMaterial.colapseButton.setImage(#imageLiteral(resourceName: "CloseImage"), for: .normal)
+        //inputInfoMaterial.colapseButton.tintColor = GlobalColors.orangeDark
 
         let nextButton = UIButton()
-        nextButton.setImage(#imageLiteral(resourceName: "NextInputButtonImage"), for: .normal)
-        nextButton.tintColor = GlobalColors.orangeDark
+        nextButton.directionalLayoutMargins = standardDirectionalLayoutMargins
+        nextButton.contentEdgeInsets = UIEdgeInsets(top: standardDirectionalLayoutMargins.top, left: standardDirectionalLayoutMargins.leading, bottom: standardDirectionalLayoutMargins.bottom, right: standardDirectionalLayoutMargins.trailing)
+        nextButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)
+        nextButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
+        nextButton.setTitle("NEXT", for: .normal)
+        //nextButton.setImage(#imageLiteral(resourceName: "NextInputButtonImage"), for: .normal)
         nextButton.addTarget(self, action: #selector(selectNextInput), for: .touchUpInside)
         inputInfoMaterial.addRightButtonItem(nextButton)
         
@@ -927,8 +936,11 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             configureEventMaterial!.title = Inputs.configure.rawValue
             configureEventMaterial!.expandedViewContent = configureCellInputView
             
-            configureEventMaterial!.colapseButton.setImage(#imageLiteral(resourceName: "CloseImage"), for: .normal)
-            configureEventMaterial!.colapseButton.tintColor = GlobalColors.orangeDark
+            configureEventMaterial!.colapseButton.directionalLayoutMargins = standardDirectionalLayoutMargins
+            configureEventMaterial!.colapseButton.contentEdgeInsets = UIEdgeInsets(top: standardDirectionalLayoutMargins.top, left: standardDirectionalLayoutMargins.leading, bottom: standardDirectionalLayoutMargins.bottom, right: standardDirectionalLayoutMargins.trailing)
+            configureEventMaterial!.colapseButton.titleLabel?.font = UIFont(name: GlobalFontNames.ralewayRegular, size: 14.0)
+            configureEventMaterial!.colapseButton.setTitleColor(GlobalColors.orangeDark, for: .normal)
+            configureEventMaterial!.colapseButton.setTitle("CONFIRM", for: .normal)
             
             configureEventMaterialManagerView!.addManagedMaterialView(configureEventMaterial!)
             configureEventMaterialManagerView!.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -2659,8 +2671,12 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             if nextInput == .none {
                 if editingEvent {inputInfoMaterial.title = "Tap info in event to edit"}
                 else {inputInfoMaterial.title = "All done!"}
+                inputInfoMaterial.layer.borderWidth = 0.0
             }
-            else {inputInfoMaterial.title = nextInput.rawValue}
+            else {
+                inputInfoMaterial.title = nextInput.rawValue
+                inputInfoMaterial.layer.borderWidth = 1.0
+            }
         }
         else {inputInfoMaterial.title = currentInputViewState.rawValue}
     }

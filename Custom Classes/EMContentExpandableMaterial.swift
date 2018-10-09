@@ -23,7 +23,7 @@ public class EMContentExpandableMaterial: UIView {
                         if !_leftButtonItems.isEmpty {
                             addSubview(leftButtonsStackView)
                         
-                            leftButtonsStackView.leftAnchor.constraint(equalTo: layoutMarginsGuide.leftAnchor, constant: 8.0).isActive = true
+                            leftButtonsStackView.leftAnchor.constraint(equalTo: layoutMarginsGuide.leftAnchor).isActive = true
                             leftButtonsStackView.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor).isActive = true
                             
                             titleLabelLeftConstraint = titleLabel.leftAnchor.constraint(greaterThanOrEqualTo: leftButtonsStackView.rightAnchor, constant: titleToButtonsSpacing)
@@ -37,7 +37,7 @@ public class EMContentExpandableMaterial: UIView {
                         if !_rightButtonItems.isEmpty {
                             addSubview(rightButtonsStackView)
                             
-                            rightButtonsStackView.rightAnchor.constraint(equalTo: layoutMarginsGuide.rightAnchor, constant: -8.0).isActive = true
+                            rightButtonsStackView.rightAnchor.constraint(equalTo: layoutMarginsGuide.rightAnchor).isActive = true
                             rightButtonsStackView.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor).isActive = true
                             
                             titleLabelRightConstraint = titleLabel.rightAnchor.constraint(lessThanOrEqualTo: rightButtonsStackView.leftAnchor, constant: -titleToButtonsSpacing)
