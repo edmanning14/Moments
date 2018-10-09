@@ -378,19 +378,43 @@ class EventTableViewCell: UITableViewCell {
                 else {
                     isPastEvent = false
                     let currentCalendar = Calendar.current
+                    var timeInterval = 0.0
+                    let todaysDate = Date()
+                    
+                    func failSafe() {
+                        os_log("Error creating next date for repeating date event: %@", log: .default, type: .error, self.eventTitle ?? "Nil")
+                        let tomorrow = currentCalendar.date(bySetting: .day, value: 1, of: Date()) ?? Date()
+                        delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: tomorrow, dateOnly: eventDate!.dateOnly))
+                    }
                     
                     switch repeats {
                     case .never: break
                     case .monthly:
-                        if let nextMonth = currentCalendar.date(byAdding: .month, value: 1, to: eventDate!.date, wrappingComponents: true) {
-                            delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextMonth, dateOnly: eventDate!.dateOnly))
+                        guard var nextMonth = currentCalendar.date(byAdding: .month, value: 1, to: eventDate!.date, wrappingComponents: false) else {
+                            failSafe(); return
                         }
-                        else {os_log("Error creating next date for repeating date event: %@", log: .default, type: .error, self.eventTitle ?? "Nil")}
+                        timeInterval = nextMonth.timeIntervalSince(todaysDate)
+                        while timeInterval < 0.0 {
+                            guard let newDate = currentCalendar.date(byAdding: .month, value: 1, to: nextMonth, wrappingComponents: false) else {
+                                failSafe(); return
+                            }
+                            nextMonth = newDate
+                            timeInterval = nextMonth.timeIntervalSince(todaysDate)
+                        }
+                        delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextMonth, dateOnly: eventDate!.dateOnly))
                     case .yearly:
-                        if let nextYear = currentCalendar.date(byAdding: .year, value: 1, to: eventDate!.date, wrappingComponents: true) {
-                            delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextYear, dateOnly: eventDate!.dateOnly))
+                        guard var nextYear = currentCalendar.date(byAdding: .year, value: 1, to: eventDate!.date, wrappingComponents: false) else {
+                            failSafe(); return
                         }
-                        else {os_log("Error creating next date for repeating date event: %@", log: .default, type: .error, self.eventTitle ?? "Nil")}
+                        timeInterval = nextYear.timeIntervalSince(todaysDate)
+                        while timeInterval < 0.0 {
+                            guard let newDate = currentCalendar.date(byAdding: .month, value: 1, to: nextYear, wrappingComponents: false) else {
+                                failSafe(); return
+                            }
+                            nextYear = newDate
+                            timeInterval = nextYear.timeIntervalSince(todaysDate)
+                        }
+                        delegate?.eventDateRepeatTriggered(cell: self, newDate: EventDate(date: nextYear, dateOnly: eventDate!.dateOnly))
                     }
                 }
             }
