@@ -2411,8 +2411,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     }*/
     
     func reFetchCloudImages() {
-        fetchCloudImages(imageTypes: [.thumbnail]) { [weak self] (image, error) in self?.thumbnailLoadComplete(image, error)
-        }
+        fetchCloudImages(imageTypes: [.thumbnail]) {[weak self] (image, error) in self?.thumbnailLoadComplete(image, error)}
     }
     
     fileprivate func fetchCloudImages(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: AssetFetchErrors?) -> Void) {
