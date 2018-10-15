@@ -8,7 +8,7 @@
 
 import UIKit
 
-@objc protocol EMContentExpandableMaterialManagerDelegate {
+@objc protocol EMContentExpandableMaterialManagerDelegate: class {
     @objc optional func shouldSelectMaterial(_ material: EMContentExpandableMaterial) -> Bool
     @objc optional func shouldColapseMaterial(_ material: EMContentExpandableMaterial) -> Bool
 }

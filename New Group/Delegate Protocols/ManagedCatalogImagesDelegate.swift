@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol ManagedCatalogImagesDelegate {
+protocol ManagedCatalogImagesDelegate: class {
     func dataUpdated()
 }

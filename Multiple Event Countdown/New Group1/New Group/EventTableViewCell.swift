@@ -18,7 +18,7 @@ class EventTableViewCell: UITableViewCell {
     //
     
     fileprivate let computationalQueue = DispatchQueue(label: "computationalQueue", qos: DispatchQoS.userInitiated)
-    var delegate: EventTableViewCellDelegate?
+    weak var delegate: EventTableViewCellDelegate?
     
     // Data Model
     var eventTitle: String? {

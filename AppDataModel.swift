@@ -302,7 +302,7 @@ internal class UserEventImage {
     
     let title: String
     var photoAsset: PHAsset?
-    var delegate: CountdownImageDelegate?
+    weak var delegate: CountdownImageDelegate?
     
     var mainImage: CountdownImage? {
         if let i = images.index(where: {$0.imageType == .main}) {return images[i]}

@@ -149,8 +149,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             else {isUserChange = false}
             
             if eventDate != nil && oldValue == nil {
-                eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
-                    DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
+                eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) {[weak weakSelf = self] (timer) in
+                    DispatchQueue.main.async {weakSelf?.specialEventView?.update()}
                 }
             }
             else if eventDate == nil && oldValue != nil {
@@ -424,7 +424,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     //
     // Other
     
-    var masterViewController: MasterViewController?
+    weak var masterViewController: MasterViewController?
     //fileprivate var productRequest: SKProductsRequest?
     /*fileprivate var imagesForPurchace = [CKRecordID]() {
         didSet {
@@ -1042,7 +1042,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         mainRealm = try! Realm(configuration: appRealmConfig)
         defaultNotificationsConfig = mainRealm.objects(DefaultNotificationsConfig.self)
         fetchLocalImages()
-        fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))
+        fetchCloudImages(imageTypes: [.thumbnail]) {[weak self] (image, error) in self?.thumbnailLoadComplete(image, error)}
         fetchUserPhotos()
         
         if let event = specialEvent{
@@ -1114,8 +1114,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     override func viewWillAppear(_ animated: Bool) {
         if eventDate != nil && eventTimer == nil {
             specialEventView?.update()
-            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
-                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
+            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak weakSelf = self] (timer) in
+                DispatchQueue.main.async {weakSelf?.specialEventView?.update()}
             }
         }
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardChangeFrame(notification:)), name: NSNotification.Name.UIKeyboardWillChangeFrame, object: nil)
@@ -1126,8 +1126,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     @objc fileprivate func applicationDidBecomeActive(notification: NSNotification) {
         if eventDate != nil && eventTimer == nil {
             specialEventView?.update()
-            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
-                DispatchQueue.main.async { [weak weakSelf = self] in weakSelf?.specialEventView?.update()}
+            eventTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak weakSelf = self] (timer) in
+                DispatchQueue.main.async {weakSelf?.specialEventView?.update()}
             }
         }
     }
@@ -1192,6 +1192,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
     deinit {
         eventTimer?.invalidate()
         eventTimer = nil
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
         
         let backgroundThread = DispatchQueue(label: "background", qos: .background, target: nil)
         backgroundThread.async {
@@ -2408,7 +2410,10 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         publicCloudDatabase.add(queryOperation)
     }*/
     
-    func reFetchCloudImages() {fetchCloudImages(imageTypes: [.thumbnail], completionHandler: thumbnailLoadComplete(_:_:))}
+    func reFetchCloudImages() {
+        fetchCloudImages(imageTypes: [.thumbnail]) { [weak self] (image, error) in self?.thumbnailLoadComplete(image, error)
+        }
+    }
     
     fileprivate func fetchCloudImages(_ previousNetworkFetchAtempts: Int = 0, imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: AssetFetchErrors?) -> Void) {
         
@@ -2427,35 +2432,29 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
         queryOperation.desiredKeys = desiredKeys
         
-        func queryCompletionBlock(_ weakSelf: NewEventViewController?, _ _cursor: CKQueryCursor?, _ error: Error?) {
-            if let nsError = error as NSError? {
+        queryOperation.queryCompletionBlock = { [weak self] (_cursor, _error) in
+            if let nsError = _error as NSError? {
                 switch nsError.code {
-                // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
-                // Error code 3: Network Unavailable.
-                // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+                    // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+                    // Error code 3: Network Unavailable.
+                    // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
                 // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
                 case 1, 4, 4097:
-                    if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
-                    else {weakSelf?.networkErrorHandler(nsError); return}
-                case 3: weakSelf?.networkErrorHandler(nsError); return
+                    if previousNetworkFetchAtempts <= 1 {self?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
+                    else {self?.networkErrorHandler(nsError); return}
+                case 3: self?.networkErrorHandler(nsError); return
                 default:
                     os_log("There was an new error fetching products from CloudKit: %@", log: OSLog.default, type: .error, nsError.localizedDescription)
-                    weakSelf?.networkErrorHandler(nsError)
+                    self?.networkErrorHandler(nsError)
                     return
                 }
             }
-            
             if let cursor = _cursor {
-                let newQuerryOperation = CKQueryOperation(cursor: cursor)
-                newQuerryOperation.desiredKeys = desiredKeys
-                newQuerryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
-                newQuerryOperation.recordFetchedBlock = recordFetchedBlock
-                weakSelf?.publicCloudDatabase.add(newQuerryOperation)
+                self?.continueFetch(withCursor: cursor, desiredKeys: desiredKeys, imageTypes: imageTypes, completionHandler: completion)
             }
             else {DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .complete}}
         }
-        
-        func recordFetchedBlock(_ record: CKRecord) {
+        queryOperation.recordFetchedBlock = { (record) in
             let recordID = record.recordID
             guard let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as? String else {completion(nil, .assetCreationFailure); return}
             guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
@@ -2484,11 +2483,112 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
             }
             else {completion(nil, .assetCreationFailure)}
         }
-        
-        queryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
-        queryOperation.recordFetchedBlock = recordFetchedBlock
         publicCloudDatabase.add(queryOperation)
     }
+    
+    fileprivate func continueFetch(withCursor cursor: CKQueryOperation.Cursor, desiredKeys: [String], imageTypes: [CountdownImage.ImageType], completionHandler completion: @escaping (_ eventImage: AppEventImage?, _ error: AssetFetchErrors?) -> Void) {
+        let newQuerryOperation = CKQueryOperation(cursor: cursor)
+        newQuerryOperation.desiredKeys = desiredKeys
+        newQuerryOperation.queryCompletionBlock = { [weak self] (_cursor, _error) in
+            if let nsError = _error as NSError? {
+                os_log("There was an new error fetching products from CloudKit: %@", log: OSLog.default, type: .error, nsError.localizedDescription)
+                self?.networkErrorHandler(nsError)
+                return
+            }
+            if let cursor = _cursor {
+                self?.continueFetch(withCursor: cursor, desiredKeys: desiredKeys, imageTypes: imageTypes, completionHandler: completion)
+            }
+            else {DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .complete}}
+        }
+        newQuerryOperation.recordFetchedBlock = { (record) in
+            let recordID = record.recordID
+            guard let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as? String else {completion(nil, .assetCreationFailure); return}
+            guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
+            guard let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as? String else {completion(nil, .assetCreationFailure); return}
+            let intLocationForCellView = record[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as? Int
+            var locationForCellView: CGFloat?
+            if let intLoc = intLocationForCellView {locationForCellView = CGFloat(intLoc) / 100.0}
+            
+            var images = [CountdownImage]()
+            for imageType in imageTypes {
+                if let imageAsset = record[imageType.recordKey] as? CKAsset {
+                    let imageFileExtension = record[imageType.extensionRecordKey] as! String
+                    
+                    do {
+                        let imageData = try Data(contentsOf: imageAsset.fileURL)
+                        let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                        images.append(newImage)
+                    }
+                    catch {completion(nil, .imageCreationFailure); return}
+                }
+                else {completion(nil, .imageCreationFailure); return}
+            }
+            
+            if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images) {
+                completion(newEventImage, nil)
+            }
+            else {completion(nil, .assetCreationFailure)}
+        }
+        publicCloudDatabase.add(newQuerryOperation)
+    }
+    
+//    fileprivate func queryCompletionBlock(_ weakSelf: NewEventViewController?, _ _cursor: CKQueryCursor?, _ error: Error?) {
+//        if let nsError = error as NSError? {
+//            switch nsError.code {
+//                // Error code 1: Internal error, couldn't send a valid signature. No recovery suggestions.
+//                // Error code 3: Network Unavailable.
+//                // Error code 4: CKErrorDoman, invalid server certificate. No recovery suggestions.
+//            // Error code 4097: Error connecting to cloudKitService. Recovery suggestion: Try your operation again. If that fails, quit and relaunch the application and try again.
+//            case 1, 4, 4097:
+//                if previousNetworkFetchAtempts <= 1 {weakSelf?.fetchCloudImages(previousNetworkFetchAtempts + 1, imageTypes: imageTypes, completionHandler: completion); return}
+//                else {weakSelf?.networkErrorHandler(nsError); return}
+//            case 3: weakSelf?.networkErrorHandler(nsError); return
+//            default:
+//                os_log("There was an new error fetching products from CloudKit: %@", log: OSLog.default, type: .error, nsError.localizedDescription)
+//                weakSelf?.networkErrorHandler(nsError)
+//                return
+//            }
+//        }
+//
+//        if let cursor = _cursor {
+//            let newQuerryOperation = CKQueryOperation(cursor: cursor)
+//            newQuerryOperation.desiredKeys = desiredKeys
+//            newQuerryOperation.queryCompletionBlock = { [weak self] (cursor, error) in queryCompletionBlock(self, cursor, error)}
+//            newQuerryOperation.recordFetchedBlock = recordFetchedBlock
+//            weakSelf?.publicCloudDatabase.add(newQuerryOperation)
+//        }
+//        else {DispatchQueue.main.async { [weak self] in self?.currentNetworkState = .complete}}
+//    }
+    
+//    fileprivate func recordFetchedBlock(_ record: CKRecord) {
+//        let recordID = record.recordID
+//        guard let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as? String else {completion(nil, .assetCreationFailure); return}
+//        guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
+//        guard let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as? String else {completion(nil, .assetCreationFailure); return}
+//        let intLocationForCellView = record[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as? Int
+//        var locationForCellView: CGFloat?
+//        if let intLoc = intLocationForCellView {locationForCellView = CGFloat(intLoc) / 100.0}
+//
+//        var images = [CountdownImage]()
+//        for imageType in imageTypes {
+//            if let imageAsset = record[imageType.recordKey] as? CKAsset {
+//                let imageFileExtension = record[imageType.extensionRecordKey] as! String
+//
+//                do {
+//                    let imageData = try Data(contentsOf: imageAsset.fileURL)
+//                    let newImage = CountdownImage(imageType: imageType, fileRootName: fileRootName, fileExtension: imageFileExtension, imageData: imageData)
+//                    images.append(newImage)
+//                }
+//                catch {completion(nil, .imageCreationFailure); return}
+//            }
+//            else {completion(nil, .imageCreationFailure); return}
+//        }
+//
+//        if let newEventImage = AppEventImage(category: category, title: title, recordName: recordID.recordName, recommendedLocationForCellView: locationForCellView, images: images) {
+//            completion(newEventImage, nil)
+//        }
+//        else {completion(nil, .assetCreationFailure)}
+//    }
     
     fileprivate func networkErrorHandler(_ error: NSError) {
         switch error.code {

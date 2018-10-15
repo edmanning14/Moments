@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol EventTableViewCellDelegate {
+protocol EventTableViewCellDelegate: class {
     func eventDateRepeatTriggered(cell: EventTableViewCell, newDate: EventDate)
 }

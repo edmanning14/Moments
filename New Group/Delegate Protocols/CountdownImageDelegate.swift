@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol CountdownImageDelegate {
+protocol CountdownImageDelegate: class {
     func fetchComplete(forImageTypes: [CountdownImage.ImageType], success: [Bool])
 }

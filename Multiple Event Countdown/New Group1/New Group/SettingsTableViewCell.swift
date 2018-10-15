@@ -10,7 +10,7 @@ import UIKit
 
 class SettingsTableViewCell: UITableViewCell, UIPickerViewDataSource, UIPickerViewDelegate {
 
-    var delegate: SettingsTableViewCellDelegate?
+    weak var delegate: SettingsTableViewCellDelegate?
     var title: String? {didSet {titleLabel.text = title}}
     
     var rowType = SettingsTypeDataSource.RowTypes.action {

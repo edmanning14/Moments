@@ -65,7 +65,7 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         private var orderedCategories = [String]()
         private var orderedImages = [[AppEventImage]]()
         
-        var delegate: ManagedCatalogImagesDelegate?
+        weak var delegate: ManagedCatalogImagesDelegate?
         var count: Int {return orderedImages.count}
         var isEmpty: Bool {return count == 0}
         

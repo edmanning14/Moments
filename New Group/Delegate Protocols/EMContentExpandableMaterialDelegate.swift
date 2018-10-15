@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol EMContentExpandableMaterialDelegate {
+protocol EMContentExpandableMaterialDelegate: class {
     func colapseButtonTapped(forMaterial material: EMContentExpandableMaterial)
     func contentViewChanged(forMaterial material: EMContentExpandableMaterial)
 }

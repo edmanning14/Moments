@@ -86,7 +86,7 @@ public class EMContentExpandableMaterial: UIView {
         }
     }
     
-    var delegate: EMContentExpandableMaterialDelegate?
+    weak var delegate: EMContentExpandableMaterialDelegate?
     
     var title: String? {
         didSet {

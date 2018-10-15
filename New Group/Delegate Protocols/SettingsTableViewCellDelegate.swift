@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol SettingsTableViewCellDelegate {
+protocol SettingsTableViewCellDelegate: class {
     func selectedOptionDidUpdate(cell: SettingsTableViewCell)
 }

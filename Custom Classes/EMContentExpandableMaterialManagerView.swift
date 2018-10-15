@@ -69,7 +69,7 @@ class EMContentExpandableMaterialManagerView: UIView, EMContentExpandableMateria
     var axis: Axes = .vertical
     var distribution: Distributions = .center
     
-    var delegate: EMContentExpandableMaterialManagerDelegate?
+    weak var delegate: EMContentExpandableMaterialManagerDelegate?
 
     override var intrinsicContentSize: CGSize {
         guard managedMaterialViews.count > 0 else {return CGSize(width: UIViewNoIntrinsicMetric, height: UIViewNoIntrinsicMetric)}

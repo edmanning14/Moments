@@ -741,8 +741,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     //
     // MARK: Target-action methods
     @objc fileprivate func timerBlock(timerFireMethod: Timer) {
+        print(tableView.visibleCells.count)
         for cell in tableView.visibleCells {
-            if let eventCell = cell as? EventTableViewCell {eventCell.update()}
+            if let eventCell = cell as? EventTableViewCell {print(eventCell.eventTitle ?? "None"); eventCell.update()}
         }
     }
     
