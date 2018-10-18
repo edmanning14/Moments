@@ -121,6 +121,7 @@
 		64C2F585212C4B0900A79E98 /* CategoriesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F584212C4B0900A79E98 /* CategoriesTableViewController.swift */; };
 		64C2F587212C524D00A79E98 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */; };
 		64D5FF8F1FC6C31E0043E064 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */; };
+		64D6C8D62175E28A00D91DEB /* ReviewTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64D6C8D52175E28A00D91DEB /* ReviewTableViewCell.swift */; };
 		64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */; };
 		64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E057292032AC6400ABCF3B /* BoolExtensions.swift */; };
 		64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */; };
@@ -262,6 +263,7 @@
 		64C2F584212C4B0900A79E98 /* CategoriesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesTableViewController.swift; sourceTree = "<group>"; };
 		64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
 		64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		64D6C8D52175E28A00D91DEB /* ReviewTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTableViewCell.swift; sourceTree = "<group>"; };
 		64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventViewController.swift; sourceTree = "<group>"; };
 		64E057292032AC6400ABCF3B /* BoolExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BoolExtensions.swift; path = Extensions/BoolExtensions.swift; sourceTree = SOURCE_ROOT; };
 		64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTypeDataSource.swift; sourceTree = "<group>"; };
@@ -319,6 +321,7 @@
 		641A38201F9E1D7D00B238A0 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				64D6C8D52175E28A00D91DEB /* ReviewTableViewCell.swift */,
 				64FADF3420F1D190009C2AE2 /* TitleOnlyTableViewCell.swift */,
 				64FADF3620F1D3BD009C2AE2 /* SettingsTableViewCell.swift */,
 				641FB2E9211897FB006BEDE3 /* DatePickerTableViewCell.swift */,
@@ -886,6 +889,7 @@
 				642E2C0F2132A0EC0059A588 /* UIImageExtensions.swift in Sources */,
 				64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */,
 				644A9D3F2136D2B200411C3A /* EMContentExpandableMaterial.swift in Sources */,
+				64D6C8D62175E28A00D91DEB /* ReviewTableViewCell.swift in Sources */,
 				64C2F583212C409B00A79E98 /* UIViewExtensions.swift in Sources */,
 				64004AEF20D0F33E002BF8A7 /* UIImageViewExtensions.swift in Sources */,
 				64503E5D213D623800E4A939 /* EMContentExpandableMaterialDelegate.swift in Sources */,

@@ -304,7 +304,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @IBAction func rateApp(_ sender: UIButton) {
-        guard let writeReviewURL = URL(string: "https://itunes.apple.com/app/id1342990841?action=write-review") else { fatalError("Expected a valid URL") }
+        guard let writeReviewURL = URL(string: "https://itunes.apple.com/app/id1342990841?action=write-review") else {
+            os_log("App Store URL could not be initialized.", log: .default, type: .error); return
+        }
         UIApplication.shared.open(writeReviewURL, options: [:], completionHandler: nil)
     }
     

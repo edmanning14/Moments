@@ -200,6 +200,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     // MARK: Other
     var tipCellIndexPath: IndexPath?
     var welcomeCellIndexPath: IndexPath?
+    var reviewCellIndexPath: IndexPath?
     
     
     //
@@ -289,6 +290,31 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         let numLaunches = userDefaults.integer(forKey: UserDefaultKeys.numberOfLaunches)
         if numLaunches == 1 {if !userDefaults.bool(forKey: UserDefaultKeys.tipShown) && numTimesViewDidAppear > 1 {displayTipCell()}}
         else if !userDefaults.bool(forKey: UserDefaultKeys.tipShown) {displayTipCell()}
+        
+        if numLaunches > 2 && !userDefaults.bool(forKey: UserDefaultKeys.reviewPromptShown) && userDefaults.bool(forKey: UserDefaultKeys.tipShown) {
+            var section = 0
+            var row = 0
+            var cellCounter = 0
+            for _section in 0..<activeCategories.count {
+                let count = items(forSection: section).count
+                if count >= 3 - cellCounter {row = 2 - cellCounter; section = _section; break}
+                else {cellCounter += count; row = count; section = _section}
+            }
+            
+            if section != 0 || row != 0 {
+                reviewCellIndexPath = IndexPath(row: row, section: section)
+                if welcomeCellIndexPath == nil && tipCellIndexPath == nil {
+                    Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (timer) in
+                        DispatchQueue.main.async { [weak self] in
+                            self?.tableView.beginUpdates()
+                            self?.tableView.insertRows(at: [self!.reviewCellIndexPath!], with: .fade)
+                            self?.tableView.endUpdates()
+                            userDefaults.set(true, forKey: UserDefaultKeys.reviewPromptShown)
+                        }
+                    }
+                }
+            }
+        }
         
         navItemTitle.setTitle(currentFilter.rawValue, for: .normal)
         
@@ -402,6 +428,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 var row = indexPath.row
                 if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
                 if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                if let review = reviewCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
                 let eventToDetail = items(forSection: indexPath.section)[row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.specialEvent = eventToDetail
@@ -413,6 +440,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 var row = indexPath.row
                 if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
                 if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                if let review = reviewCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
                 let event = items(forSection: indexPath.section)[row]
                 let dest = segue.destination as! NewEventViewController
                 dest.specialEvent = event
@@ -443,7 +471,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         if activeCategories.count > 0 {removeTableViewBackground(); return activeCategories.count}
-        else if welcomeCellIndexPath != nil || tipCellIndexPath != nil {removeTableViewBackground(); return 1}
+        else if welcomeCellIndexPath != nil || tipCellIndexPath != nil || reviewCellIndexPath != nil {removeTableViewBackground(); return 1}
         else {
             if mainRealmSpecialEvents.count == 0 {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEvents)}
             else {addTableViewBackground(withMessage: TableViewBackgroundViewMessages.noEventsInThisFilter)}
@@ -454,6 +482,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if let ipForWelcomCell = welcomeCellIndexPath, ipForWelcomCell.section == section {return items(forSection: section).count + 1}
         if let ipForTipCell = tipCellIndexPath, ipForTipCell.section == section {return items(forSection: section).count + 1}
+        if let ipForReviewCell = reviewCellIndexPath, ipForReviewCell.section == section {return items(forSection: section).count + 1}
         return items(forSection: section).count
     }
     
@@ -479,9 +508,27 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath == welcomeCellIndexPath || indexPath == tipCellIndexPath {return UITableViewAutomaticDimension}
+        if indexPath == welcomeCellIndexPath || indexPath == tipCellIndexPath || indexPath == reviewCellIndexPath {return UITableViewAutomaticDimension}
         if indexPath.row == items(forSection: indexPath.section).count - 1 {return 160}
         return 160 + globalCellSpacing
+    }
+    
+    @objc fileprivate func reviewApp() {
+        guard let writeReviewURL = URL(string: "https://itunes.apple.com/app/id1342990841?action=write-review") else {
+            os_log("App Store URL could not be initialized.", log: .default, type: .error); return
+        }
+        UIApplication.shared.open(writeReviewURL, options: [:], completionHandler: nil)
+        dismissReviewCell()
+    }
+    
+    @objc fileprivate func dismissReviewCell() {
+        if let deletedIP = reviewCellIndexPath {
+            reviewCellIndexPath = nil
+            tableView.beginUpdates()
+            if activeCategories.count == 0 {tableView.deleteSections(IndexSet([deletedIP.section]), with: .fade)}
+            else {tableView.deleteRows(at: [deletedIP], with: .fade)}
+            tableView.endUpdates()
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -494,11 +541,25 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
             let cell = tableView.dequeueReusableCell(withIdentifier: "Tip Cell", for: indexPath)
             return cell
         }
+        else if indexPath == reviewCellIndexPath {
+            if let cell = tableView.dequeueReusableCell(withIdentifier: "Review Cell", for: indexPath) as? ReviewTableViewCell {
+                cell.sureButton.emphasisedFormat()
+                cell.laterButton.regularFormat()
+                cell.sureButton.addTarget(self, action: #selector(reviewApp), for: .touchUpInside)
+                cell.laterButton.addTarget(self, action: #selector(dismissReviewCell), for: .touchUpInside)
+                return cell
+            }
+            else {
+                os_log("Could not downcast to reviewTableViewCell.", log: .default, type: .error)
+                return UITableViewCell()
+            }
+        }
         else {
             let event: SpecialEvent = {
                 var row = indexPath.row
                 if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
                 if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                if let review = reviewCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
                 return items(forSection: indexPath.section)[row]
             }()
             
@@ -570,7 +631,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
     
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        if indexPath != welcomeCellIndexPath || indexPath != tipCellIndexPath {
+        if indexPath != welcomeCellIndexPath || indexPath != tipCellIndexPath || indexPath != reviewCellIndexPath {
             let editAction = UIContextualAction(style: .normal, title:"Edit") { [weak self] (_, _, completion) in
                 if let cell = self?.tableView.cellForRow(at: indexPath) {
                     self?.performSegue(withIdentifier: SegueIdentifiers.addNewEventSegue, sender: cell)
@@ -622,11 +683,19 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 else {tableView.deleteRows(at: [indexPath], with: .fade)}
                 tableView.endUpdates()
             }
+            else if self?.reviewCellIndexPath != nil, self!.reviewCellIndexPath! == indexPath {
+                self?.reviewCellIndexPath = nil
+                tableView.beginUpdates()
+                if livingSelf.activeCategories.count == 0 {tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)}
+                else {tableView.deleteRows(at: [indexPath], with: .fade)}
+                tableView.endUpdates()
+            }
             else {
                 let deletedItem: SpecialEvent = {
                     var row = indexPath.row
                     if let welcome = livingSelf.welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
                     if let tip = livingSelf.tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+                    if let review = livingSelf.tipCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
                     return livingSelf.items(forSection: indexPath.section)[row]
                 }()
                 let deletedItemCategory = deletedItem.category
@@ -649,6 +718,9 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                 if livingSelf.tipCellIndexPath != nil && livingSelf.tipCellIndexPath!.section == indexPath.section && livingSelf.tipCellIndexPath!.row > indexPath.row {
                     livingSelf.tipCellIndexPath = IndexPath(row: livingSelf.tipCellIndexPath!.row - 1, section: livingSelf.tipCellIndexPath!.section)
                 }
+                if livingSelf.reviewCellIndexPath != nil && livingSelf.reviewCellIndexPath!.section == indexPath.section && livingSelf.reviewCellIndexPath!.row > indexPath.row {
+                    livingSelf.reviewCellIndexPath = IndexPath(row: livingSelf.reviewCellIndexPath!.row - 1, section: livingSelf.reviewCellIndexPath!.section)
+                }
                 
                 tableView.beginUpdates()
                 switch livingSelf.currentSort {
@@ -658,7 +730,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
                     }
                     else {tableView.deleteRows(at: [indexPath], with: .fade)}
                 case .chronologically:
-                    if livingSelf.items(forSection: 0).count == 0 && livingSelf.welcomeCellIndexPath == nil && livingSelf.tipCellIndexPath == nil {
+                    if livingSelf.items(forSection: 0).count == 0 && livingSelf.welcomeCellIndexPath == nil && livingSelf.tipCellIndexPath == nil && livingSelf.reviewCellIndexPath == nil {
                         tableView.deleteSections(IndexSet([indexPath.section]), with: .fade)
                     }
                     else {tableView.deleteRows(at: [indexPath], with: .fade)}
@@ -755,6 +827,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         var row = indexPath.row
         if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
         if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+        if let review = reviewCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
         mainRealm.beginWrite()
         items(forSection: indexPath.section)[row].abridgedDisplayMode = !items(forSection: indexPath.section)[row].abridgedDisplayMode
         try! mainRealm.commitWrite() //withoutNotifying: [specialEventsOnMainRealmNotificationToken]
@@ -766,6 +839,7 @@ class MasterViewController: UITableViewController, UIPickerViewDataSource, UIPic
         var row = indexPath.row
         if let welcome = welcomeCellIndexPath, welcome.section == indexPath.section {row -= 1}
         if let tip = tipCellIndexPath, tip.section == indexPath.section, tip.row < indexPath.row {row -= 1}
+        if let review = reviewCellIndexPath, review.section == indexPath.section, review.row < indexPath.row {row -= 1}
         switch cell.infoDisplayed {
         case .tagline:
             cell.infoDisplayed = .date

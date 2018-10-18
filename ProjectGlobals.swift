@@ -45,6 +45,7 @@ struct UserDefaultKeys {
     static let widgetConfiguration = "Widget Configuration"
     static let numberOfLaunches = "Number of Launches"
     static let tipShown = "Tip Shown"
+    static let reviewPromptShown = "Review Prompt Shown"
     static let notificationTimeAsDateKey = "Notification Time As Date"
     static let currentlyScheduledUUIDKey = "currently Scheduled UUID"
 }

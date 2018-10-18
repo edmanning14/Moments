@@ -1047,6 +1047,96 @@ If you have any questions or feedback, head over to the settings page to drop me
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Review Cell" rowHeight="300" id="dIk-wh-eQI" customClass="ReviewTableViewCell" customModule="Multiple_Event_Countdown" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="1228" width="375" height="300"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dIk-wh-eQI" id="O1W-Jt-RJL">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ney-tt-2vb">
+                                            <rect key="frame" x="54" y="36" width="305" height="28.333333333333329"/>
+                                            <fontDescription key="fontDescription" name="Raleway-Bold" family="Raleway" pointSize="24"/>
+                                            <color key="textColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fOo-Tb-OKO">
+                                            <rect key="frame" x="16" y="80" width="351" height="75.333333333333314"/>
+                                            <string key="text">If you are enjoying the app, I would appreciate it if you would take a minute to write a review on the App Store! It is an important part in getting the word out to others.</string>
+                                            <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="16"/>
+                                            <color key="textColor" red="0.93725490199999995" green="0.42352941179999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SmileFace" translatesAutoresizingMaskIntoConstraints="NO" id="Y2f-Ph-Z2K">
+                                            <rect key="frame" x="16" y="35" width="30" height="30"/>
+                                            <color key="tintColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="Y2f-Ph-Z2K" secondAttribute="height" multiplier="1:1" id="iZP-wr-Sa7"/>
+                                            </constraints>
+                                        </imageView>
+                                        <view alpha="0.15000000596046448" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ai8-kl-g64">
+                                            <rect key="frame" x="8" y="284.33333333333331" width="359" height="0.33333333333331439"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="QFg-6w-fLq"/>
+                                            </constraints>
+                                        </view>
+                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="N0H-Ui-8m0">
+                                            <rect key="frame" x="18" y="175.33333333333334" width="339" height="89.000000000000028"/>
+                                            <subviews>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="POT-jh-SV5">
+                                                    <rect key="frame" x="0.0" y="27.333333333333314" width="164.66666666666666" height="34"/>
+                                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="18"/>
+                                                    <state key="normal" title="Later">
+                                                        <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </state>
+                                                </button>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5He-vg-sQl">
+                                                    <rect key="frame" x="174.66666666666663" y="27.333333333333314" width="164.33333333333337" height="34"/>
+                                                    <fontDescription key="fontDescription" name="Raleway-Regular" family="Raleway" pointSize="18"/>
+                                                    <state key="normal" title="Sure!">
+                                                        <color key="titleColor" red="0.90196078430000004" green="0.31764705879999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </state>
+                                                </button>
+                                            </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </stackView>
+                                        <view alpha="0.15000000596046448" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e6g-JX-QNw">
+                                            <rect key="frame" x="8" y="15" width="359" height="0.66666666666666607"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="h53-86-dxe"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="fOo-Tb-OKO" secondAttribute="trailing" constant="8" id="0fA-ab-nSL"/>
+                                        <constraint firstItem="fOo-Tb-OKO" firstAttribute="top" secondItem="Y2f-Ph-Z2K" secondAttribute="bottom" constant="15" id="2v8-qH-iIV"/>
+                                        <constraint firstAttribute="trailing" secondItem="ai8-kl-g64" secondAttribute="trailing" constant="8" id="67I-hR-yA3"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="N0H-Ui-8m0" secondAttribute="trailing" constant="10" id="80W-AA-lS6"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="ney-tt-2vb" secondAttribute="trailing" constant="8" id="CuG-Qc-IBe"/>
+                                        <constraint firstItem="ai8-kl-g64" firstAttribute="top" secondItem="N0H-Ui-8m0" secondAttribute="bottom" constant="20" id="SFs-Zs-bYg"/>
+                                        <constraint firstItem="ney-tt-2vb" firstAttribute="leading" secondItem="Y2f-Ph-Z2K" secondAttribute="trailing" constant="8" id="YFw-H0-g1S"/>
+                                        <constraint firstItem="Y2f-Ph-Z2K" firstAttribute="leading" secondItem="O1W-Jt-RJL" secondAttribute="leadingMargin" constant="8" id="bAf-Te-tU5"/>
+                                        <constraint firstItem="ai8-kl-g64" firstAttribute="leading" secondItem="O1W-Jt-RJL" secondAttribute="leading" constant="8" id="bQt-4J-78y"/>
+                                        <constraint firstItem="e6g-JX-QNw" firstAttribute="top" secondItem="O1W-Jt-RJL" secondAttribute="top" constant="15" id="c7b-Vb-p1S"/>
+                                        <constraint firstItem="Y2f-Ph-Z2K" firstAttribute="top" secondItem="e6g-JX-QNw" secondAttribute="topMargin" constant="12" id="d0l-jX-q1d"/>
+                                        <constraint firstAttribute="trailing" secondItem="e6g-JX-QNw" secondAttribute="trailing" constant="8" id="da4-TB-cKJ"/>
+                                        <constraint firstAttribute="bottom" secondItem="ai8-kl-g64" secondAttribute="bottom" constant="15" id="hwS-c0-nqz"/>
+                                        <constraint firstItem="e6g-JX-QNw" firstAttribute="leading" secondItem="O1W-Jt-RJL" secondAttribute="leading" constant="8" id="jg4-DK-qzo"/>
+                                        <constraint firstItem="N0H-Ui-8m0" firstAttribute="top" secondItem="fOo-Tb-OKO" secondAttribute="bottom" constant="20" id="kdI-Hv-Ipw"/>
+                                        <constraint firstItem="N0H-Ui-8m0" firstAttribute="leading" secondItem="O1W-Jt-RJL" secondAttribute="leadingMargin" constant="10" id="ks3-pL-ZdU"/>
+                                        <constraint firstItem="fOo-Tb-OKO" firstAttribute="leading" secondItem="O1W-Jt-RJL" secondAttribute="leadingMargin" constant="8" id="p2H-bc-bY4"/>
+                                        <constraint firstItem="ney-tt-2vb" firstAttribute="centerY" secondItem="Y2f-Ph-Z2K" secondAttribute="centerY" id="zJW-2V-Nfv"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <outlet property="laterButton" destination="POT-jh-SV5" id="YRG-mr-6wr"/>
+                                    <outlet property="sureButton" destination="5He-vg-sQl" id="ez3-7v-3Kr"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <sections/>
                         <connections>
@@ -1062,7 +1152,7 @@ If you have any questions or feedback, head over to the settings page to drop me
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Rux-fX-hf1" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="708.75" y="-630.63380281690138"/>
+            <point key="canvasLocation" x="708" y="-631.0344827586207"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="r7l-gg-dq7">
