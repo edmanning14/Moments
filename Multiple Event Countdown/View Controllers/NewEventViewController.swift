@@ -203,8 +203,7 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         didSet {
             if let image = selectedImage {
                 hideImageNilLabel(animated: false)
-                if let appImage = image as? AppEventImage, appImage.maskImage != nil {useMask = true}
-                else {useMask = false}
+                useMask = true
                 specialEventView?.setSelectedImage(image: image, locationForCellView: locationForCellView)
                 if !isUserChange {currentInputViewState = .none}
             }
@@ -1540,11 +1539,9 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         dataSource[s1].rows[s1r3].options.append(StaticData.Options.InfoDisplayed.date)
         dataSource[s1].rows[s1r3].options.append(StaticData.Options.InfoDisplayed.none)
         
-        if let appImage = selectedImage as? AppEventImage, appImage.maskImage != nil {
-            let s1r4 = dataSource[s1].addRow(type: .onOrOff, title: StaticData.Text.RowTitles.toggleMask)
-            dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.on)
-            dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.off)
-        }
+        let s1r4 = dataSource[s1].addRow(type: .onOrOff, title: StaticData.Text.RowTitles.toggleMask)
+        dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.on)
+        dataSource[s1].rows[s1r4].options.append(StaticData.Options.UseMask.off)
         
         let s1r5 = dataSource[s1].addRow(type: .segue, title: StaticData.Text.RowTitles.notifications)
         dataSource[s1].rows[s1r5].options.append(StaticData.Options.Notifications._default)
@@ -2456,7 +2453,8 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         queryOperation.recordFetchedBlock = { (record) in
             let recordID = record.recordID
             guard let title = record[AppEventImage.CloudKitKeys.EventImageKeys.title] as? String else {completion(nil, .assetCreationFailure); return}
-            guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
+            //guard let fileRootName = record[AppEventImage.CloudKitKeys.EventImageKeys.fileRootName] as? String else {completion(nil, .assetCreationFailure); return}
+            let fileRootName = title.convertToFileName()
             guard let category = record[AppEventImage.CloudKitKeys.EventImageKeys.category] as? String else {completion(nil, .assetCreationFailure); return}
             let intLocationForCellView = record[AppEventImage.CloudKitKeys.EventImageKeys.locationForCellView] as? Int
             var locationForCellView: CGFloat?
@@ -2732,10 +2730,6 @@ class NewEventViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
                 locationForCellView: locationForCellView
             )
             try! mainRealm.write {mainRealm.add(newEvent, update: overwrite)}
-            #if DEBUG
-            let specialEvents = mainRealm.objects(SpecialEvent.self)
-            for event in specialEvents {print(event.title)}
-            #endif
         }
     }
     

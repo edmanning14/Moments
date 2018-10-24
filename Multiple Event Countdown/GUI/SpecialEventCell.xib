@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -39,6 +40,10 @@
                     <rect key="frame" x="0.0" y="20" width="320" height="538"/>
                     <subviews>
                         <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="YY7-N8-bbj">
+                            <rect key="frame" x="0.0" y="0.0" width="320" height="538"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </imageView>
+                        <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="EXI-66-cMI">
                             <rect key="frame" x="0.0" y="0.0" width="320" height="538"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </imageView>
@@ -160,37 +165,37 @@
                             </constraints>
                         </view>
                         <view opaque="NO" tag="3" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ods-Qx-ZRB">
-                            <rect key="frame" x="78.5" y="480.5" width="233.5" height="49.5"/>
+                            <rect key="frame" x="79" y="480.5" width="233" height="49.5"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qkz-v5-ZxG">
-                                    <rect key="frame" x="22" y="35" width="203" height="14.5"/>
+                                    <rect key="frame" x="22.5" y="35" width="202.5" height="14.5"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="wk" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aTS-LB-qlQ">
-                                            <rect key="frame" x="0.0" y="0.0" width="18" height="14.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="16.5" height="14.5"/>
                                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
                                             <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="day" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EtD-sb-F3l">
-                                            <rect key="frame" x="18" y="0.0" width="74" height="14.5"/>
+                                            <rect key="frame" x="16.5" y="0.0" width="75" height="14.5"/>
                                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
                                             <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="hr" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GLb-VE-l5X">
-                                            <rect key="frame" x="92" y="0.0" width="19.5" height="14.5"/>
+                                            <rect key="frame" x="91.5" y="0.0" width="18" height="14.5"/>
                                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
                                             <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="min" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gCu-Zh-ClW">
-                                            <rect key="frame" x="111.5" y="0.0" width="73.5" height="14.5"/>
+                                            <rect key="frame" x="109.5" y="0.0" width="75" height="14.5"/>
                                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
                                             <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="sec" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zV7-xk-WIU">
-                                            <rect key="frame" x="185" y="0.0" width="18" height="14.5"/>
+                                            <rect key="frame" x="184.5" y="0.0" width="18" height="14.5"/>
                                             <fontDescription key="fontDescription" name="FiraSans-Light" family="Fira Sans" pointSize="12"/>
                                             <color key="textColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                             <nil key="highlightedColor"/>
@@ -198,7 +203,7 @@
                                     </subviews>
                                 </stackView>
                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="bottom" spacing="2.5" translatesAutoresizingMaskIntoConstraints="NO" id="BAz-xP-8I2">
-                                    <rect key="frame" x="0.0" y="-0.5" width="233" height="30"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="233" height="30"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="In" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uxj-Kj-MqJ">
                                             <rect key="frame" x="0.0" y="15.5" width="12" height="14.5"/>
@@ -330,17 +335,21 @@
                         <constraint firstItem="YY7-N8-bbj" firstAttribute="leading" secondItem="LQr-u9-ByW" secondAttribute="leading" id="47w-Fi-MQr"/>
                         <constraint firstAttribute="bottom" secondItem="ods-Qx-ZRB" secondAttribute="bottom" constant="8" id="5Gq-Vh-BKh"/>
                         <constraint firstAttribute="trailing" secondItem="YY7-N8-bbj" secondAttribute="trailing" id="5Nh-3L-bzg"/>
+                        <constraint firstItem="EXI-66-cMI" firstAttribute="top" secondItem="YY7-N8-bbj" secondAttribute="top" id="6CX-Kd-VgW"/>
                         <constraint firstItem="YY7-N8-bbj" firstAttribute="top" secondItem="LQr-u9-ByW" secondAttribute="top" id="F1g-7H-7R1"/>
                         <constraint firstAttribute="bottom" secondItem="YY7-N8-bbj" secondAttribute="bottom" id="GrP-oI-jB2"/>
                         <constraint firstAttribute="trailing" secondItem="Nw8-LM-txh" secondAttribute="trailing" constant="8" id="HNC-H6-O31"/>
                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ue3-Sf-TXv" secondAttribute="trailing" constant="8" id="Q2L-aJ-iNj"/>
                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Yd2-Ze-G9g" secondAttribute="trailing" constant="8" id="SI4-WN-9qG"/>
+                        <constraint firstItem="EXI-66-cMI" firstAttribute="bottom" secondItem="YY7-N8-bbj" secondAttribute="bottom" id="U4E-d1-BG6"/>
                         <constraint firstItem="Ue3-Sf-TXv" firstAttribute="top" secondItem="LQr-u9-ByW" secondAttribute="top" constant="8" id="UuP-Ft-oze"/>
                         <constraint firstAttribute="trailing" secondItem="ods-Qx-ZRB" secondAttribute="trailing" constant="8" id="gWO-QI-08O"/>
                         <constraint firstItem="Yd2-Ze-G9g" firstAttribute="leading" secondItem="LQr-u9-ByW" secondAttribute="leading" constant="8" id="gkM-ct-1xr"/>
                         <constraint firstItem="Ue3-Sf-TXv" firstAttribute="leading" secondItem="LQr-u9-ByW" secondAttribute="leading" constant="8" id="pYK-Df-jwz"/>
                         <constraint firstAttribute="bottom" secondItem="Nw8-LM-txh" secondAttribute="bottom" constant="8" id="poG-Zz-crT"/>
                         <constraint firstItem="Yd2-Ze-G9g" firstAttribute="top" secondItem="Ue3-Sf-TXv" secondAttribute="bottom" constant="4" id="uPs-dR-OQL"/>
+                        <constraint firstItem="EXI-66-cMI" firstAttribute="leading" secondItem="YY7-N8-bbj" secondAttribute="leading" id="wQV-nJ-7Y2"/>
+                        <constraint firstItem="EXI-66-cMI" firstAttribute="trailing" secondItem="YY7-N8-bbj" secondAttribute="trailing" id="xMM-1y-fUq"/>
                     </constraints>
                 </view>
             </subviews>
@@ -376,6 +385,7 @@
                 <outlet property="hoursTextLabel" destination="GLb-VE-l5X" id="bEq-Hr-phy"/>
                 <outlet property="inLabel" destination="Uxj-Kj-MqJ" id="x4b-9W-aVT"/>
                 <outlet property="mainImageView" destination="YY7-N8-bbj" id="aab-wY-MDp"/>
+                <outlet property="maskImageView" destination="EXI-66-cMI" id="s15-zy-5O5"/>
                 <outlet property="minutesColon" destination="w1t-Yx-ePF" id="pbJ-x9-yHB"/>
                 <outlet property="minutesLabel" destination="Wgi-QA-0VC" id="qDf-c6-ywp"/>
                 <outlet property="minutesTextLabel" destination="gCu-Zh-ClW" id="tw2-8F-2nO"/>

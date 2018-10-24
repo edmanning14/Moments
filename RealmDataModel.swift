@@ -204,7 +204,7 @@ class EventImageInfo: Object {
         if let appImage = image as? AppEventImage {
             category = appImage.category
             isAppImage = true
-            if appImage.maskImage != nil {hasMask = true}
+            hasMask = true
             recordName = appImage.recordName
             if let _recommendedLocationForCellView = appImage.recommendedLocationForCellView {
                 recommendedLocationForCellView.value = Int(_recommendedLocationForCellView * 100.0)

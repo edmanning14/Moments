@@ -11,7 +11,7 @@ import CloudKit
 import Photos
 import os
 
-class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITabBarDelegate, UIPopoverPresentationControllerDelegate {
+class ImagePreviewViewController: UIViewController, UITabBarDelegate, UIPopoverPresentationControllerDelegate {
     
     //
     // MARK: - Paramters
@@ -35,7 +35,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             }
         }
     }
-    var selectImageViewController: SelectImageViewController?
     
     fileprivate var cropRect: CGRect?
     fileprivate var cropRectStartPanOrigin: CGPoint?
@@ -45,11 +44,12 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     // MARK: Types
     
     enum LoadStatuses {
-        case fetching, done, failedImageFetch, failedMainHomeCreate
+        case fetching, creatingMask, done, failedImageFetch, failedMainHomeCreate
         
         var statusLabelMessage: String {
             switch self {
             case .fetching: return "Fetching Image"
+            case .creatingMask: return "Creating Mask Image"
             case .done: return "Done!"
             case .failedImageFetch: return "Oops"
             case .failedMainHomeCreate: return "Oops"
@@ -59,6 +59,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         var detailMessage: String {
             switch self {
             case .fetching: return "This may take a moment."
+            case .creatingMask: return "This may take a moment."
             case .done: return ""
             case .failedImageFetch: return "There was an error fetching the image from iCloud, please try again. If problem persists, it would be greatly appreciated if you submitted a bug report by navigating to the 'Settings' page."
             case .failedMainHomeCreate: return "There was an error creating the cropped image, please try again. If problem persists, it would be greatly appreciated if you submitted a bug report by navigating to the 'Settings' page."
@@ -91,7 +92,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             loadingStatusLabel.text = loadStatus.statusLabelMessage
             loadingDetailLabel.text = loadStatus.detailMessage
             switch loadStatus {
-            case .fetching:
+            case .fetching, .creatingMask:
                 loadingActivityIndicator.startAnimating()
                 loadingActivityIndicator.isHidden = false
                 loadingStackView.isHidden = false
@@ -105,35 +106,27 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                 homeTabBarItem.isEnabled = false
                 originalTabBarItem.isEnabled = false
                 
-                if !homePreviewOptionsButtonsStackView.isHidden {
+                if !homePreviewButtonsView.isHidden {
                     let animOut = UIViewPropertyAnimator(duration: 0.5, curve: .linear) {
-                        self.homePreviewOptionsButtonsStackView.layer.opacity = 0.0
+                        self.homePreviewButtonsView.layer.opacity = 0.0
                     }
-                    animOut.addCompletion { (position) in self.homePreviewOptionsButtonsStackView.isHidden = true}
+                    animOut.addCompletion { (position) in self.homePreviewButtonsView.isHidden = true}
                     animOut.startAnimation()
                 }
             case .done:
                 loadingStackView.isHidden = true
                 homeTabBarItem.isEnabled = true
                 originalTabBarItem.isEnabled = true
-                if homePreviewOptionsButtonsStackView.isHidden {
-                    homePreviewOptionsButtonsStackView.layer.opacity = 0.0
-                    homePreviewOptionsButtonsStackView.isHidden = false
+                if homePreviewButtonsView.isHidden {
+                    homePreviewButtonsView.layer.opacity = 0.0
+                    homePreviewButtonsView.isHidden = false
                     
                     let animIn = UIViewPropertyAnimator(duration: 0.5, curve: .linear) {
-                        self.homePreviewOptionsButtonsStackView.layer.opacity = 1.0
+                        self.homePreviewButtonsView.layer.opacity = 1.0
                     }
                     animIn.startAnimation()
                 }
             }
-            /*if loadStatus == .done && oldValue != .done {
-                if locationForCellView == nil {createHomeImageButton.isHidden =  false}
-            }
-            else if loadStatus != .done && oldValue == .done {
-                homeTabBarItem.isEnabled = false
-                originalTabBarItem.isEnabled = false
-                createHomeImageButton.isHidden = true
-            }*/
         }
     }
     
@@ -145,19 +138,21 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             
             switch tabBarState {
             case .home:
-                if let image = selectedImage {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: standardDuration,
+                    delay: 0.0,
+                    options: .curveLinear,
+                    animations: {self.toggleMaskButton.isHidden = false},
+                    completion: nil
+                )
+                if selectedImage != nil {
                     previewTypeTabBar.selectedItem = homeTabBarItem
                     let cropRect = getCropRect()
                     let desiredOriginY = cropRect.origin.y - ((homePreviewView.bounds.height - cropRect.size.height) / 2)
                     homePreviewView.frame.origin = CGPoint(x: 0.0, y: desiredOriginY)
                     let centeredOrigin = CGPoint(x: 0.0, y: (fullSizePreviewView.bounds.height / 2) - (homePreviewView.bounds.height / 2))
                     homePreviewView.isHidden = false
-                    
-                    if let appImage = image as? AppEventImage, appImage.maskImage != nil {toggleMaskButton.isHidden = false}
-                    else {toggleMaskButton.isHidden = true}
-                    
-                    let standardDuration = 0.2
-                    let cascadeDelayTime = 0.1
+                    toggleMaskButton.isHidden = false
                     
                     let originalFadeOutAnim = UIViewPropertyAnimator(duration: standardDuration, curve: .linear) {
                         self.fullSizePreviewView.layer.opacity = 0.0
@@ -173,6 +168,13 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
                 }
                 else {loadingStackView.isHidden = false}
             case .original:
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: standardDuration,
+                    delay: 0.0,
+                    options: .curveLinear,
+                    animations: {self.toggleMaskButton.isHidden = true},
+                    completion: nil
+                )
                 if selectedImage != nil {
                     previewTypeTabBar.selectedItem = originalTabBarItem
                     
@@ -224,7 +226,7 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     @IBOutlet weak var loadingStatusLabel: UILabel!
     @IBOutlet weak var loadingDetailLabel: UILabel!
     @IBOutlet weak var editingButtonsStackView: UIStackView!
-    @IBOutlet weak var homePreviewOptionsButtonsStackView: UIStackView!
+    @IBOutlet weak var homePreviewButtonsView: UIView!
     @IBOutlet weak var previewTypeTabBar: UITabBar!
     @IBOutlet weak var homeTabBarItem: UITabBarItem!
     @IBOutlet weak var originalTabBarItem: UITabBarItem!
@@ -351,31 +353,6 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     //
     
     //
-    // MARK: CountdownImageDelegate
-    func fetchComplete(forImageTypes types: [CountdownImage.ImageType], success: [Bool]) {
-        if let appImage = selectedImage as? AppEventImage {
-            if let i = types.index(where: {$0 == CountdownImage.ImageType.mask}) {
-                if success[i] {hasMask = true}
-                else {hasMask = false}
-                if appImage.mainImage?.cgImage != nil {performAppImageSetup()}
-            }
-            else if let i = types.index(where: {$0 == CountdownImage.ImageType.main}) {
-                if success[i] {
-                    if let _hasMask = hasMask {
-                        if _hasMask {if appImage.maskImage?.cgImage != nil {performAppImageSetup()}}
-                        else {performAppImageSetup()}
-                    }
-                }
-                else {
-                    os_log("There was an error fetching the main image for %@ from the cloud!", log: .default, type: .error, appImage.title)
-                    loadStatus = .failedImageFetch
-                }
-            }
-        }
-        else {performUserImageSetup()}
-    }
-    
-    //
     // MARK: TabBar Delegate
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
         if item == homeTabBarItem && tabBarState != .home {
@@ -438,37 +415,39 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             if locationForCellView != nil {tabBarState = .home}
             else {tabBarState = .original}
         }
-        else if sender.title(for: .normal) == "CROP" {
             
-            func setHomePreview() {
-                selectImageViewController?.selectedImage = selectedImage
-                selectImageViewController?.locationForCellView = locationForCellView
-                tabBarState = .home
-            }
+        else if sender.title(for: .normal) == "CROP" {
             
             let _locationForCellView = ((cropAreaView!.frame.origin.y - fullSizePreviewCell.mainImageView.imageRect!.origin.y) + (cropAreaView!.frame.height / 2)) / fullSizePreviewCell.mainImageView.imageRect!.height
             locationForCellView = _locationForCellView
             cropRect = cropAreaView!.frame
             
-            guard let mainImage = selectedImage?.generateMainHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView) else {
-                os_log("There was an error creating the main home image for %@.", log: .default, type: .error, selectedImage!.title)
-                loadStatus = .failedMainHomeCreate
-                viewTransitionOutOfCropMode()
-                removeCropRect()
-                setHomePreview()
-                return
-            }
-            var maskImage: UIImage?
-            if let appImage = selectedImage as? AppEventImage {
-                maskImage = appImage.generateMaskHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView)
+            selectedImage?.requestMainHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView) { (uiImage) in
+                DispatchQueue.main.async { [weak self] in
+                    guard let mainHomeImage = uiImage else {
+                        os_log("There was an error creating the main home image for %@.", log: .default, type: .error, self?.selectedImage!.title ?? "WEAKSELF GONE!")
+                        self?.loadStatus = .failedMainHomeCreate
+                        return
+                    }
+                    self?.homePreviewCell.setHomeImages(mainHomeImage: mainHomeImage, maskHomeImage: nil)
+                    self?.tabBarState = .home
+                }
             }
             
-            homePreviewCell.setHomeImages(mainHomeImage: mainImage, maskHomeImage: maskImage)
-            
-            viewTransitionOutOfCropMode()
+            selectedImage?.requestMaskHomeImage(size: cropRect!.size, locationForCellView: _locationForCellView) { (uiImage) in
+                DispatchQueue.main.async { [weak self] in
+                    guard let maskHomeImage = uiImage else {
+                        os_log("There was an error creating the mask home image for %@.", log: .default, type: .error, self?.selectedImage!.title ?? "WEAKSELF GONE!")
+                        self?.loadStatus = .failedMainHomeCreate
+                        return
+                    }
+                    self?.homePreviewCell.setHomeImages(mainHomeImage: nil, maskHomeImage: maskHomeImage)
+                    //self?.tabBarState = .home
+                }
+            }
             
             removeCropRect()
-            setHomePreview()
+            viewTransitionOutOfCropMode()
         }
         else {os_log("Unrecognized edit button title!", log: .default, type: .error)}
     }
@@ -503,45 +482,59 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
     //
     
     fileprivate func setImage() {
-        if selectedImage != nil {
-            selectedImage!.delegate = self
-            if let appImage = selectedImage as? AppEventImage {
-                if appImage.mainImage?.uiImage == nil {loadStatus = .fetching}
-                else {performAppImageSetup()}
-                appImage.fetch(imageTypes: [.mask], alertDelegate: true)
+        if let anImage = selectedImage {
+            
+            loadStatus = .fetching
+//            if let appImage = selectedImage as? AppEventImage {
+//
+//                // App image setup
+//                appImage.requestMainImage { [weak self] (image) in
+//                    if image != nil {
+//                        DispatchQueue.main.async { [weak self] in
+//                            self?.homePreviewCell.setSelectedImage(image: appImage, locationForCellView: self!.locationForCellView)
+//                            self?.fullSizePreviewCell.setSelectedImage(image: appImage, locationForCellView: nil)
+//                            self?.loadStatus = .done
+//                            self?.tabBarState = .original
+//                            self?.homeTabBarItem.title = TabBarTitles.home
+//                        }
+//                    }
+//                    else {
+//                        DispatchQueue.main.async { [weak self] in
+//                            os_log("There was an error fetching the image for %@", log: .default, type: .error, appImage.title)
+//                            self?.loadStatus = .failedImageFetch
+//                            self?.tabBarState = .original
+//                            self?.homeTabBarItem.title = TabBarTitles.home
+//                        }
+//                    }
+//                }
+//            }
+            //else {
+                
+            // All image setup
+            anImage.requestMainImage { [weak self] (image) in
+                if image != nil {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.fullSizePreviewCell.setSelectedImage(image: anImage, locationForCellView: nil)
+                        if let _locationForCellView = self?.locationForCellView {
+                            self?.homePreviewCell.setSelectedImage(image: anImage, locationForCellView: _locationForCellView)
+                            self?.homeTabBarItem.title = TabBarTitles.home
+                        }
+                        else {self?.homeTabBarItem.title = TabBarTitles.setImage}
+                        self?.tabBarState = .original
+                        self?.loadStatus = .done
+                    }
+                }
+                else {
+                    DispatchQueue.main.async { [weak self] in
+                        os_log("There was an error fetching the image for %@", log: .default, type: .error, anImage.title)
+                        self?.loadStatus = .failedImageFetch
+                        self?.tabBarState = .original
+                        self?.homeTabBarItem.title = TabBarTitles.home
+                    }
+                }
             }
-            else {
-                if selectedImage!.mainImage?.uiImage == nil {loadStatus = .fetching}
-                else {performUserImageSetup()}
-            }
+            //}
         }
-    }
-    
-    fileprivate var isAppImageSetup = false
-    
-    fileprivate func performAppImageSetup() {
-        if !isAppImageSetup {
-            let appImage = selectedImage as! AppEventImage
-            homePreviewCell.setSelectedImage(image: appImage, locationForCellView: locationForCellView)
-            fullSizePreviewCell.setSelectedImage(image: appImage, locationForCellView: nil)
-            loadStatus = .done
-            tabBarState = .original
-            homeTabBarItem.title = TabBarTitles.home
-            isAppImageSetup = true
-        }
-    }
-    
-    fileprivate func performUserImageSetup() {
-        fullSizePreviewCell.setSelectedImage(image: selectedImage!, locationForCellView: nil)
-        loadStatus = .done
-        if let _locationForCellView = locationForCellView {
-            homePreviewCell.setSelectedImage(image: self.selectedImage!, locationForCellView: _locationForCellView)
-            selectImageViewController?.selectedImage = self.selectedImage!
-            selectImageViewController?.locationForCellView = _locationForCellView
-            homeTabBarItem.title = TabBarTitles.home
-        }
-        else {homeTabBarItem.title = TabBarTitles.setImage}
-        tabBarState = .original
     }
     
     fileprivate func enterCropMode(animated: Bool = true) {
@@ -623,11 +616,11 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
             transition.duration = 0.5
             
             previewTypeTabBar.layer.add(transition, forKey: "transition")
-            homePreviewOptionsButtonsStackView.layer.add(transition, forKey: "transition")
+            homePreviewButtonsView.layer.add(transition, forKey: "transition")
             editingButtonsStackView.layer.add(transition, forKey: "transition")
             
             previewTypeTabBar.isHidden = true
-            homePreviewOptionsButtonsStackView.isHidden = true
+            homePreviewButtonsView.isHidden = true
             editingButtonsStackView.isHidden = false
         }
     }
@@ -649,20 +642,17 @@ class ImagePreviewViewController: UIViewController, CountdownImageDelegate, UITa
         return CGRect(x: 0.0, y: (view.bounds.height / 2) - (160.0 / 2), width: view.bounds.width, height: 160.0)
     }
     
-    //@objc fileprivate func enterEditMode() {dismiss(animated: true, completion: nil); enterCropMode(animated: true)}
-    //@objc fileprivate func togglePreviewMode() {isInMaskPreviewMode = !isInMaskPreviewMode}
-    
     fileprivate func viewTransitionOutOfCropMode() {
         let transition = CATransition()
         transition.type = kCATransitionFade
         transition.duration = 0.5
         
         editingButtonsStackView.layer.add(transition, forKey: "transition")
-        homePreviewOptionsButtonsStackView.layer.add(transition, forKey: "transition")
+        homePreviewButtonsView.layer.add(transition, forKey: "transition")
         previewTypeTabBar.layer.add(transition, forKey: "transition")
         
         editingButtonsStackView.isHidden = true
-        homePreviewOptionsButtonsStackView.isHidden = false
+        homePreviewButtonsView.isHidden = false
         previewTypeTabBar.isHidden = false
     }
 }

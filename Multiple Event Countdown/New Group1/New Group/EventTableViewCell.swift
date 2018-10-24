@@ -115,7 +115,7 @@ class EventTableViewCell: UITableViewCell {
     
     var repeats = RepeatingOptions.never {didSet {if eventDate != nil {update()}}}
     
-    var creationDate: Date? {didSet {updateMask()}}
+    var creationDate: Date? {didSet {updateMaskCoverageValues()}}
     
     fileprivate let defaultHomeImageSize = CGSize(width: UIScreen.main.bounds.width, height: 160.0)
     
@@ -136,8 +136,15 @@ class EventTableViewCell: UITableViewCell {
                         animations: {self.mainImageView.layer.opacity = 1.0},
                         completion: nil
                     )
-                    if useMask {updateMask(); addGradientView()}}
-                else {removeGradientView()}
+                    if useMask {
+                        updateMask()
+                        showMaskView()
+                    }
+                }
+                else {
+                    mainImageView.image = nil
+                    hideMaskView()
+                }
             case .detail: break
             }
         }
@@ -147,8 +154,11 @@ class EventTableViewCell: UITableViewCell {
         didSet {
             switch configuration {
             case .cell:
-                if useMask {addMaskImageView()}
-                else {removeMaskImageView()}
+                maskImageView.image = maskHomeImage
+                if useMask {
+                    updateMask()
+                    showMaskView()
+                }
             case .detail: break
             }
         }
@@ -220,26 +230,23 @@ class EventTableViewCell: UITableViewCell {
     var percentMaskCoverage: CGFloat = 1.0 - 0.025 {
         didSet {
             if 1.0 - percentMaskCoverage < minSizeOfGradientArea {percentMaskCoverage = 1.0 - minSizeOfGradientArea}
-            if let _gradientView = gradientView {
-                let percentDiff = (_gradientView.percentMaskCoverage - percentMaskCoverage) / _gradientView.percentMaskCoverage
-                if percentDiff > minMaskCoveragePercentDifferenceForUIUpdate || percentDiff < 0.0 {
-                    _gradientView.percentMaskCoverage = percentMaskCoverage
-                    maskImageView?.percentMaskCoverage = percentMaskCoverage
-                }
-            }
+            if useMask {updateMask()}
         }
     }
     
     var useMask = false {
         didSet {
             if useMask == true && oldValue == false && mainImageView.image != nil {
-                updateMask()
-                addGradientView()
+                switch configuration {
+                case .cell:
+                    if maskHomeImage != nil {
+                        updateMask()
+                        showMaskView()
+                    }
+                case .detail: break
+                }
             }
-            else if useMask == false && oldValue == true {
-                removeGradientView()
-                removeMaskImageView()
-            }
+            else if useMask == false && oldValue == true {hideMaskView()}
         }
     }
     
@@ -252,15 +259,15 @@ class EventTableViewCell: UITableViewCell {
         didSet {
             if isPastEvent && oldValue != isPastEvent {
                 
-                removeGradientView()
-                removeMaskImageView()
+                //removeGradientView()
+                //removeMaskImageView()
                 
                 viewTransition(from: [inLabel], to: [agoLabel])
                 viewTransition(from: [abridgedInLabel], to: [abridgedAgoLabel])
             }
                 
             else if !isPastEvent && oldValue != isPastEvent {
-                if useMask {updateMask(); addGradientView()}
+                if useMask {updateMaskCoverageValues()}
                 
                 viewTransition(from: [agoLabel], to: [inLabel])
                 viewTransition(from: [abridgedAgoLabel], to: [abridgedInLabel])
@@ -271,10 +278,11 @@ class EventTableViewCell: UITableViewCell {
     fileprivate var initialized = false
     
     //
-    // MARK: UI Elements
+    // MARK: GUI
     @IBOutlet weak var viewWithMargins: UIView!
     @IBOutlet weak var spacingAdjustmentConstraint: NSLayoutConstraint!
     @IBOutlet weak var mainImageView: UIImageView!
+    @IBOutlet weak var maskImageView: UIImageView!
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var taglineLabel: UILabel!
@@ -313,21 +321,13 @@ class EventTableViewCell: UITableViewCell {
     @IBOutlet weak var abridgedYearsTextLabel: UILabel!
     @IBOutlet weak var abridgedMonthsTextLabel: UILabel!
     @IBOutlet weak var abridgedDaysTextLabel: UILabel!
-    
-    fileprivate var gradientView: GradientMaskView?
-    fileprivate var maskImageView: CountdownMaskImageView?
 
     
     //
     // MARK: - Cell Lifecycle
     //
     
-    override func prepareForReuse() {
-        eventImage?.delegate = nil
-        clearEventImage()
-        maskImageView = nil
-        gradientView = nil
-    }
+    override func prepareForReuse() {clearEventImage()}
     
     //
     // MARK: Delegate Methods
@@ -341,12 +341,27 @@ class EventTableViewCell: UITableViewCell {
         
         if let location = locationForCellView {_locationForCellView = location}
         _eventImage = image
+        mainImageView.contentMode = .scaleAspectFit
         
-        if let mainUIImage = image.mainImage?.uiImage {
-            mainImageView.contentMode = .scaleAspectFit
-            switch configuration {
-            case .cell: getHomeImages()
-            case .detail: mainImageView.image = mainUIImage
+        switch configuration {
+        case .cell:
+            image.requestMainHomeImage(size: defaultHomeImageSize, locationForCellView: _locationForCellView) { (image) in
+                DispatchQueue.main.async { [weak self] in
+                    self?.mainHomeImage = image
+                }
+            }
+            if useMask {
+                image.requestMaskHomeImage(size: defaultHomeImageSize, locationForCellView: _locationForCellView) {  (image) in
+                    DispatchQueue.main.async { [weak self] in
+                        self?.maskHomeImage = image
+                    }
+                }
+            }
+        case .detail:
+            image.requestMainImage { (image) in
+                DispatchQueue.main.async { [weak self] in
+                    self?.mainImageView.image = image?.uiImage
+                }
             }
         }
     }
@@ -361,9 +376,6 @@ class EventTableViewCell: UITableViewCell {
         mainHomeImage = nil
         maskHomeImage = nil
         backgroundColor = UIColor.black
-        removeMaskImageView()
-        removeGradientView()
-        mainImageView.image = nil
     }
     
     // Function to update the displayed event times and masks.
@@ -503,13 +515,16 @@ class EventTableViewCell: UITableViewCell {
                 }
                 else {
                     if eventDateComponents.day! == todaysDateComponents.day! + 1 && tomorrowLabel.text != "Tomorrow!" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Tomorrow!")
+                        tomorrowLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                        tomorrowLabel.text = "Tomorrow!"
                     }
                     else if eventDateComponents.day! == todaysDateComponents.day! && tomorrowLabel.text != "Today!!!" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Today!!!")
+                        tomorrowLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                        tomorrowLabel.text = "Today!!!"
                     }
                     else if eventDateComponents.day! == todaysDateComponents.day! - 1 && tomorrowLabel.text != "Yesterday" {
-                        transitionText(inLabel: tomorrowLabel, toText: "Yesterday")
+                        tomorrowLabel.layer.add(GlobalAnimations.labelTransition, forKey: nil)
+                        tomorrowLabel.text = "Yesterday"
                     }
                 }
             }
@@ -632,7 +647,7 @@ class EventTableViewCell: UITableViewCell {
             fullFormat(label: secondsLabel, withNumber: seconds)
         }
         
-        updateMask()
+        updateMaskCoverageValues()
     }
     
     
@@ -640,7 +655,7 @@ class EventTableViewCell: UITableViewCell {
     // MARK: - Helper Functions
     //
     
-    fileprivate func updateMask() {
+    fileprivate func updateMaskCoverageValues() {
         if useMask && !isPastEvent && creationDate != nil && eventDate != nil {
             
             let timerCoverage = timerContainerView.frame.width + 8.0
@@ -670,121 +685,33 @@ class EventTableViewCell: UITableViewCell {
             
             let percentRevealRange = maxPercentCoverage - minPercentCoverage
             let percentOfLegToCover = percentRevealRange * percentUntilLegComplete
-            percentMaskCoverage = minPercentCoverage + percentOfLegToCover
-        }
-    }
-    
-    fileprivate func initializeGradientView() {
-        gradientView = GradientMaskView(frame: self.bounds)
-        gradientView!.translatesAutoresizingMaskIntoConstraints = false
-        gradientView!.backgroundColor = UIColor.clear
-        gradientView!.percentMaskCoverage = percentMaskCoverage
-    }
-    
-    fileprivate func initializeMaskImageView() {
-        if let _maskHomeImage = maskHomeImage?.cgImage {
-            maskImageView = CountdownMaskImageView(frame: self.bounds, image: _maskHomeImage)
-            maskImageView!.translatesAutoresizingMaskIntoConstraints = false
-            maskImageView!.backgroundColor = UIColor.clear
+            let newPercentMaskCoverage = minPercentCoverage + percentOfLegToCover
             
-            maskImageView!.image = _maskHomeImage
-            maskImageView!.percentMaskCoverage = percentMaskCoverage
-        }
-    }
-    
-    fileprivate func addGradientView() {
-        if useMask && !isPastEvent && mainHomeImage != nil {
-            if let _gradientView = gradientView {_gradientView.percentMaskCoverage = percentMaskCoverage}
-            else {initializeGradientView()}
-            
-            if !mainImageView!.subviews.contains(gradientView!) {
-                gradientView!.layer.opacity = 0.0
-                mainImageView!.addSubview(gradientView!)
-                mainImageView!.topAnchor.constraint(equalTo: gradientView!.topAnchor).isActive = true
-                mainImageView!.rightAnchor.constraint(equalTo: gradientView!.rightAnchor).isActive = true
-                mainImageView!.bottomAnchor.constraint(equalTo: gradientView!.bottomAnchor).isActive = true
-                mainImageView!.leftAnchor.constraint(equalTo: gradientView!.leftAnchor).isActive = true
-                //if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.2,
-                        delay: 0.0,
-                        options: .curveEaseInOut,
-                        animations: { [weak self] in self?.gradientView!.layer.opacity = 1.0},
-                        completion: nil
-                    )
-                //}
-                //else {gradientView!.layer.opacity = 1.0}
-            }
-            if maskHomeImage != nil {addMaskImageView()}
-        }
-    }
-    
-    fileprivate func addMaskImageView() {
-        if let _maskHomeImage = maskHomeImage?.cgImage, let _gradientView = gradientView {
-            if let _maskImageView = maskImageView {
-                _maskImageView.image = _maskHomeImage
-                _maskImageView.percentMaskCoverage = percentMaskCoverage
-            }
-            else {initializeMaskImageView()}
-            
-            if !_gradientView.subviews.contains(maskImageView!) {
-                maskImageView!.layer.opacity = 0.0
-                _gradientView.addSubview(maskImageView!)
-                _gradientView.topAnchor.constraint(equalTo: maskImageView!.topAnchor).isActive = true
-                _gradientView.rightAnchor.constraint(equalTo: maskImageView!.rightAnchor).isActive = true
-                _gradientView.bottomAnchor.constraint(equalTo: maskImageView!.bottomAnchor).isActive = true
-                _gradientView.leftAnchor.constraint(equalTo: maskImageView!.leftAnchor).isActive = true
-                //if configuration == .newEventsController, configuration == .imagePreviewControllerCell {
-                    UIViewPropertyAnimator.runningPropertyAnimator(
-                        withDuration: 0.2,
-                        delay: 0.0,
-                        options: .curveEaseInOut,
-                        animations: { [weak self] in self?.maskImageView!.layer.opacity = 1.0},
-                        completion: nil
-                    )
-                //}
-                //else {maskImageView!.layer.opacity = 1.0}
+            let percentDiff = (percentMaskCoverage - newPercentMaskCoverage) / percentMaskCoverage
+            if percentDiff > minMaskCoveragePercentDifferenceForUIUpdate || percentDiff < 0.0 {
+                percentMaskCoverage = newPercentMaskCoverage
             }
         }
     }
     
-    fileprivate func removeGradientView() {
-        if let _gradientView = gradientView {
-            UIViewPropertyAnimator.runningPropertyAnimator(
-                withDuration: 0.2,
-                delay: 0.0,
-                options: .curveEaseInOut,
-                animations: {_gradientView.layer.opacity = 0.0},
-                completion: {(_) in _gradientView.removeFromSuperview()}
-            )
+    fileprivate func updateMask() {
+        let sizeOfGradientArea: CGFloat = 0.15
+        
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = maskImageView.bounds
+        gradientLayer.colors = [
+            UIColor(displayP3Red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0).cgColor,
+            UIColor(displayP3Red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0).cgColor]
+        
+        let location2: CGFloat = 1.0 - percentMaskCoverage
+        var location1: CGFloat {
+            let location = location2 - sizeOfGradientArea
+            if location < 0.0 {return 0.0} else {return location}
         }
-    }
-    
-    fileprivate func removeMaskImageView() {
-        if let _maskImageView = maskImageView {
-            UIViewPropertyAnimator.runningPropertyAnimator(
-                withDuration: 0.2,
-                delay: 0.0,
-                options: .curveEaseInOut,
-                animations: {_maskImageView.layer.opacity = 0.0},
-                completion: {(_) in _maskImageView.removeFromSuperview()}
-            )
-        }
-    }
-    
-    fileprivate func getHomeImages() {
-        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-            let _mainHomeImage = self?.eventImage?.generateMainHomeImage(size: self!.defaultHomeImageSize, locationForCellView: self!.locationForCellView)
-            DispatchQueue.main.async { [weak self] in self?.mainHomeImage = _mainHomeImage}
-            if let appImage = self?.eventImage as? AppEventImage {
-                let _maskHomeImage = appImage.generateMaskHomeImage(size: self!.defaultHomeImageSize, locationForCellView: self!.locationForCellView)
-                DispatchQueue.main.async { [weak self] in self?.maskHomeImage = _maskHomeImage}
-            }
-        }
-//        mainHomeImage = eventImage?.generateMainHomeImage(size: defaultHomeImageSize, locationForCellView: locationForCellView)
-//        if let appImage = eventImage as? AppEventImage {
-//            maskHomeImage = appImage.generateMaskHomeImage(size: defaultHomeImageSize, locationForCellView: locationForCellView)
-//        }
+        gradientLayer.startPoint = CGPoint(x: location1, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: location2, y: 0.5)
+        
+        maskImageView.layer.mask = gradientLayer;
     }
     
     //
@@ -803,93 +730,6 @@ class EventTableViewCell: UITableViewCell {
             initialized = true
         }
     }
-    
-    /*fileprivate func configureView() {
-        switch configuration {
-            
-        case .tableView:
-            /*titleWaveEffectView?.removeFromSuperview()
-            titleWaveEffectView = nil
-            taglineWaveEffectView?.removeFromSuperview()
-            taglineWaveEffectView = nil
-            timerWaveEffectView?.removeFromSuperview()
-            timerWaveEffectView = nil
-            timerLabelsWaveEffectView?.removeFromSuperview()
-            timerLabelsWaveEffectView = nil*/
-            
-        case .newEventsController:
-            
-            //titleLabel.isHidden = true
-            //taglineLabel.isHidden = true
-            timerContainerView.isHidden = true
-            abridgedTimerContainerView.isHidden = true
-            
-            /*titleWaveEffectView = WaveEffectView()
-            taglineWaveEffectView = WaveEffectView()
-            timerWaveEffectView = WaveEffectView()
-            timerLabelsWaveEffectView = WaveEffectView()
-            
-            titleWaveEffectView!.translatesAutoresizingMaskIntoConstraints = false
-            taglineWaveEffectView!.translatesAutoresizingMaskIntoConstraints = false
-            timerWaveEffectView!.translatesAutoresizingMaskIntoConstraints = false
-            timerLabelsWaveEffectView!.translatesAutoresizingMaskIntoConstraints = false
-            
-            addSubview(titleWaveEffectView!)
-            addSubview(taglineWaveEffectView!)
-            addSubview(timerWaveEffectView!)
-            addSubview(timerLabelsWaveEffectView!)
-            
-            titleWaveEffectView!.topAnchor.constraint(equalTo: self.topAnchor, constant: 8.0).isActive = true
-            titleWaveEffectView!.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 8.0).isActive = true
-            titleWaveEffectView!.heightAnchor.constraint(equalToConstant: titleLabel.bounds.height).isActive = true
-            titleWaveEffectView!.widthAnchor.constraint(equalToConstant: self.bounds.width * (2.0/5.0)).isActive = true
-            
-            taglineWaveEffectView!.topAnchor.constraint(equalTo: titleWaveEffectView!.bottomAnchor, constant: 6.0).isActive = true
-            taglineWaveEffectView!.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 8.0).isActive = true
-            taglineWaveEffectView!.heightAnchor.constraint(equalToConstant: taglineLabel.bounds.height).isActive = true
-            taglineWaveEffectView!.widthAnchor.constraint(equalToConstant: self.bounds.width * (1.0/3.0)).isActive = true
-            
-            timerLabelsWaveEffectView!.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8.0).isActive = true
-            timerLabelsWaveEffectView!.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -8.0).isActive = true
-            timerLabelsWaveEffectView!.heightAnchor.constraint(equalToConstant: timerLabelsStackView.bounds.height).isActive = true
-            timerLabelsWaveEffectView!.widthAnchor.constraint(equalToConstant: timerLabelsStackView.bounds.width).isActive = true
-            
-            timerWaveEffectView!.bottomAnchor.constraint(equalTo: timerLabelsWaveEffectView!.topAnchor, constant: -6.0).isActive = true
-            timerWaveEffectView!.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -8.0).isActive = true
-            timerWaveEffectView!.heightAnchor.constraint(equalToConstant: timerStackView.bounds.height).isActive = true
-            timerWaveEffectView!.widthAnchor.constraint(equalToConstant: timerStackView.bounds.width).isActive = true*/
-            
-            titleLabel.textColor = UIColor.lightText
-            taglineLabel.textColor = UIColor.lightText
-            inLabel.textColor = UIColor.lightText
-            weeksLabel.textColor = UIColor.lightText
-            weeksColon.textColor = UIColor.lightText
-            daysLabel.textColor = UIColor.lightText
-            daysColon.textColor = UIColor.lightText
-            hoursLabel.textColor = UIColor.lightText
-            hoursColon.textColor = UIColor.lightText
-            minutesLabel.textColor = UIColor.lightText
-            minutesColon.textColor = UIColor.lightText
-            secondsLabel.textColor = UIColor.lightText
-            
-        case .imagePreviewControllerCell, .imagePreviewControllerDetail, .detailView:
-            titleWaveEffectView?.removeFromSuperview()
-            titleWaveEffectView = nil
-            taglineWaveEffectView?.removeFromSuperview()
-            taglineWaveEffectView = nil
-            timerWaveEffectView?.removeFromSuperview()
-            timerWaveEffectView = nil
-            timerLabelsWaveEffectView?.removeFromSuperview()
-            timerLabelsWaveEffectView = nil
-            
-            if configuration == .imagePreviewControllerCell || configuration == .imagePreviewControllerDetail {
-                titleLabel.removeFromSuperview()
-                taglineLabel.removeFromSuperview()
-                timerContainerView.removeFromSuperview()
-                abridgedTimerContainerView.removeFromSuperview()
-            }
-        }
-    }*/
     
     fileprivate func initializeShadows() {
         func initializeShadows(for views: [UIView], withShadowRadius shadowRadius: CGFloat) {
@@ -962,54 +802,29 @@ class EventTableViewCell: UITableViewCell {
         for view in endViews {view.isHidden = false; view.isUserInteractionEnabled = true}
     }
     
-    fileprivate func fadeIn(view: UIView) {
-        view.isHidden = false
-        view.isUserInteractionEnabled = true
-        
-        UIViewPropertyAnimator.runningPropertyAnimator(
-            withDuration: 0.3,
-            delay: 0.0,
-            options: [.curveLinear],
-            animations: {view.layer.opacity = 1.0},
-            completion: nil
-        )
+    fileprivate func showMaskView() {
+        if mainHomeImage != nil && maskHomeImage != nil && maskImageView.isHidden {
+            maskImageView.layer.opacity = 0.0
+            maskImageView.isHidden = false
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.2,
+                delay: 0.0,
+                options: .curveLinear,
+                animations: {self.maskImageView.layer.opacity = 1.0},
+                completion: nil
+            )
+        }
     }
     
-    /*fileprivate func fadeOut(view: UIView) {
-        let duration = 0.3
-        UIViewPropertyAnimator.runningPropertyAnimator(
-            withDuration: duration,
-            delay: 0.0,
-            options: [.curveLinear],
-            animations: {view.layer.opacity = 0.0},
-            completion: {(position) in
-                switch position {
-                case .end:
-                    Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
-                        view.isHidden = true; view.isUserInteractionEnabled = false
-                    }
-                default: fatalError("...")
-                }
-            }
-        )
-    }*/
-    
-    fileprivate func transitionText(inLabel label: UILabel, toText text: String) {
-        UIViewPropertyAnimator.runningPropertyAnimator(
-            withDuration: 0.15,
-            delay: 0.0,
-            options: [.curveLinear],
-            animations: {label.layer.opacity = 0.0},
-            completion: { (position) in
-                label.text = text
-                UIViewPropertyAnimator.runningPropertyAnimator(
-                    withDuration: 0.15,
-                    delay: 0.0,
-                    options: [.curveLinear],
-                    animations: {label.layer.opacity = 1.0},
-                    completion: nil
-                )
-            }
-        )
+    fileprivate func hideMaskView() {
+        if !maskImageView.isHidden {
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.2,
+                delay: 0.0,
+                options: .curveLinear,
+                animations: {self.maskImageView.layer.opacity = 0.0},
+                completion: {[weak self] (position) in self?.maskImageView.isHidden = true}
+            )
+        }
     }
 }

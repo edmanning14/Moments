@@ -13,7 +13,7 @@ import StoreKit
 import RealmSwift
 import Photos
 
-class SelectImageViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITabBarDelegate, CountdownImageDelegate, ManagedCatalogImagesDelegate, UIPopoverPresentationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
+class SelectImageViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITabBarDelegate, ManagedCatalogImagesDelegate, UIPopoverPresentationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
     
     //
     // MARK: Parameters
@@ -71,33 +71,41 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         
         subscript(section: Int) -> [AppEventImage] {get {return orderedImages[section]}}
         
-        fileprivate func add(_ image: AppEventImage) -> Bool {
-            guard image.thumbnail?.uiImage != nil else {
-                os_log("%@ did not contain a thumbnail!", log: .default, type: .error, image.title)
-                return false
+        fileprivate func add(_ image: AppEventImage, completion: @escaping (Bool) -> Void) {
+            guard !contains(image) else {completion(false); return}
+            image.requestThumbnailImage { [weak self] (uiImage) in
+                if uiImage != nil {
+                    let category = image.category
+                    if self?.orderedCategories.contains(category) == false {
+                        self?.orderedCategories.append(category)
+                        self?.orderedImages.append([image])
+                    }
+                    else {
+                        if let i = self?.orderedCategories.index(of: category) {self?.orderedImages[i].append(image)}
+                    }
+                    completion(true)
+                }
+                else {
+                    os_log("%@ did not contain a thumbnail!", log: .default, type: .error, image.title)
+                    completion(false)
+                }
             }
-            guard !contains(image) else {return false}
-            
-            let category = image.category
-            if !orderedCategories.contains(category) {
-                orderedCategories.append(category)
-                orderedImages.append([image])
-            }
-            else {
-                let i = orderedCategories.index(of: category)!
-                orderedImages[i].append(image)
-            }
-            return true
         }
         
         func index(after i: Int) -> Int {return i + 1}
         
-        func addImage(_ image: AppEventImage) {if add(image) {delegate?.dataUpdated()}}
+        func addImage(_ image: AppEventImage) {
+            add(image) { [weak self] (success) in
+                if success {self?.delegate?.dataUpdated()}
+            }
+        }
         
         func addImages(_ images: [AppEventImage]) {
-            var success = [Bool]()
-            for image in images {success.append(add(image))}
-            if success.contains(true) {delegate?.dataUpdated()}
+            for image in images {
+                add(image) { [weak self] (success) in
+                    if success {self?.delegate?.dataUpdated()}
+                }
+            }
         }
         
         func titleForSection(_ section: Int) -> String {return orderedCategories[section]}
@@ -595,7 +603,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
                 let destination = segue.destination as! ImagePreviewViewController
                 destination.selectedImage = selectedImage
                 destination.locationForCellView = locationForCellView
-                destination.selectImageViewController = self
                 
                 /*if let button = sender as? UIBarButtonItem, button == doneButton, button.title == "CREATE IMAGE" {
                     destination.createImage = true
@@ -821,7 +828,9 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
             }
             else {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ReuseIdentifiers.image, for: indexPath) as! SelectImageCollectionViewCell
-                cell.image = catalogImages[indexPath.section][indexPath.row].thumbnail?.uiImage
+                catalogImages[indexPath.section][indexPath.row].requestThumbnailImage { (thumbnail) in
+                    cell.image = thumbnail?.uiImage
+                }
                 cell.imageTitle = catalogImages[indexPath.section][indexPath.row].title
                 configure(cell)
                 return cell
@@ -1221,20 +1230,6 @@ class SelectImageViewController: UIViewController, UICollectionViewDataSource, U
         case .none: break
         }
         dismiss(animated: true, completion: nil)
-    }
-    
-    //
-    // CountdownImageDelagate
-    func fetchComplete(forImageTypes: [CountdownImage.ImageType], success: [Bool]) {
-        if !success.contains(where: {$0 == false}) && needToDismissSelf {
-            let appImage = selectedImage as! AppEventImage
-            guard appImage.mainImage != nil && appImage.maskImage != nil else {return}
-            let newEventController = navigationController!.viewControllers[1] as! NewEventViewController
-            newEventController.selectedImage = selectedImage
-            self.dismiss(animated: true, completion: nil)
-            navigationController!.viewControllers[0].dismiss(animated: true, completion: nil)
-            needToDismissSelf = false
-        }
     }
     
     //

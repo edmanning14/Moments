@@ -12,6 +12,7 @@ import QuartzCore
 import CloudKit
 import Photos
 import os
+import CoreML
 
 internal enum WidgetConfigurations: String {
     case nextEvent = "Next Event"
@@ -302,16 +303,10 @@ internal class UserEventImage {
     
     let title: String
     var photoAsset: PHAsset?
-    weak var delegate: CountdownImageDelegate?
     
-    var mainImage: CountdownImage? {
-        if let i = images.index(where: {$0.imageType == .main}) {return images[i]}
-        else {
-            if delegate != nil {fetch(imageTypes: [CountdownImage.ImageType.main], alertDelegate: true)}
-        }
-        return nil
-    }
-    
+    /**
+     Returns false if any of the images are not saved to disk.
+     */
     var imagesAreSavedToDisk: Bool {
         for image in images {if !image.isSavedToDisk {return false}}
         return true
@@ -330,10 +325,17 @@ internal class UserEventImage {
             images.append(image)
         }
         
+        if let image = CountdownImage(imageType: .mask, fileRootName: fileRootName, fileExtension: ".jpg") {
+            images.append(image)
+        }
+        else if let image = CountdownImage(imageType: .mask, fileRootName: fileRootName, fileExtension: ".png") {
+            images.append(image)
+        }
+        
         if let image = CountdownImage(imageType: .thumbnail, fileRootName: fileRootName, fileExtension: ".jpg") {
             images.append(image)
         }
-        if let image = CountdownImage(imageType: .thumbnail, fileRootName: fileRootName, fileExtension: ".png") {
+        else if let image = CountdownImage(imageType: .thumbnail, fileRootName: fileRootName, fileExtension: ".png") {
             images.append(image)
         }
         
@@ -368,58 +370,196 @@ internal class UserEventImage {
         return arrayToReturn
     }
     
-    func fetch(imageTypes: [CountdownImage.ImageType], alertDelegate: Bool) {
-        
-        func fetchMainImage() {
-            let imageName = photoAsset!.localIdentifier
-            let fileRootName = imageName.convertToFileName()
-            let options = PHImageRequestOptions()
-            options.version = .original
-            options.deliveryMode = .highQualityFormat
-            options.isNetworkAccessAllowed = true
-            let id = PHImageManager.default().requestImage(for: photoAsset!, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: options) { (_image, _info) in
-                if let info = _info {
-                    if let error = info[PHImageErrorKey] as? NSError {
-                        os_log("PHImageError: %@", log: .default, type: .error, error.debugDescription)
-                        self.delegate?.fetchComplete(forImageTypes: [.main], success: [false])
-                    }
-                }
-                if let image = _image {
-                    let fileExtension = ".jpg"
-                    let wrappedImage = CountdownImage(imageType: .main, fileRootName: fileRootName, fileExtension: fileExtension, image: image)
-                    DispatchQueue.main.async { [weak self] in
-                        self?.images.append(wrappedImage)
-                        for imageType in imageTypes {
-                            if let i = self?.fetching.index(where:{$0 == imageType}) {self?.fetching.remove(at: i)}
+    /**
+     Use to request full sized main image. May execute asyncronously to fetch image from photos album. Image is cached. Dispatch back to main with each call to make UI changes.
+     */
+    func requestMainImage(_ completion: @escaping (CountdownImage?) -> Void) {
+        if let i = images.index(where: {$0.imageType == .main}) {completion(images[i]); return}
+        else {
+            if mainImageFetchOperationQueue == nil {
+                guard let asset = photoAsset else {completion(nil); return}
+                
+                mainImageFetchOperationQueue = OperationQueue()
+                mainImageFetchOperationQueue!.isSuspended = true
+                mainImageFetchOperationQueue!.qualityOfService = .userInitiated
+                
+                DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                    let imageName = asset.localIdentifier
+                    let fileRootName = imageName.convertToFileName()
+                    let options = PHImageRequestOptions()
+                    options.version = .original
+                    options.deliveryMode = .highQualityFormat
+                    options.isNetworkAccessAllowed = true
+                    let id = PHImageManager.default().requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: options) { [weak self] (_image, _info) in
+                        if let info = _info, let error = info[PHImageErrorKey] as? NSError {
+                            os_log("PHImageError: %@", log: .default, type: .error, error.debugDescription)
+                            completion(nil); self?.mainImageFetchOperationQueue = nil; return
                         }
-                        self?.imageRequests.removeAll()
-                        if alertDelegate {self?.delegate?.fetchComplete(forImageTypes: [CountdownImage.ImageType.main], success: [true])}
+                        if let image = _image {
+                            let fileExtension = ".jpg"
+                            let wrappedImage = CountdownImage(imageType: .main, fileRootName: fileRootName, fileExtension: fileExtension, image: image)
+                            self?.images.append(wrappedImage)
+                            self?.imageRequest = nil
+                            completion(wrappedImage)
+                            self?.mainImageFetchOperationQueue?.isSuspended = false
+                        }
+                        else {
+                            os_log("DataUTI and/or ImageData are nil! Incorrect user image asset fetched maybe?", log: .default, type: .error)
+                            self?.mainImageFetchOperationQueue = nil
+                            completion(nil)
+                        }
                     }
-                }
-                else {
-                    os_log("DataUTI and/or ImageData are nil! Incorrect user image asset fetched maybe?", log: .default, type: .error)
-                    self.delegate?.fetchComplete(forImageTypes: [.main], success: [false])
+                    self?.imageRequest = id
                 }
             }
-            imageRequests.append(id)
+            else {
+                mainImageFetchOperationQueue?.addOperation { [weak self] in
+                    if let i = self?.images.index(where: {$0.imageType == .main}) {
+                        completion(self!.images[i]); return
+                    }
+                }
+            }
         }
-        
-        guard photoAsset != nil && imageTypes.contains(.main) else {
-            delegate?.fetchComplete(forImageTypes: imageTypes, success: Array(repeating: false, count: imageTypes.count))
-            return
-        }
-        
-        if imageTypes.contains(.main) && !fetching.contains(.main) {fetching.append(.main); fetchMainImage()}
     }
     
-    func generateMainHomeImage(size: CGSize, locationForCellView: CGFloat) -> UIImage? {
-        guard let image = mainImage?.uiImage else {return nil}
-        return _generateHomeImage(from: image, size: size, locationForCellView: locationForCellView)
+    /**
+     Use to request full sized mask image. May execute asyncronously to generate image using coreML. Image is cached. Dispatch back to main with each call to make UI changes.
+     */
+    func requestMaskImage(_ completion: @escaping (CountdownImage?) -> Void) {
+        if let i = images.index(where: {$0.imageType == .mask}) {completion(images[i]); return}
+        else if imagesAreSavedToDisk {
+            
+        }
+        else {
+            if maskImageFetchOperationQueue == nil {
+                guard let i = images.index(where: {$0.imageType == .main}) else {completion(nil); return}
+                let mainImage = images[i]
+                guard let inputImage = mainImage.uiImage else {completion(nil); return}
+                
+                maskImageFetchOperationQueue = OperationQueue()
+                maskImageFetchOperationQueue!.isSuspended = true
+                maskImageFetchOperationQueue!.qualityOfService = .userInitiated
+                
+                DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                    let hedSO3 = HED_so3()
+                    let outputLayerName = "upscore-dsn3"
+                    
+                    // Remember the time when we started
+                    let startDate = Date()
+                    
+                    // Convert our image to proper input format
+                    // In this case we need to feed pixel buffer which is 500x500 sized.
+                    let inputW = 500
+                    let inputH = 500
+                    let originalWidth = Int(inputImage.size.width * inputImage.scale)
+                    let originalHeight = Int(inputImage.size.height * inputImage.scale)
+                    guard let inputPixelBuffer = inputImage.resized(width: inputW, height: inputH).pixelBuffer(width: inputW, height: inputH) else {
+                        fatalError("Couldn't create pixel buffer.")
+                    }
+                    
+                    // Use different models based on what output we need
+                    let featureProvider: MLFeatureProvider
+                    featureProvider = try! hedSO3.prediction(data: inputPixelBuffer)
+                    
+                    // Retrieve results
+                    guard let outputFeatures = featureProvider.featureValue(for: outputLayerName)?.multiArrayValue else {
+                        fatalError("Couldn't retrieve features")
+                    }
+                    
+                    // Calculate total buffer size by multiplying shape tensor's dimensions
+                    let bufferSize = outputFeatures.shape.lazy.map { $0.intValue }.reduce(1, { $0 * $1 })
+                    
+                    // Get data pointer to the buffer
+                    let dataPointer = UnsafeMutableBufferPointer(start: outputFeatures.dataPointer.assumingMemoryBound(to: Double.self),
+                                                                 count: bufferSize)
+                    
+                    // Prepare buffer for single-channel image result
+                    var imgData = [UInt8](repeating: 0, count: bufferSize)
+                    
+                    // Normalize result features by applying sigmoid to every pixel and convert to UInt8
+                    for i in 0..<inputW {
+                        for j in 0..<inputH {
+                            let idx = i * inputW + j
+                            let value = dataPointer[idx]
+                            
+                            let sigmoid = { (input: Double) -> Double in
+                                return 1 / (1 + exp(-input))
+                            }
+                            
+                            let result = sigmoid(value)
+                            imgData[idx] = UInt8(result * 255)
+                        }
+                    }
+                    
+                    // Create single chanel gray-scale image out of our freshly-created buffer
+                    let cfbuffer = CFDataCreate(nil, &imgData, bufferSize)!
+                    let dataProvider = CGDataProvider(data: cfbuffer)!
+                    let colorSpace = CGColorSpaceCreateDeviceGray()
+                    let cgImage = CGImage(width: inputW, height: inputH, bitsPerComponent: 8, bitsPerPixel: 8, bytesPerRow: inputW, space: colorSpace, bitmapInfo: [], provider: dataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+                    let resultUIImage = UIImage(cgImage: cgImage!)
+                    let finalUIImage = resultUIImage.resized(width: originalWidth, height: originalHeight)
+                    
+                    guard let title = self?.title else {completion(nil); return}
+                    let resultImage = CountdownImage(imageType: .mask, fileRootName: title + "Mask", fileExtension: ".jpg", image: finalUIImage)
+                    
+                    // Calculate the time of inference
+                    let endDate = Date()
+                    
+                    print("Inference is finished in \(endDate.timeIntervalSince(startDate))")
+                    self?.images.append(resultImage)
+                    self?.maskImageFetchOperationQueue?.isSuspended = false
+                    completion(resultImage)
+                }
+            }
+            else {
+                maskImageFetchOperationQueue?.addOperation { [weak self] in
+                    if let i = self?.images.index(where: {$0.imageType == .mask}) {
+                        completion(self!.images[i]); return
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     Use to request main home image. Executes asyncronously to generate image each time, does not cache image. Dispatch back to main with each call to make UI changes.
+     */
+    func requestMainHomeImage(size: CGSize, locationForCellView: CGFloat, completion: @escaping (UIImage?) -> Void) {
+        guard let i = images.index(where: {$0.imageType == .main}) else {completion(nil); return}
+        guard let mainImage = images[i].uiImage else {completion(nil); return}
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+            let image = self?._generateHomeImage(from: mainImage, size: size, locationForCellView: locationForCellView)
+            completion(image)
+        }
+    }
+    
+    /**
+     Use to request mask home image. Executes asyncronously to generate image each time, does not cache image. Will attempt to request mask image if it is not cached. Dispatch back to main with each call to make UI changes.
+    */
+    func requestMaskHomeImage(size: CGSize, locationForCellView: CGFloat, completion: @escaping (UIImage?) -> Void) {
+        if let i = images.index(where: {$0.imageType == .mask}) {
+            guard let maskImage = images[i].uiImage else {completion(nil); return}
+            DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                let image = self?._generateHomeImage(from: maskImage, size: size, locationForCellView: locationForCellView)
+                completion(image)
+            }
+        }
+        else {
+            requestMaskImage { (countdownImage) in
+                guard let maskImage = countdownImage?.uiImage else {completion(nil); return}
+                DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                    let image = self?._generateHomeImage(from: maskImage, size: size, locationForCellView: locationForCellView)
+                    completion(image)
+                }
+            }
+        }
     }
     
     func cancelNetworkFetches() {
-        for request in imageRequests {PHImageManager.default().cancelImageRequest(request)}
-        if let i = fetching.index(of: .main) {fetching.remove(at: i)}
+        if let request = imageRequest {
+            PHImageManager.default().cancelImageRequest(request)
+            imageRequest = nil
+        }
     }
     
     //
@@ -430,13 +570,10 @@ internal class UserEventImage {
     // Parameters
     
     fileprivate var images = [CountdownImage]()
-    fileprivate var imageRequests = [PHImageRequestID]()
-    fileprivate var serialImageCreationQueue: DispatchQueue?
+    fileprivate var imageRequest: PHImageRequestID?
     
-    //
-    // Flags
-    
-    fileprivate var fetching = [CountdownImage.ImageType]()
+    fileprivate var mainImageFetchOperationQueue: OperationQueue?
+    fileprivate var maskImageFetchOperationQueue: OperationQueue?
     
     //
     // Methods
@@ -468,24 +605,6 @@ internal class AppEventImage: UserEventImage {
     var recommendedLocationForCellView: CGFloat?
     var recordName: String?
     
-    var maskImage: CountdownImage? {
-        if let i = images.index(where: {$0.imageType == .mask}) {return images[i]}
-        else {
-            if delegate != nil {fetch(imageTypes: [CountdownImage.ImageType.mask], alertDelegate: true)}
-        }
-        return nil
-    }
-    
-    var maskHomeImage: UIImage? {return _maskHomeImage}
-    
-    var thumbnail: CountdownImage? {
-        if let i = images.index(where: {$0.imageType == .thumbnail}) {return images[i]}
-        else {
-            if delegate != nil {fetch(imageTypes: [CountdownImage.ImageType.thumbnail], alertDelegate: true)}
-        }
-        return nil
-    }
-    
     //
     // init
     
@@ -500,14 +619,6 @@ internal class AppEventImage: UserEventImage {
             self.recommendedLocationForCellView = CGFloat(_recommendedLocationForCellView) / 100.0
         }
         super.init(fromEventImageInfo: info)
-        
-        let fileRootName = info.title.convertToFileName()
-        if let image = CountdownImage(imageType: .mask, fileRootName: fileRootName, fileExtension: ".jpg") {
-            images.append(image)
-        }
-        else if let image = CountdownImage(imageType: .mask, fileRootName: fileRootName, fileExtension: ".png") {
-            images.append(image)
-        }
         
         if images.isEmpty {return nil}
     }
@@ -536,105 +647,169 @@ internal class AppEventImage: UserEventImage {
     //
     // Methods
     
-    override func fetch(imageTypes: [CountdownImage.ImageType], alertDelegate: Bool) {
-        
-        guard recordName != nil && imageTypes.count > 0 else {
-            delegate?.fetchComplete(forImageTypes: imageTypes, success: Array(repeating: false, count: imageTypes.count))
-            return
-        }
-        
-        var needToFetch = [CountdownImage.ImageType]()
-        for imageType in imageTypes {
-            if !fetching.contains(imageType) {
-                fetching.append(imageType)
-                needToFetch.append(imageType)
-            }
-        }
-        if needToFetch.isEmpty {return}
-        
-        let recordID = CKRecordID(recordName: recordName!)
-        fetchOperation = CKFetchRecordsOperation(recordIDs: [recordID])
-        
-        var desiredKeys = [String]()
-        for imageType in needToFetch {
-            desiredKeys.append(contentsOf: [CloudKitKeys.EventImageKeys.fileRootName, imageType.recordKey, imageType.extensionRecordKey])
-        }
-        fetchOperation!.desiredKeys = desiredKeys
-        
-        fetchOperation!.fetchRecordsCompletionBlock = { [weak weakSelf = self] (_records, error) in
-            if let records = _records {
-                guard !records.isEmpty else {
-                    DispatchQueue.main.async { [weak weakSelf = self] in
-                        for imageType in imageTypes {
-                            if let i = weakSelf?.fetching.index(where:{$0 == imageType}) {weakSelf?.fetching.remove(at: i)}
-                        }
-                        weakSelf?.delegate?.fetchComplete(forImageTypes: imageTypes, success: Array(repeating: false, count: imageTypes.count))
-                    }
-                    return
-                }
-                for record in records {
+    /**
+     Use to request full sized main image. May execute asyncronously to fetch image from iCloud. Function is NOT thread safe. Image is cached. Dispatch back to main with each call to make UI changes.
+     */
+    override func requestMainImage(_ completion: @escaping (CountdownImage?) -> Void) {
+        if let i = images.index(where: {$0.imageType == .main}) {completion(images[i]); return}
+        else {
+            if mainImageFetchOperationQueue == nil {
+                guard let record = recordName else {completion(nil); return}
+                
+                mainImageFetchOperationQueue = OperationQueue()
+                mainImageFetchOperationQueue!.isSuspended = true
+                mainImageFetchOperationQueue!.qualityOfService = .userInitiated
+    
+                DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                    let recordID = CKRecordID(recordName: record)
+                    self?.mainImageFetchOperation = CKFetchRecordsOperation(recordIDs: [recordID])
                     
-                    var images = [CountdownImage]()
-                    var success = [Bool]()
-                    for imageType in imageTypes {
+                    let fileRootName = CloudKitKeys.EventImageKeys.fileRootName
+                    let recordKey = CountdownImage.ImageType.main.recordKey
+                    let extensionRecordKey = CountdownImage.ImageType.main.extensionRecordKey
+                    let desiredKeys = [fileRootName, recordKey, extensionRecordKey]
+                    self?.mainImageFetchOperation?.desiredKeys = desiredKeys
+                    
+                    self?.mainImageFetchOperation?.fetchRecordsCompletionBlock = { [weak self] (_records, _error) in
+                        if let error = _error {
+                            os_log("Error fetching records from the cloud: %@", log: .default, type: .error, error.localizedDescription)
+                            completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                        }
                         
-                        if let imageAsset = record.value[imageType.recordKey] as? CKAsset {
-                            let imageFileRootName = record.value[CloudKitKeys.EventImageKeys.fileRootName] as! String
-                            let imageFileExtension = record.value[imageType.extensionRecordKey] as! String
+                        guard let records = _records, !records.isEmpty else {
+                            os_log("Record %@ could not be fetched from the cloud.", log: .default, type: .error, recordID)
+                            completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                        }
+                        
+                        for record in records {
+                            guard let imageAsset = record.value[recordKey] as? CKAsset else {
+                                os_log("Error getting imageAsset", log: .default, type: .error)
+                                completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                            }
+                            guard let imageFileRootName = record.value[fileRootName] as? String else {
+                                os_log("Error getting imageFileRootName", log: .default, type: .error)
+                                completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                            }
+                            guard let imageFileExtension = record.value[extensionRecordKey] as? String else {
+                                os_log("Error getting extensionRecordKey", log: .default, type: .error)
+                                completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                            }
                             
                             do {
                                 let imageData = try Data(contentsOf: imageAsset.fileURL)
-                                let newImage = CountdownImage(imageType: imageType, fileRootName: imageFileRootName, fileExtension: imageFileExtension, imageData: imageData)
-                                images.append(newImage)
-                                success.append(true)
-                            } catch {success.append(false)}
+                                let newImage = CountdownImage(imageType: .main, fileRootName: imageFileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                                self?.images.append(newImage)
+                                completion(newImage)
+                                self?.mainImageFetchOperationQueue?.isSuspended = false
+                            }
+                            catch {
+                                os_log("Image data creation failed for %@", log: .default, type: .error, fileRootName)
+                                completion(nil); self?.mainImageFetchOperationQueue = nil; return
+                            }
                         }
-                        else {success.append(false)}
                     }
-                    
-                    weakSelf?.images.append(contentsOf: images)
-                    DispatchQueue.main.async { [weak weakSelf = self] in
-                        for imageType in imageTypes {
-                            if let i = weakSelf?.fetching.index(where:{$0 == imageType}) {weakSelf?.fetching.remove(at: i)}
-                        }
-                        weakSelf?.delegate?.fetchComplete(forImageTypes: imageTypes, success: success)
-                    }
+                    self?.mainImageFetchOperation?.database = CKContainer.default().publicCloudDatabase
+                    self?.mainImageFetchOperation?.start()
+                    //CKContainer.default().publicCloudDatabase.add(self!.mainImageFetchOperation!)
                 }
             }
             else {
-                DispatchQueue.main.async { [weak weakSelf = self] in
-                    for imageType in imageTypes {
-                        if let i = weakSelf?.fetching.index(where:{$0 == imageType}) {weakSelf?.fetching.remove(at: i)}
+                mainImageFetchOperationQueue?.addOperation { [weak self] in
+                    if let i = self?.images.index(where: {$0.imageType == .main}) {
+                        completion(self!.images[i]); return
                     }
-                    weakSelf?.delegate?.fetchComplete(forImageTypes: imageTypes, success: Array(repeating: false, count: imageTypes.count))
                 }
             }
         }
-        CKContainer.default().publicCloudDatabase.add(fetchOperation!)
     }
     
-    /*override func generateMainHomeImage(size: CGSize, locationForCellView: CGFloat, userInitiated: Bool, completion: ((UIImage?) -> Void)?) {
-        guard let image = mainImage?.uiImage else {completion?(nil); return}
-        
-        _generateHomeImage(
-            from: image,
-            imageType: "Main Home",
-            isUserImage: false,
-            size: size,
-            locationForCellView: locationForCellView,
-            userInitiated: userInitiated,
-            completion: { (mainHomeImage) in completion?(mainHomeImage)}
-        )
-    }*/
-    
-    func generateMaskHomeImage(size: CGSize, locationForCellView: CGFloat) -> UIImage? {
-        guard let maskImage = maskImage?.uiImage else {return nil}
-        return _generateHomeImage(from: maskImage, size: size, locationForCellView: locationForCellView)
+    /**
+     Use to request thumbnail of main image. May execute asyncronously to fetch image from iCloud. Image is cached. Dispatch back to main with each call to make UI changes.
+     */
+    func requestThumbnailImage(_ completion: @escaping (CountdownImage?) -> Void) {
+        if let i = images.index(where: {$0.imageType == .thumbnail}) {completion(images[i]); return}
+        else {
+            // Create a queue that will suspend until results processing is done
+            if thumbnailFetchOperationQueue == nil {
+                guard let record = recordName else {completion(nil); return}
+                
+                thumbnailFetchOperationQueue = OperationQueue()
+                thumbnailFetchOperationQueue!.isSuspended = true
+                thumbnailFetchOperationQueue!.qualityOfService = .userInitiated
+                
+                DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                    let recordID = CKRecordID(recordName: record)
+                    self?.thumbnailFetchOperation = CKFetchRecordsOperation(recordIDs: [recordID])
+                    
+                    let fileRootName = CloudKitKeys.EventImageKeys.fileRootName
+                    let recordKey = CountdownImage.ImageType.thumbnail.recordKey
+                    let extensionRecordKey = CountdownImage.ImageType.thumbnail.extensionRecordKey
+                    let desiredKeys = [fileRootName, recordKey, extensionRecordKey]
+                    self?.thumbnailFetchOperation?.desiredKeys = desiredKeys
+                    
+                    self?.thumbnailFetchOperation?.fetchRecordsCompletionBlock = { [weak self] (_records, _error) in
+                        if let error = _error {
+                            os_log("Error fetching records from the cloud: %@", log: .default, type: .error, error.localizedDescription)
+                            completion(nil); return
+                        }
+                        
+                        guard let records = _records, !records.isEmpty else {
+                            os_log("Record %@ could not be fetched from the cloud.", log: .default, type: .error, recordID)
+                            completion(nil); return
+                        }
+                        
+                        for record in records {
+                            guard let imageAsset = record.value[recordKey] as? CKAsset else {
+                                os_log("Error getting imageAsset", log: .default, type: .error)
+                                completion(nil); return
+                            }
+                            guard let imageFileRootName = record.value[fileRootName] as? String else {
+                                os_log("Error getting imageFileRootName", log: .default, type: .error)
+                                completion(nil); return
+                            }
+                            guard let imageFileExtension = record.value[extensionRecordKey] as? String else {
+                                os_log("Error getting extensionRecordKey", log: .default, type: .error)
+                                completion(nil); return
+                            }
+                            
+                            do {
+                                let imageData = try Data(contentsOf: imageAsset.fileURL)
+                                let newImage = CountdownImage(imageType: .thumbnail, fileRootName: imageFileRootName, fileExtension: imageFileExtension, imageData: imageData)
+                                self?.images.append(newImage)
+                                completion(newImage)
+                                self?.thumbnailFetchOperationQueue?.isSuspended = false
+                            }
+                            catch {
+                                os_log("Image data creation failed for %@", log: .default, type: .error, fileRootName)
+                                completion(nil); return
+                            }
+                        }
+                    }
+                    self?.thumbnailFetchOperation?.database = CKContainer.default().publicCloudDatabase
+                    self?.thumbnailFetchOperation?.start()
+                    //CKContainer.default().publicCloudDatabase.add(thumbnailFetchOperation!)
+                }
+            }
+            // Add to the opperations queue if it exists, will suspend until results processing.
+            else {
+                thumbnailFetchOperationQueue?.addOperation { [weak self] in
+                    if let i = self?.images.index(where: {$0.imageType == .thumbnail}) {
+                        completion(self!.images[i]); return
+                    }
+                }
+            }
+        }
     }
     
     override func cancelNetworkFetches() {
-        fetchOperation?.cancel()
-        fetchOperation = nil
+        mainImageFetchOperation?.cancel()
+        mainImageFetchOperation = nil
+        thumbnailFetchOperation?.cancel()
+        thumbnailFetchOperation = nil
+        mainImageFetchOperationQueue?.cancelAllOperations()
+        mainImageFetchOperationQueue = nil
+        thumbnailFetchOperationQueue?.cancelAllOperations()
+        thumbnailFetchOperationQueue = nil
     }
     
     
@@ -645,8 +820,9 @@ internal class AppEventImage: UserEventImage {
     //
     // Parameters
     
-    fileprivate var fetchOperation: CKFetchRecordsOperation?
-    fileprivate var _maskHomeImage: UIImage?
+    fileprivate var thumbnailFetchOperationQueue: OperationQueue?
+    fileprivate var mainImageFetchOperation: CKFetchRecordsOperation?
+    fileprivate var thumbnailFetchOperation: CKFetchRecordsOperation?
     
     //
     // Types

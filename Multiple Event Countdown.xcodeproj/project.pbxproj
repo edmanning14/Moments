@@ -35,8 +35,6 @@
 		641FB2E821187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641FB2E721187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift */; };
 		641FB2EA211897FB006BEDE3 /* DatePickerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641FB2E9211897FB006BEDE3 /* DatePickerTableViewCell.swift */; };
 		642E2C01213286190059A588 /* SettingsTypeDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */; };
-		642E2C02213286320059A588 /* AppDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A8A9E20294FD200E5934D /* AppDataModel.swift */; };
-		642E2C03213286460059A588 /* CountdownImageDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */; };
 		642E2C08213291650059A588 /* Comfortaa-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 642E2C05213291640059A588 /* Comfortaa-Light.ttf */; };
 		642E2C0A213291650059A588 /* Raleway-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 642E2C06213291640059A588 /* Raleway-Light.ttf */; };
 		642E2C0C213291650059A588 /* Raleway-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 642E2C07213291650059A588 /* Raleway-Medium.ttf */; };
@@ -58,14 +56,12 @@
 		644A9D3F2136D2B200411C3A /* EMContentExpandableMaterial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644A9D3E2136D2B200411C3A /* EMContentExpandableMaterial.swift */; };
 		644A9D412136DD7700411C3A /* EMContentExpandableMaterialManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644A9D402136DD7700411C3A /* EMContentExpandableMaterialManagerDelegate.swift */; };
 		644BBAAE2047C0AF00CF0C29 /* ImagePreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAAD2047C0AF00CF0C29 /* ImagePreviewViewController.swift */; };
-		644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */; };
 		644BBAB22049318400CF0C29 /* GradientMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAB12049318400CF0C29 /* GradientMaskView.swift */; };
 		644BBAB6204BC67B00CF0C29 /* CountdownMaskImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */; };
 		64503E5A213D2E9500E4A939 /* Formattable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64503E59213D2E9500E4A939 /* Formattable.swift */; };
 		64503E5B213D2E9500E4A939 /* Formattable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64503E59213D2E9500E4A939 /* Formattable.swift */; };
 		64503E5D213D623800E4A939 /* EMContentExpandableMaterialDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64503E5C213D623800E4A939 /* EMContentExpandableMaterialDelegate.swift */; };
 		64520C0920C1305D00169A17 /* LoadingCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */; };
-		64537F61204663B500FDAC5A /* CountdownImageDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */; };
 		645A8A9F20294FD200E5934D /* AppDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A8A9E20294FD200E5934D /* AppDataModel.swift */; };
 		64691C1C201EBA7300ADA4C3 /* SpecialEventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */; };
 		64691C1F201FDF5700ADA4C3 /* DS-DIGIB.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 64FE12751FBC21FB0025C005 /* DS-DIGIB.TTF */; };
@@ -122,6 +118,9 @@
 		64C2F587212C524D00A79E98 /* CategoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */; };
 		64D5FF8F1FC6C31E0043E064 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */; };
 		64D6C8D62175E28A00D91DEB /* ReviewTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64D6C8D52175E28A00D91DEB /* ReviewTableViewCell.swift */; };
+		64D6C8DA2178D4F000D91DEB /* HED_so3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 64D6C8D92178D4D200D91DEB /* HED_so3.mlmodel */; };
+		64D6C8DB2178DE4A00D91DEB /* AppDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A8A9E20294FD200E5934D /* AppDataModel.swift */; };
+		64D6C8DC2178DE5500D91DEB /* HED_so3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 64D6C8D92178D4D200D91DEB /* HED_so3.mlmodel */; };
 		64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */; };
 		64E0572A2032AC6400ABCF3B /* BoolExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E057292032AC6400ABCF3B /* BoolExtensions.swift */; };
 		64E330CD2115D44600F6CB65 /* SettingsTypeDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */; };
@@ -202,13 +201,11 @@
 		644A9D3E2136D2B200411C3A /* EMContentExpandableMaterial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EMContentExpandableMaterial.swift; sourceTree = "<group>"; };
 		644A9D402136DD7700411C3A /* EMContentExpandableMaterialManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EMContentExpandableMaterialManagerDelegate.swift; sourceTree = "<group>"; };
 		644BBAAD2047C0AF00CF0C29 /* ImagePreviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewViewController.swift; sourceTree = "<group>"; };
-		644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownMainImageView.swift; sourceTree = "<group>"; };
 		644BBAB12049318400CF0C29 /* GradientMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientMaskView.swift; sourceTree = "<group>"; };
 		644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownMaskImageView.swift; sourceTree = "<group>"; };
 		64503E59213D2E9500E4A939 /* Formattable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formattable.swift; sourceTree = "<group>"; };
 		64503E5C213D623800E4A939 /* EMContentExpandableMaterialDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EMContentExpandableMaterialDelegate.swift; sourceTree = "<group>"; };
 		64520C0820C1305D00169A17 /* LoadingCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingCollectionViewCell.swift; sourceTree = "<group>"; };
-		64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownImageDelegate.swift; sourceTree = "<group>"; };
 		645A8A9E20294FD200E5934D /* AppDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataModel.swift; sourceTree = "<group>"; };
 		64691C1B201EBA7300ADA4C3 /* SpecialEventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpecialEventCell.xib; sourceTree = "<group>"; };
 		6474D9AC2137E58400BE4F87 /* EMContentExpandableMaterialManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EMContentExpandableMaterialManagerView.swift; sourceTree = "<group>"; };
@@ -264,6 +261,7 @@
 		64C2F586212C524D00A79E98 /* CategoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewCell.swift; sourceTree = "<group>"; };
 		64D5FF8E1FC6C31E0043E064 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		64D6C8D52175E28A00D91DEB /* ReviewTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTableViewCell.swift; sourceTree = "<group>"; };
+		64D6C8D92178D4D200D91DEB /* HED_so3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = HED_so3.mlmodel; sourceTree = "<group>"; };
 		64DC6E3A1FFC6BCC00FF8385 /* NewEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewEventViewController.swift; sourceTree = "<group>"; };
 		64E057292032AC6400ABCF3B /* BoolExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BoolExtensions.swift; path = Extensions/BoolExtensions.swift; sourceTree = SOURCE_ROOT; };
 		64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTypeDataSource.swift; sourceTree = "<group>"; };
@@ -417,6 +415,7 @@
 				64E330CC2115D44600F6CB65 /* SettingsTypeDataSource.swift */,
 				6444D8F11F9D03F1005C0F9C /* RealmDataModel.swift */,
 				645A8A9E20294FD200E5934D /* AppDataModel.swift */,
+				64D6C8D92178D4D200D91DEB /* HED_so3.mlmodel */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -427,7 +426,6 @@
 				644A9D402136DD7700411C3A /* EMContentExpandableMaterialManagerDelegate.swift */,
 				64503E5C213D623800E4A939 /* EMContentExpandableMaterialDelegate.swift */,
 				64F7809C20C4FB3D008B1A2F /* ManagedCatalogImagesDelegate.swift */,
-				64537F60204663B500FDAC5A /* CountdownImageDelegate.swift */,
 				64F08BE620FB2C9D009DE926 /* SettingsTableViewCellDelegate.swift */,
 				64F08BE820FB4242009DE926 /* EventTableViewCellDelegate.swift */,
 			);
@@ -517,7 +515,6 @@
 			children = (
 				6445926D213FF0CF00CFFE62 /* DateInputViewClass.swift */,
 				64C28D332139761A00D0388E /* ImageInputViewClass.swift */,
-				644BBAAF2049226300CF0C29 /* CountdownMainImageView.swift */,
 				644BBAB5204BC67B00CF0C29 /* CountdownMaskImageView.swift */,
 				644BBAB12049318400CF0C29 /* GradientMaskView.swift */,
 				64074C3E2018470600BD6C39 /* TextInputAccessoryView.swift */,
@@ -847,12 +844,12 @@
 				642E2C102132A0EC0059A588 /* UIImageExtensions.swift in Sources */,
 				6405C8E7212ED4D2004B0832 /* CGSizeExtensions.swift in Sources */,
 				6405C8E1212ED4D2004B0832 /* DictionaryExtensions.swift in Sources */,
-				642E2C03213286460059A588 /* CountdownImageDelegate.swift in Sources */,
+				64D6C8DC2178DE5500D91DEB /* HED_so3.mlmodel in Sources */,
 				6405C8DF212EC695004B0832 /* ArrayExtensions.swift in Sources */,
 				64503E5B213D2E9500E4A939 /* Formattable.swift in Sources */,
+				64D6C8DB2178DE4A00D91DEB /* AppDataModel.swift in Sources */,
 				6405C8E2212ED4D2004B0832 /* UIImageViewExtensions.swift in Sources */,
 				6405C8E5212ED4D2004B0832 /* BoolExtensions.swift in Sources */,
-				642E2C02213286320059A588 /* AppDataModel.swift in Sources */,
 				6405C8E4212ED4D2004B0832 /* CKAssetExtensions.swift in Sources */,
 				641189D7212EA2C40021EA3D /* TodayViewController.swift in Sources */,
 				6405C8E3212ED4D2004B0832 /* UIViewExtensions.swift in Sources */,
@@ -866,6 +863,7 @@
 			files = (
 				64768B1C1F9E4395005CA6CA /* EventTableViewCell.swift in Sources */,
 				640F9C912043AA7A005CD69E /* CKAssetExtensions.swift in Sources */,
+				64D6C8DA2178D4F000D91DEB /* HED_so3.mlmodel in Sources */,
 				64B1D9AB2022D1C50034FE21 /* SelectImageViewController.swift in Sources */,
 				641FB2E821187C78006BEDE3 /* ConfigureNotificationsTableViewController.swift in Sources */,
 				6444D8F21F9D03F1005C0F9C /* RealmDataModel.swift in Sources */,
@@ -880,9 +878,7 @@
 				641FB2EA211897FB006BEDE3 /* DatePickerTableViewCell.swift in Sources */,
 				6444D8DF1F9CFDFE005C0F9C /* DetailViewController.swift in Sources */,
 				64520C0920C1305D00169A17 /* LoadingCollectionViewCell.swift in Sources */,
-				64537F61204663B500FDAC5A /* CountdownImageDelegate.swift in Sources */,
 				644BBAAE2047C0AF00CF0C29 /* ImagePreviewViewController.swift in Sources */,
-				644BBAB02049226300CF0C29 /* CountdownMainImageView.swift in Sources */,
 				64DC6E3B1FFC6BCC00FF8385 /* NewEventViewController.swift in Sources */,
 				64A1F1D02135393000E19451 /* NavigationControllerFunctionality.swift in Sources */,
 				64FADF3720F1D3BD009C2AE2 /* SettingsTableViewCell.swift in Sources */,
